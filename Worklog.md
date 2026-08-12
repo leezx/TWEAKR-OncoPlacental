@@ -123,6 +123,21 @@ Per-dataset manifests: `datasets/Greenbaum_NatMed_2024/dataset.md`, `datasets/Ve
 7. Resume the 6-question framework (Q1–Q6) from `2026-GPT-TWEAKR-Oncofetal.md#定义清楚Placenta的问题` — infra/data setup was the detour, the actual signature-construction work hasn't started yet. Recommended starting point: Q1.
 8. Once all datasets settle, the actual Aim-1 pipeline work starts: define P1 (placenta-core) / P2 (early-placenta) / P3 (placenta-specific) / D (shared-developmental) per `2026-GPT-TWEAKR-Oncofetal.md#Placenta数据集`'s evidence-layer weighting table — this is still not started, everything so far has been data acquisition.
 
+### Update, same session: HPA trophoblast proteome + HDMA resolved
+
+**HPA trophoblast cell-specific proteome** — closes the last of the 6 originally-missing datasets. Downloaded the full HPA bulk export (small, 43MB) rather than trying to query a filtered API subset, then filtered locally for trophoblast-related single-cell-type specificity (tiered: 54 cell-type-enriched / 90 group-enriched / 1641 cell-type-enhanced). Script + full method + a flagged discrepancy against the KB-cited numbers: `datasets/HPA_trophoblast_proteome/dataset.md`. Lives in `DATA/1.Databases/signatures/TWEAKR_Oncofetal_gene_sets/` (not a new dataset_id — it's an addition to the existing gene-sets collection).
+
+**HDMA (fetal negative reference)** — the placeholder from earlier this session got resolved. User pointed out the full collection is a huge multi-part collection (~2.2TB total: ArchR/bigwigs/ChromBPNet/motifs/fragments/Seurat objects). Investigated via the Zenodo API and found the RNA Seurat objects are stored as **individually downloadable per-organ files** within 4 "Part" records — no need to pull whole bundles. Resolved the full 12-organ size table (see `datasets/HumanDevelopmentMultiomicAtlas/dataset.md`), user picked 7 organs (~57GB: Adrenal/Thyroid/Spleen/Thymus/Liver/Skin/StomachEsophagus — spans all 3 germ layers, skips the 5 largest). **Note: HDMA has no intestine/colon** — it's a broad fetal-negative reference, not gut-specific. Non-RNA data types (ArchR/ChromBPNet/bigwigs/motifs/fragments, ~1.5TB combined) deliberately out of scope.
+
+### Updated open TODOs (supersedes earlier lists where they overlap)
+
+1. Verify `Arutyunyan2023_MFI` primary_tissue h5ad (12.4GB) finished — this was still downloading as of the HDMA/HPA work above; check size.
+2. Verify the 7 HDMA per-organ `.rds` downloads completed cleanly (background job; check `DATA/scRNAseq/HumanDevelopmentMultiomicAtlas/raw/per_organ_RNA_seurat/` file sizes against the table in `link.md`).
+3. Vento-Tormo 2018: confirm `decidua-v3.h5ad` cell-type coverage (trophoblast included, or decidua-only?) — still open.
+4. Fix the stale docs on `2026_human_maternal_fetal_Nature` (`link.md` says skeleton_only, actually has data + a first analysis pass) — still open.
+5. Decide E-MTAB-12595 (Arutyunyan multiome, ~299GB raw FASTQ, no processed alternative) — default is skip, still open.
+6. **Data acquisition for Aim 1 is essentially done** (6/6 originally-missing datasets resolved, modulo the verification items above). Next real step: resume the 6-question framework (Q1–Q6) from `2026-GPT-TWEAKR-Oncofetal.md#定义清楚Placenta的问题` — recommended starting point Q1 — and start actually building P1/P2/P3/D signatures per the evidence-layer weighting table in `2026-GPT-TWEAKR-Oncofetal.md#Placenta数据集`.
+
 ### Repo layout (as of this session)
 
 ```text
