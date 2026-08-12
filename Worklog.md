@@ -98,6 +98,31 @@ Expected: `adata_all_donors_all_cell_states_UPD_20230307.h5ad` ≈12.4GB; organo
 7. **Resume the 6-question framework** from `2026-GPT-TWEAKR-Oncofetal.md#定义清楚Placenta的问题` (Q1–Q6) — user had not yet picked a starting question when this session pivoted to infra/data setup. Recommended starting point discussed but not confirmed: Q1 (the D-shared/F-specific/P-specific orthogonal module definitions), since everything downstream depends on it.
 8. Init git repo + push to GitHub (`leezx/TWEAKR-OncoPlacental`, public) — see repo root for whether this has been done (check `git remote -v`).
 
+### Update, same session: 3 more datasets (user-downloaded, this session organized them)
+
+The user manually downloaded 3 more datasets directly into `DATA/scRNAseq/` (outside this session's automated pull) and asked to have them integrated into the standard `raw/processed/result` + `link.md` structure and registered. Done:
+
+| Dataset | `DATA/` location | Size | Status |
+|---|---|---|---|
+| Greenbaum et al. Nat Med 2024 (SCP2601) | `scRNAseq/Greenbaum_NatMed_2024/` | ~7.5GB | ✅ organized — paired snRNA+snATAC + 3 spatial modalities, 8 donors |
+| Vento-Tormo et al. Nature 2018 | `scRNAseq/VentoTormo_Nature_2018/` | 800MB | ✅ organized — **open question:** `decidua-v3.h5ad` filename suggests possibly decidua-only, not trophoblast; check `obs` cell types before relying on it as a trophoblast reference |
+| Human Development Multiomic Atlas (Liu/Jessa/Kim/Ng et al., Nature 2026 — different paper from `2026_human_maternal_fetal_Nature`) | `scRNAseq/HumanDevelopmentMultiomicAtlas/` | ~20KB (README only) | ⚠️ **placeholder, not downloaded** — only the repo's own README was saved; actual data needs picking specific records from the paper's `table_s14.tsv` on Zenodo, not a bulk pull |
+
+This closes out 3 of the 4 previously-missing datasets from the original gap analysis (Greenbaum 2024 ✓, Vento-Tormo 2018 ✓, HDMA — placeholder only, still needs real data ⚠️). Only the HPA trophoblast cell-specific proteome (distinct from the tissue-level HPA list already in `1.Databases/signatures/TWEAKR_Oncofetal_gene_sets/`) remains completely untouched.
+
+Per-dataset manifests: `datasets/Greenbaum_NatMed_2024/dataset.md`, `datasets/VentoTormo_Nature_2018/dataset.md`, `datasets/HumanDevelopmentMultiomicAtlas/dataset.md`.
+
+### Updated open TODOs (supersedes the list above where they overlap)
+
+1. Verify the 3 `Arutyunyan2023_MFI`/`Arutyunyan2023_MFI_Visium` background downloads completed cleanly (see verify command above).
+2. Vento-Tormo 2018: confirm `decidua-v3.h5ad` cell-type coverage (trophoblast included, or decidua-only?).
+3. HDMA: still needs an actual data pull — go through `table_s14.tsv`, pick relevant fetal-organ Seurat objects, download just those (not the whole Zenodo community — it also has ChromBPNet models, motif compendia, genome tracks that are out of scope).
+4. Still fully missing: HPA trophoblast cell-specific proteome (distinct from the HPA tissue-level list already in `DATA/1.Databases/signatures/TWEAKR_Oncofetal_gene_sets/`).
+5. Fix the stale docs on `2026_human_maternal_fetal_Nature` (`link.md` says skeleton_only, actually has data + a first analysis pass).
+6. Decide E-MTAB-12595 (multiome, ~299GB raw FASTQ, no processed alternative) — default is skip.
+7. Resume the 6-question framework (Q1–Q6) from `2026-GPT-TWEAKR-Oncofetal.md#定义清楚Placenta的问题` — infra/data setup was the detour, the actual signature-construction work hasn't started yet. Recommended starting point: Q1.
+8. Once all datasets settle, the actual Aim-1 pipeline work starts: define P1 (placenta-core) / P2 (early-placenta) / P3 (placenta-specific) / D (shared-developmental) per `2026-GPT-TWEAKR-Oncofetal.md#Placenta数据集`'s evidence-layer weighting table — this is still not started, everything so far has been data acquisition.
+
 ### Repo layout (as of this session)
 
 ```text
@@ -105,8 +130,10 @@ TWEAKR-OncoPlacental/
 ├── Worklog.md              # this file — read first when resuming
 ├── README.md
 ├── datasets/
-│   └── Arutyunyan2023_MFI/
-│       └── dataset.md      # full manifest for E-MTAB-12421/12595/12650/12698
+│   ├── Arutyunyan2023_MFI/dataset.md              # E-MTAB-12421/12595/12650/12698
+│   ├── Greenbaum_NatMed_2024/dataset.md            # Broad SCP2601
+│   ├── VentoTormo_Nature_2018/dataset.md           # E-MTAB-6701/6678/7304
+│   └── HumanDevelopmentMultiomicAtlas/dataset.md   # placeholder only, not downloaded
 ├── scripts/                 # empty so far
 ├── notebooks/                # empty so far
 └── docs/                     # empty so far
