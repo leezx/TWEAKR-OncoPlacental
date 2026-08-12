@@ -129,14 +129,21 @@ Per-dataset manifests: `datasets/Greenbaum_NatMed_2024/dataset.md`, `datasets/Ve
 
 **HDMA (fetal negative reference)** — the placeholder from earlier this session got resolved. User pointed out the full collection is a huge multi-part collection (~2.2TB total: ArchR/bigwigs/ChromBPNet/motifs/fragments/Seurat objects). Investigated via the Zenodo API and found the RNA Seurat objects are stored as **individually downloadable per-organ files** within 4 "Part" records — no need to pull whole bundles. Resolved the full 12-organ size table (see `datasets/HumanDevelopmentMultiomicAtlas/dataset.md`), user picked 7 organs (~57GB: Adrenal/Thyroid/Spleen/Thymus/Liver/Skin/StomachEsophagus — spans all 3 germ layers, skips the 5 largest). **Note: HDMA has no intestine/colon** — it's a broad fetal-negative reference, not gut-specific. Non-RNA data types (ArchR/ChromBPNet/bigwigs/motifs/fragments, ~1.5TB combined) deliberately out of scope.
 
+### Verification: Arutyunyan2023_MFI fully downloaded ✅
+
+All 3 accessions confirmed complete by exact byte match, 2026-08-12 ~19:30:
+- `scRNAseq/Arutyunyan2023_MFI/raw/primary_tissue/adata_all_donors_all_cell_states_UPD_20230307.h5ad` — 12,382,386,129 bytes, matches expected exactly
+- `scRNAseq/Arutyunyan2023_MFI/raw/organoid/` — 3/3 files, all exact byte matches (PTO 1,559,704,580 / TSC 788,504,395 / Fig3 2,010,471,040)
+- `SpatialTranscriptomics/Arutyunyan2023_MFI_Visium/raw/` — 8/8 Visium `*_spaceranger_output.tar.gz` present
+- Total: 16GB (scRNAseq) + 2.2GB (Visium) = 18.2GB
+
 ### Updated open TODOs (supersedes earlier lists where they overlap)
 
-1. Verify `Arutyunyan2023_MFI` primary_tissue h5ad (12.4GB) finished — this was still downloading as of the HDMA/HPA work above; check size.
-2. Verify the 7 HDMA per-organ `.rds` downloads completed cleanly (background job; check `DATA/scRNAseq/HumanDevelopmentMultiomicAtlas/raw/per_organ_RNA_seurat/` file sizes against the table in `link.md`).
-3. Vento-Tormo 2018: confirm `decidua-v3.h5ad` cell-type coverage (trophoblast included, or decidua-only?) — still open.
-4. Fix the stale docs on `2026_human_maternal_fetal_Nature` (`link.md` says skeleton_only, actually has data + a first analysis pass) — still open.
-5. Decide E-MTAB-12595 (Arutyunyan multiome, ~299GB raw FASTQ, no processed alternative) — default is skip, still open.
-6. **Data acquisition for Aim 1 is essentially done** (6/6 originally-missing datasets resolved, modulo the verification items above). Next real step: resume the 6-question framework (Q1–Q6) from `2026-GPT-TWEAKR-Oncofetal.md#定义清楚Placenta的问题` — recommended starting point Q1 — and start actually building P1/P2/P3/D signatures per the evidence-layer weighting table in `2026-GPT-TWEAKR-Oncofetal.md#Placenta数据集`.
+1. Verify the 7 HDMA per-organ `.rds` downloads completed cleanly (background job still running as of this update — Adrenal + Thyroid confirmed done by exact-enough size match, Spleen in progress, Thymus/Liver/Skin/StomachEsophagus not yet started/checked; check `DATA/scRNAseq/HumanDevelopmentMultiomicAtlas/raw/per_organ_RNA_seurat/` file sizes against the table in `link.md`).
+2. Vento-Tormo 2018: confirm `decidua-v3.h5ad` cell-type coverage (trophoblast included, or decidua-only?) — still open.
+3. Fix the stale docs on `2026_human_maternal_fetal_Nature` (`link.md` says skeleton_only, actually has data + a first analysis pass) — still open.
+4. Decide E-MTAB-12595 (Arutyunyan multiome, ~299GB raw FASTQ, no processed alternative) — default is skip, still open.
+5. **Data acquisition for Aim 1 is essentially done** (6/6 originally-missing datasets resolved, modulo the HDMA download finishing and the 2 minor open questions above). Next real step: resume the 6-question framework (Q1–Q6) from `2026-GPT-TWEAKR-Oncofetal.md#定义清楚Placenta的问题` — recommended starting point Q1 — and start actually building P1/P2/P3/D signatures per the evidence-layer weighting table in `2026-GPT-TWEAKR-Oncofetal.md#Placenta数据集`.
 
 ### Repo layout (as of this session)
 
