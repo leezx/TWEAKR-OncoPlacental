@@ -47,12 +47,18 @@ With F-developmental and P-developmental defined as above (each already adult-co
 - **F-specific** = F-developmental AND NOT P-developmental
 - **P-specific** = P-developmental AND NOT F-developmental
 
+### Reviewer's post-APPROVE note: F is organ-specific, P is global — needs reconciling before final gene sets, not before merge
+
+PR #6's APPROVE flagged one more thing to track (not a blocker): `F-developmental(gene, organ)` is organ-specific, while `P-developmental(gene)` is global (not organ-scoped). So generating the actual final D/F/P gene sets requires deciding whether F-specific results stay organ-stratified (a gene can be "F-specific in Liver" without being "F-specific in Skin") or get collapsed into a single cross-7-organ consensus/union before comparing against P-developmental. Reviewer's framing: "这个应该由真实分布决定，不需要现在提前拍死" — decide this once the real per-organ F-developmental gene sets exist and their overlap pattern across organs is visible, not now.
+
 ## What's explicitly left open, to decide against real data rather than assume
 
 - Exact percentile/threshold cutoffs for "elevated" and "adult_excluded" (placeholder language above, not numbers) — Step 4's first qsub pass should compute the real distributions per dataset and report them before locking a cutoff, same discipline as the collision-count-mass check in Step 3.
-- Whether all 5 placental datasets have enough donor/sample-level replicate structure for within-dataset DE, or whether some need to be pseudobulk-per-cluster instead (weaker but usable) — needs a real inventory check, not an assumption.
-- The exact quorum for `replicated_in_placenta`.
-- Whether Nature2026's `snRNA_raw_counts` file (still missing usable annotation per Step 1 Finding #3) gets resolved before Step 4 runs or is excluded from this pass.
+- ~~Whether all 5 placental datasets have enough donor/sample-level replicate structure for within-dataset DE~~ — **resolved**, see `results/04_dfp_signature/replicate_structure_audit.md`: 4 of 7 placental datasets (Arutyunyan primary_tissue, Nature2026 scPlacenta_host, VentoTormo decidua-v3, Greenbaum) have real donor/sample replicate structure (8–23 donors each) AND a non-trophoblast population to contrast against. The other 3 (Arutyunyan organoid PTO/TSC/Fig3) are structurally excluded — pure trophoblast by construction, no internal contrast possible regardless of replicate count. Quorum language below revised from "≥3 of 5" to reflect only 4 datasets are eligible.
+- The exact quorum for `replicated_in_placenta` — now "≥3 of 4" eligible datasets, exact number (3 vs. requiring all 4) still to be set once the DE is actually run.
+- Whether Nature2026's `snRNA_raw_counts` file (still missing usable annotation per Step 1 Finding #3) gets resolved before Step 4 runs or is excluded from this pass — still open, unaffected by the replicate-structure audit.
+- **New from the audit**: VentoTormo's `Fetus` donor labels have inconsistent leading whitespace (`" F15"` vs `"F19"`) — needs trimming before use. Greenbaum's cluster-level annotation file (~1,923 cells) is a much smaller subset than the full RNA matrix (~36,456 cells per Step 1) — needs checking whether that's a representative subsample or needs re-deriving before running the DE on it.
+- Whether F-specific gene sets stay per-organ or get collapsed to a cross-organ consensus/union before the final D/F/P set operations (reviewer's post-APPROVE note, above) — decide once real per-organ results exist.
 
 ## What this design does NOT do yet
 

@@ -14,12 +14,12 @@ User-requested (2026-08-13): report a global % after every completed task, using
 | D. Step 1 Inventory | 4% | done | 100% |
 | E. Step 2 gene-ID mapping | 6% | done | 100% |
 | F. Step 3 prep (collision rule + adult reference) | 7% | done — PR #5 merged | 100% |
-| G. Step 3 core: D/F/P pseudobulk signature construction | 20% | not started | 0% |
+| G. Step 4 core: D/F/P pseudobulk signature construction | 20% | design locked + replicate-structure audit done, DE compute not started | ~13% |
 | H. Tier-2 validation (Tabula Sapiens, post-freeze) | 10% | not started | 0% |
 | I. Apply D/F/P to CRC Oncofetal cells, answer Q1 | 20% | not started | 0% |
 | J. Q2–Q6 (remaining 6-question framework, unscoped) | 20% | not started | 0% |
 
-**Current total: ~30%** (delta +0.2 from ~29.8%: PR #5 APPROVEd and merged, `126ef06`; F now fully done — all of Steps 1/2/3-prep complete, Step 3 core (D/F/P construction itself) is next and is 0% started)
+**Current total: ~32.6%** (delta +0.6 from ~32%: replicate-structure audit resolved one of `STEP4_DFP_DESIGN.md`'s open items with real data — 4 of 7 placental datasets usable for the trophoblast-vs-rest DE, 3 organoid datasets structurally excluded — no new compute needed, just re-reading Step 1's already-verified inventory JSONs; G bumped from ~10% to ~13% of its 20% weight)
 
 When reporting progress: recompute the weighted sum, state the delta from the last reported number, and update this table in the same commit as the work it reflects.
 
@@ -341,6 +341,31 @@ Reviewer endorsed the direction (P-specific's new `NOT elevated_in_fetal_somatic
 - P-developmental(gene) = replicated_in_placenta AND adult_excluded(whole_body)
 
 — then D/F/P become a clean three-way partition of these two already-adult-corrected programs: D-shared = F-developmental AND P-developmental; F-specific = F-developmental AND NOT P-developmental; P-specific = P-developmental AND NOT F-developmental. Reviewer's framing: "D/F/P 真正成为同一个 developmental universe 的三分解，而不是三个条件各异、可能留下大量灰区的 ad hoc gene lists." Still respects `STEP3_METHOD_CONTRACT.md` — no HDMA-UMI-vs-GTEx-TPM fold-change, `adult_excluded` still uses each dataset's own internal rank/percentile. Reviewer confirmed the no-internal-HDMA-DE decision was correct too — the blocker was never "HDMA needs its own control," it was "expression ≠ developmental specificity." Updated `docs/STEP4_DFP_DESIGN.md`, resubmitting.
+
+### PR #6 approved and merged
+
+**APPROVE**: "上一轮 blocker 已经实质解决... 这比上一版干净很多，因为现在 D/F/P 真的是从两个已经定义好的 developmental parent programs 做集合分解。" One post-APPROVE note, not a blocker: F-developmental is organ-specific, P-developmental is global — final gene-set generation needs to decide whether F stays per-organ or collapses to a cross-organ consensus, "由真实分布决定，不需要现在提前拍死." Merged (`gh pr merge 6 --merge --delete-branch`), local `main` fast-forwarded to `2e727ab`.
+
+### Replicate-structure audit: resolves design doc's first open item, no new compute needed
+
+New branch `step04-dfp-inventory-2026-08-13`. Answered "do all 5 placental datasets have enough donor/sample replicate structure for the trophoblast-vs-rest DE" by re-reading `results/01_inventory/*.json` (already produced/verified via Step 1's qsub job) rather than running anything new — the donor/sample columns and their value counts were already captured there.
+
+**Result**: 4 of 7 placental datasets are actually usable — Arutyunyan primary_tissue (18 donors), Nature2026 scPlacenta_host (23 samples), VentoTormo decidua-v3 (12 fetuses), Greenbaum (8 donors), all with real replicate structure AND a non-trophoblast population to contrast against. The 3 Arutyunyan organoid datasets (PTO/TSC/Fig3) are **structurally excluded regardless of replicate count** — they're pure trophoblast cultures by construction (Step 1 already noted this), so there's no internal non-trophoblast population to run a contrast DE against. Not a data-quality gap, just what organoid culture datasets are. Revises the design doc's "≥3 of 5" quorum placeholder to "≥3 of 4."
+
+Also surfaced two minor real data-quality notes along the way: VentoTormo's `Fetus` donor labels have inconsistent leading whitespace (`" F15"` vs `"F19"`, needs trimming); Greenbaum's cluster-annotation file (~1,923 cells) is much smaller than its full RNA matrix (~36,456 cells per Step 1) — needs checking whether that's a representative subsample before running the DE on it.
+
+Full writeup: `results/04_dfp_signature/replicate_structure_audit.md`. `docs/STEP4_DFP_DESIGN.md` updated to mark this open item resolved and cross-reference the audit.
+
+### PR #7 review round 1 (REQUEST_CHANGES) — fixed: marginal totals ≠ paired contrast, found two real bugs while fixing it
+
+Reviewer correctly caught that the audit only checked marginal totals (dataset has N donors; dataset has trophoblast + non-trophoblast cells overall) — not whether any single donor actually has both. If trophoblast status is confounded with donor identity, donor-level pseudobulk DE is invalid no matter how many nominal donors exist. Asked for a real `dataset | donor | n_trophoblast | n_non_trophoblast | eligible` table.
+
+Wrote `scripts/04_dfp_signature/donor_troph_crosstab.py`, ran on Argos (this genuinely needed new compute — the joint donor×cell-type breakdown wasn't in Step 1's existing inventory JSONs, only marginal value_counts were). Found two real bugs while building it, both caught by looking at actual output rather than trusting the first pass:
+
+1. **VentoTormo's whitespace bug confirmed real**: after trimming `Fetus`, all 12 donors cleanly have both groups — untrimmed, `" F15"` and a clean `"F15"` would have silently split into two fake single-group donors.
+2. **Greenbaum join was completely broken, 0/1923 cells matched**: `cluster.csv`'s `NAME` (`W9_AAACCAACACCTGCCT`) and `metadata.csv`'s `NAME` (`JS34#ACGTCAAGTTGCAATG-1`) use incompatible barcode schemes entirely — not almost-matching, not matching at all. Fixed by noticing `cluster.csv`'s own `NAME` already embeds the donor as the prefix before the last `_` — no join needed. This also revealed the annotated ~1,923-cell subset covers only **3 of the full 8 donors** (W8-2/W9/W11), not 8 as round 1's marginal-count table implied.
+
+**Final real numbers**: Arutyunyan 17/18 donors eligible, Nature2026 23/23, VentoTormo 12/12, Greenbaum 3/3 (not 8) — all 4 datasets remain usable, but Greenbaum's real replicate count is much thinner than round 1 suggested and should be weighted accordingly, not treated as equal-strength evidence. Updated `results/04_dfp_signature/replicate_structure_audit.md` with the full cross-tab and this correction, resubmitting.
 
 ### Repo layout (as of this session)
 
