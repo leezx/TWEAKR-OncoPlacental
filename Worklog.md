@@ -371,6 +371,18 @@ Wrote `scripts/04_dfp_signature/donor_troph_crosstab.py`, ran on Argos (this gen
 
 **APPROVE**: "上一轮唯一 blocker 已经被真正解决... 这次 audit 确实在检查真实结构，而不是为了得到预期答案." One non-blocking doc-sync note: the audit's top summary still echoed round-1's stale "Greenbaum 8 donors" framing even though round 2 had already corrected it to 3 — fixed by adding an explicit final-numbers callout at the very top and striking through the stale number in the round-1 table, so skimming only the top half can't mislead. Merged (`gh pr merge 7 --merge --delete-branch`), local `main` fast-forwarded to `37adf04`. Reviewer's suggested next step: "trophoblast pseudobulk DE 的 statistical-design/threshold audit" — i.e. now that dataset eligibility is settled, pick the actual test and thresholds before running it.
 
+### Step 4 statistical design: the actual test/threshold logic for all three evidence types
+
+New branch `step04-dfp-statdesign-2026-08-13`. Wrote `docs/STEP4_STATISTICAL_DESIGN.md` before writing any DE code — picks the concrete statistic for each evidence type in `STEP4_DFP_DESIGN.md`.
+
+**P-developmental (trophoblast positive evidence)**: leverages the donor pairing the replicate-structure audit just confirmed — paired Wilcoxon signed-rank per gene per dataset (log-CPM trophoblast vs. non-trophoblast, matched by donor), not an unpaired test that would throw the pairing away. Worked out a concrete, quantified reason Greenbaum's n=3 can't be a full quorum vote: an exact paired Wilcoxon on 3 pairs has only 2³=8 sign arrangements, so its smallest possible two-sided p-value is 2/8=0.25 — it mathematically cannot clear a conventional significance bar no matter how strong the true effect, a hard ceiling not just "weaker evidence." `replicated_in_placenta` quorum now scoped to the 3 adequately-powered datasets (Arutyunyan/Nature2026/VentoTormo); Greenbaum contributes only as an optional directional-concordance booster, never a required or sufficient vote.
+
+**F-developmental (fetal-somatic positive evidence)**: checked `meta_value_counts['Sample']` in Step 1's HDMA inventory JSONs (not assumed) and found each of the 7 organs actually has real individual-level replicate structure too (3–7 samples/organ: Adrenal 4, Thyroid/Spleen/Thymus/Skin 3 each, Liver/StomachEsophagus 7 each) — HDMA has no internal contrast population, but it does have within-organ individual replicates, so "elevated_in_fetal_somatic" is now defined as a within-organ percentile clearing a floor **and** detected in a majority of that organ's own samples, not a single pooled number driven by whichever sample happens to be largest. Also flagged that StomachEsophagus's 7 samples mix Stomach- and Esophagus-labeled tissue, which may need splitting before pseudobulking given GTEx/HPA already treat them as separate adult tissues.
+
+**`adult_excluded`**: reaffirmed within-dataset percentile only (no absolute number chosen yet), and added the missing distinction between organ-matched (F-developmental) and whole-body (P-developmental) exclusion — whole-body must clear the bar in essentially all 68 GTEx tissues, not just on average, otherwise a gene high in one specific adult tissue (testis, brain) but low elsewhere would incorrectly pass.
+
+No DE run yet, no percentile cutoffs locked to numbers — design/logic only, submitting for review before the next compute step (which will report real per-gene test-statistic and percentile distributions to actually set the cutoffs).
+
 ### Repo layout (as of this session)
 
 ```text
