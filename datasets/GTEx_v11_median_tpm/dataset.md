@@ -11,6 +11,8 @@
   - **CRC sanity check**: normal adult colon columns (`Colon_Sigmoid`, `Colon_Transverse`+Mucosa/Muscularis) — the eventual target is CRC malignant epithelial cells, so a "placenta-specific" gene that's already high in normal adult colon epithelium isn't a useful discriminator.
 - **Tier 2 (deferred, independent validation only)**: Tabula Sapiens (adult single-cell) + a dedicated adult colon epithelial single-cell atlas, held out of signature *definition* entirely so "P-specific genes are largely absent across adult cell types" is an independent post-hoc validation, not circular. Not downloaded yet — revisit after Step 3's first D/F/P version is frozen.
 
+**Cross-platform comparison rule (fixed 2026-08-13, PR #5 round-2)**: GTEx (bulk TPM) is never directly compared in raw magnitude against HDMA/trophoblast (single-cell counts). It's used only as an **adult-exclusion reference** — is a candidate gene still meaningfully expressed in the matched tissue(s), judged by GTEx's own internal rank/percentile/threshold — combined as a separate evidence axis alongside developmental evidence computed entirely within the scRNA-seq data. Full rule: `docs/STEP3_METHOD_CONTRACT.md`. `hdma_organ_to_gtex_tissue_map.tsv` now has an explicit `role` column (`adult_negative_reference` for every row — GTEx has no placenta column, so unlike HPA there's no exclusion case needed here).
+
 ## What's on disk
 
 `DATA/1.Databases/GTEx_v11_median_tpm/`:

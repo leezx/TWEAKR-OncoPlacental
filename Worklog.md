@@ -13,13 +13,13 @@ User-requested (2026-08-13): report a global % after every completed task, using
 | C. Data audit + compute feasibility doc | 3% | done | 100% |
 | D. Step 1 Inventory | 4% | done | 100% |
 | E. Step 2 gene-ID mapping | 6% | done | 100% |
-| F. Step 3 prep (collision rule + adult reference) | 7% | in progress | ~90% |
+| F. Step 3 prep (collision rule + adult reference) | 7% | PR #5 open, round-1 review addressed | ~97% |
 | G. Step 3 core: D/F/P pseudobulk signature construction | 20% | not started | 0% |
 | H. Tier-2 validation (Tabula Sapiens, post-freeze) | 10% | not started | 0% |
 | I. Apply D/F/P to CRC Oncofetal cells, answer Q1 | 20% | not started | 0% |
 | J. Q2–Q6 (remaining 6-question framework, unscoped) | 20% | not started | 0% |
 
-**Current total: ~29%** (2026-08-13, after Step 3 prep collision-quantification + GTEx/HPA/TabulaSapiens acquisition, before that PR is opened/merged)
+**Current total: ~29.8%** (delta +0.8 from ~29%: PR #5's REQUEST_CHANGES round 1 fixed with `docs/STEP3_METHOD_CONTRACT.md` + HPA/GTEx `role` column fix; still not merged, F stays <100% until approved)
 
 When reporting progress: recompute the weighted sum, state the delta from the last reported number, and update this table in the same commit as the work it reflects.
 
@@ -303,7 +303,15 @@ Two prerequisites the reviewer flagged before real D/F/P construction can start:
 
 Also caught and fixed a bash bug of my own before it did any damage: the first download-manifest generator used Python's default `print(a, b, c)` (space-joined) while the download script's `read` expected tab-delimited fields — this silently produced empty `url` variables and `curl: (3) URL using bad/illegal format`, again caught by the explicit size/MD5 check rather than the script's own exit status.
 
-Updated `DATA/dataset.index.md` with all three new entries. Not yet done: pushing `TabulaSapiens` to Argos (large, in progress), committing this branch, and submitting for review.
+Updated `DATA/dataset.index.md` with all three new entries. Committed (`f7230f7`), pushed, opened as **PR #5** and submitted to the ChatGPT reviewer.
+
+### PR #5 review round 1 (REQUEST_CHANGES) — fixed: cross-platform comparison method contract
+
+Reviewer's collision-quantification and two-tier design were both endorsed with no changes needed ("collision 部分处理得很好... 这个结论足够稳，可以不再反复讨论" / "GTEx + HPA + held-out Tabula Sapiens 的两层设计本身我也赞成"). One real methodological blocker: HDMA is single-cell/Seurat counts, GTEx is bulk median TPM, HPA is bulk nTPM — three platforms/normalizations that can't be directly compared as fold-change or a merged DE model without platform/depth/composition effects contaminating the signature. The reviewer didn't ask for new data or for Step 3 to actually start — just for the comparison boundary to be locked down first.
+
+**Fixed by writing `docs/STEP3_METHOD_CONTRACT.md`**, which locks in: developmental evidence (F/P-specific candidate identification) computed entirely *within* the scRNA-seq data, never touching GTEx/HPA; GTEx/HPA used only to answer "is this gene still meaningfully expressed in the matched adult tissue?" via each dataset's own internal rank/percentile/threshold (never raw-magnitude cross-platform comparison); final signature = developmental evidence AND adult-depletion evidence as two independently-computed axes, not one merged model.
+
+**Also fixed a genuine inconsistency the reviewer caught**: `HPA_RNA_tissue_consensus` includes a `placenta` row among its "40 adult tissues," and earlier docs didn't carve it out — which would have let placenta count as adult-negative background for P-specific calls (circular: "gene isn't placenta-specific because it's high in placenta"). Fixed by adding an explicit `role` column to both `hdma_organ_to_hpa_tissue_map.tsv` (`placenta` → `positive_cross_check_ONLY_never_negative_reference`, everything else → `adult_negative_reference`) and `hdma_organ_to_gtex_tissue_map.tsv` (all rows `adult_negative_reference` — GTEx has no placenta column, so no exclusion case needed there) so Step 3 code has a machine-readable contract to filter on, not just prose. Re-pushed both updated processed tables to Argos, verified byte-for-byte via `cat` over ssh.
 
 ### Repo layout (as of this session)
 
