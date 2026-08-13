@@ -14,12 +14,12 @@ User-requested (2026-08-13): report a global % after every completed task, using
 | D. Step 1 Inventory | 4% | done | 100% |
 | E. Step 2 gene-ID mapping | 6% | done | 100% |
 | F. Step 3 prep (collision rule + adult reference) | 7% | done — PR #5 merged | 100% |
-| G. Step 4 core: D/F/P pseudobulk signature construction | 20% | design locked + real donor×trophoblast eligibility confirmed, DE compute not started | ~17% |
+| G. Step 4 core: D/F/P pseudobulk signature construction | 20% | full statistical design locked (eligibility + test/model chosen), DE compute not started | ~20% |
 | H. Tier-2 validation (Tabula Sapiens, post-freeze) | 10% | not started | 0% |
 | I. Apply D/F/P to CRC Oncofetal cells, answer Q1 | 20% | not started | 0% |
 | J. Q2–Q6 (remaining 6-question framework, unscoped) | 20% | not started | 0% |
 
-**Current total: ~33.4%** (delta +0.8 from ~32.6%: PR #7 APPROVEd and merged, `37adf04` — real donor×trophoblast-status cross-tab confirms 4 usable placental datasets with actual eligible-donor counts (17/23/12/3, not the marginal 18/23/12/8), catching two real bugs (VentoTormo whitespace, Greenbaum barcode-scheme mismatch) along the way; G bumped from ~13% to ~17% of its 20% weight — this is real per-donor compute now, not just a design doc)
+**Current total: ~34%** (delta +0.6 from ~33.4%: PR #8 APPROVEd and merged, `ff0ab0a` — primary trophoblast DE model locked to count-based paired edgeR/DESeq2 design after fixing a real methodology gap (Wilcoxon-on-log-CPM was the wrong primary model); F-developmental and adult_excluded approaches endorsed unchanged. G now at ~20% of its 20% weight: the full statistical design (which datasets, which test, which model, how to combine evidence types) is locked end-to-end, but zero real distributions/cutoffs/DE have been computed yet — reviewer's explicit next step is the distribution/threshold audit before cutoffs freeze)
 
 When reporting progress: recompute the weighted sum, state the delta from the last reported number, and update this table in the same commit as the work it reflects.
 
@@ -390,6 +390,12 @@ Reviewer endorsed F-developmental and `adult_excluded` as-is, but caught a real 
 **Fixed**: primary DE model upgraded to edgeR quasi-likelihood F-test or DESeq2, fit independently per dataset with an explicit paired design (`~ donor + trophoblast_status`, donor as blocking factor) — the standard approach for paired pseudobulk RNA-seq DE, correctly modeling mean-variance/library-size/dispersion from raw counts. Paired Wilcoxon downgraded to a secondary sensitivity/direction-consistency check, not the primary engine.
 
 **Also fixed the now-mismatched Greenbaum justification**: the original "paired Wilcoxon's minimum p-value with n=3 is 0.25" reasoning was mathematically correct but no longer the right justification once Wilcoxon stopped being the primary model. Revised to the actual reason: n=3 is too thin to reliably estimate dispersion/effect size in an independent per-dataset edgeR/DESeq2 fit, regardless of test choice. Conclusion unchanged (Greenbaum stays an optional directional booster, never a required quorum vote), reasoning now matches the real primary model. Updated `docs/STEP4_STATISTICAL_DESIGN.md`, resubmitting.
+
+### PR #8 approved and merged — full Step 4 statistical design locked
+
+**APPROVE**: "P-developmental 的 primary DE 现在改成了真正的 pseudobulk count-based paired model... Greenbaum 的处理也已经和新模型一致... 这个结论合理." F-developmental and adult_excluded reconfirmed unchanged. Reviewer's explicit next step: "下一步可以开始跑 distribution / threshold audit，再冻结具体 cutoffs." Merged (`gh pr merge 8 --merge --delete-branch`), local `main` fast-forwarded to `ff0ab0a`.
+
+End-to-end statistical design for Step 4 is now fully locked across 5 review rounds (PR #6 D/F/P set logic → PR #7 dataset/donor eligibility → PR #8 test/model choice): which datasets, which donors, which pairing, which model, how the three evidence types combine. Nothing has been executed yet — next task is computing real per-gene/per-tissue distributions to actually set the percentile/effect-size/quorum cutoffs this design left as placeholders, before running the real edgeR/DESeq2 DE.
 
 ### Repo layout (as of this session)
 
