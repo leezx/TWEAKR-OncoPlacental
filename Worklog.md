@@ -383,6 +383,14 @@ New branch `step04-dfp-statdesign-2026-08-13`. Wrote `docs/STEP4_STATISTICAL_DES
 
 No DE run yet, no percentile cutoffs locked to numbers — design/logic only, submitting for review before the next compute step (which will report real per-gene test-statistic and percentile distributions to actually set the cutoffs).
 
+### PR #8 review round 1 (REQUEST_CHANGES) — fixed: primary DE model must be count-based, not Wilcoxon on log-CPM
+
+Reviewer endorsed F-developmental and `adult_excluded` as-is, but caught a real statistical-methodology gap: paired Wilcoxon signed-rank on log-CPM was proposed as the *primary* trophoblast-vs-rest DE model, but that discards the RNA-seq count model information the pseudobulk data actually has, and its p-value behavior degrades under heavy zero/tie structure typical of pseudobulk counts. CNS-level rigor needs a proper count-based paired model.
+
+**Fixed**: primary DE model upgraded to edgeR quasi-likelihood F-test or DESeq2, fit independently per dataset with an explicit paired design (`~ donor + trophoblast_status`, donor as blocking factor) — the standard approach for paired pseudobulk RNA-seq DE, correctly modeling mean-variance/library-size/dispersion from raw counts. Paired Wilcoxon downgraded to a secondary sensitivity/direction-consistency check, not the primary engine.
+
+**Also fixed the now-mismatched Greenbaum justification**: the original "paired Wilcoxon's minimum p-value with n=3 is 0.25" reasoning was mathematically correct but no longer the right justification once Wilcoxon stopped being the primary model. Revised to the actual reason: n=3 is too thin to reliably estimate dispersion/effect size in an independent per-dataset edgeR/DESeq2 fit, regardless of test choice. Conclusion unchanged (Greenbaum stays an optional directional booster, never a required quorum vote), reasoning now matches the real primary model. Updated `docs/STEP4_STATISTICAL_DESIGN.md`, resubmitting.
+
 ### Repo layout (as of this session)
 
 ```text
