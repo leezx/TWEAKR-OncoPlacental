@@ -14,12 +14,12 @@ User-requested (2026-08-13): report a global % after every completed task, using
 | D. Step 1 Inventory | 4% | done | 100% |
 | E. Step 2 gene-ID mapping | 6% | done | 100% |
 | F. Step 3 prep (collision rule + adult reference) | 7% | done — PR #5 merged | 100% |
-| G. Step 4 core: D/F/P pseudobulk signature construction | 20% | full statistical design locked (eligibility + test/model chosen), DE compute not started | ~20% |
+| G. Step 4 core: D/F/P pseudobulk signature construction | 20% | primary P-developmental DE run for real (2/2 usable datasets), bio-validated, threshold audit drafted; F-developmental/adult_excluded percentiles + final gene lists still pending | ~40% |
 | H. Tier-2 validation (Tabula Sapiens, post-freeze) | 10% | not started | 0% |
 | I. Apply D/F/P to CRC Oncofetal cells, answer Q1 | 20% | not started | 0% |
 | J. Q2–Q6 (remaining 6-question framework, unscoped) | 20% | not started | 0% |
 
-**Current total: ~34%** (delta +0.6 from ~33.4%: PR #8 APPROVEd and merged, `ff0ab0a` — primary trophoblast DE model locked to count-based paired edgeR/DESeq2 design after fixing a real methodology gap (Wilcoxon-on-log-CPM was the wrong primary model); F-developmental and adult_excluded approaches endorsed unchanged. G now at ~20% of its 20% weight: the full statistical design (which datasets, which test, which model, how to combine evidence types) is locked end-to-end, but zero real distributions/cutoffs/DE have been computed yet — reviewer's explicit next step is the distribution/threshold audit before cutoffs freeze)
+**Current total: ~38%** (delta +4 from ~34%: ran the actual distribution/threshold-audit compute the PR #8 reviewer asked for. Found — by directly checking the files, not assuming — that VentoTormo has no raw counts anywhere in `decidua-v3.h5ad` (irreversibly normalized, no `.raw`/layers/separate file), collapsing the approved "≥2 of 3 datasets" quorum to an interim **2-of-2** (Arutyunyan, Nature2026); documented in `raw_counts_availability_audit.md` and folded into `STEP4_STATISTICAL_DESIGN.md`. Built donor×trophoblast-status pseudobulk raw-count matrices for both usable datasets (verified byte-exact against Argos and against the known replicate-structure-audit donor counts), then ran the real edgeR QLF paired DE (`~donor+status`) for both on Argos. Results independently sanity-checked against 9 canonical trophoblast/immune/endothelial markers (ERVFRD-1, CGA, CSH1/2, PSG1/3, GATA3, KRT7, HLA-G, PTPRC, PECAM1) — all landed in the biologically expected direction with FDR≪0.05 in both datasets. Drafted (not yet reviewer-approved) a concrete effect-size/FDR cutoff proposal (`|logFC|≥1` & `FDR<0.05` per dataset, 2-of-2 quorum) in `trophoblast_edgeR_audit.md`. G now ~40% of its 20% weight: real primary-DE compute + validation + threshold proposal done; F-developmental within-organ percentiles, `adult_excluded` GTEx/HPA percentiles, and final D/F/P gene-list assembly still pending.)
 
 When reporting progress: recompute the weighted sum, state the delta from the last reported number, and update this table in the same commit as the work it reflects.
 
@@ -396,6 +396,24 @@ Reviewer endorsed F-developmental and `adult_excluded` as-is, but caught a real 
 **APPROVE**: "P-developmental 的 primary DE 现在改成了真正的 pseudobulk count-based paired model... Greenbaum 的处理也已经和新模型一致... 这个结论合理." F-developmental and adult_excluded reconfirmed unchanged. Reviewer's explicit next step: "下一步可以开始跑 distribution / threshold audit，再冻结具体 cutoffs." Merged (`gh pr merge 8 --merge --delete-branch`), local `main` fast-forwarded to `ff0ab0a`.
 
 End-to-end statistical design for Step 4 is now fully locked across 5 review rounds (PR #6 D/F/P set logic → PR #7 dataset/donor eligibility → PR #8 test/model choice): which datasets, which donors, which pairing, which model, how the three evidence types combine. Nothing has been executed yet — next task is computing real per-gene/per-tissue distributions to actually set the percentile/effect-size/quorum cutoffs this design left as placeholders, before running the real edgeR/DESeq2 DE.
+
+## 2026-08-13 — Session 2: distribution/threshold audit — first real DE compute
+
+Picked up the reviewer's explicit next step after PR #8's approval: "下一步可以开始跑 distribution / threshold audit，再冻结具体 cutoffs." New branch `step04-dfp-threshold-audit-2026-08-13`.
+
+**Installed Bioconductor**: `argos-codex`'s R lacked edgeR/DESeq2/limma. Installed into the env's existing user-library path (not the shared conda-managed library) via `BiocManager::install()`; verified all three load.
+
+**Raw-counts availability audit (new finding)**: before running the approved "3 adequately-powered datasets" design, checked directly (not assumed) whether each dataset's h5ad actually holds raw integer counts. Arutyunyan: yes, via `.raw.X`. Nature2026: `scPlacenta_host.h5ad`'s `X` is normalized with no `.raw`, but the sibling `snRNA_raw_counts.h5ad` has real raw counts and its `obs_names` match 100% (191,735/191,735) — direct index alignment works, no join needed (this also resolves Step 1 Finding #3 as a side effect). **VentoTormo: no raw counts anywhere** — `decidua-v3.h5ad`'s `X` is `normalize_total`+`log1p`'d and not reversible (`expm1(X)` integer-close for only ~1.4% of entries), no `.raw`, no layers, no separate raw-count file on disk. Documented in `results/04_dfp_signature/raw_counts_availability_audit.md`; this collapses PR #8's approved "≥2 of 3" quorum to an interim **2-of-2** (Arutyunyan + Nature2026 only), with VentoTormo demoted to the same optional directional-booster role already defined for Greenbaum. `STEP4_STATISTICAL_DESIGN.md` §1 updated to match.
+
+**Built pseudobulk matrices**: `scripts/04_dfp_signature/build_trophoblast_pseudobulk.py` — donor×trophoblast-status raw-count sums for Arutyunyan and Nature2026 (sparse indicator-matrix multiplication), explicitly skips VentoTormo with a printed explanation. Ran on Argos via qsub (job 3620369). Output verified byte-exact (md5) between Argos and local copies, and cross-checked against the replicate-structure audit's known donor counts: Arutyunyan 17/18 donors paired (35 samples), Nature2026 23/23 paired (46 samples) — exact match.
+
+**Ran the primary DE**: `scripts/04_dfp_signature/run_trophoblast_edgeR.R` — edgeR QLF, paired `~donor+status` design, fit independently per dataset. Ran on Argos via qsub (job 3620373), clean stderr, results pulled back and verified byte-exact. Arutyunyan: 16,919/30,800 genes pass `filterByExpr`, 10,227 FDR<0.05, 6,806 also |logFC|≥1. Nature2026: 21,958/36,601 pass filter, 14,244 FDR<0.05, 4,848 also |logFC|≥1.
+
+**Independent biological sanity check**: looked up 9 canonical markers (trophoblast: ERVFRD-1, CGA, CSH1/2, PSG1/3, GATA3, KRT7, HLA-G; non-trophoblast: PTPRC, PECAM1) directly in the result tables — all 9 landed in the expected direction with FDR well below 0.05 in both datasets, confirming the pipeline is capturing real trophoblast biology, not just running without errors.
+
+Drafted a threshold proposal (not yet reviewer-approved) in `results/04_dfp_signature/trophoblast_edgeR_audit.md`: `|logFC|≥1` and `FDR<0.05` per dataset as the pass criterion, with the interim 2-of-2 quorum, for `replicated_in_placenta(gene)`.
+
+Not yet done: F-developmental's within-organ percentile compute, `adult_excluded`'s GTEx/HPA percentile compute, final D/F/P gene-list assembly. Submitting this round (raw-counts audit + real DE + threshold proposal) for review before continuing.
 
 ### Repo layout (as of this session)
 
