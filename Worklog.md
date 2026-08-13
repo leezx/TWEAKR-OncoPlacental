@@ -146,13 +146,14 @@ While verifying the 7 HDMA organ downloads, found that `StomachEsophagus_RNA_obj
 - `Arutyunyan2023_MFI_Visium` (8 tarballs): remote HEAD checks were flaky (EBI FTP host had intermittent SSL handshake failures during this check, unrelated to the download itself), so verified via local `gzip -t` + `tar -tzf` integrity instead — **all 8 passed, each with exactly 79 archive entries**. Confident these are fine.
 - `Arutyunyan2023_MFI` primary_tissue/organoid and HPA export were already confirmed byte-exact/integrity-checked earlier in the session (see prior sections) — not re-checked again here.
 
+**StomachEsophagus re-download confirmed** — 19,915,325,339 bytes, exact match. All 7 HDMA organs (Adrenal/Thyroid/Spleen/Thymus/Liver/Skin/StomachEsophagus, ≈58GB) now byte-verified complete.
+
 ### Updated open TODOs (supersedes earlier lists where they overlap)
 
-1. **Confirm the StomachEsophagus re-download finished and matches 19,915,325,339 bytes exactly** — was in progress as of this update.
-2. Vento-Tormo 2018: confirm `decidua-v3.h5ad` cell-type coverage (trophoblast included, or decidua-only?) — still open.
-3. Fix the stale docs on `2026_human_maternal_fetal_Nature` (`link.md` says skeleton_only, actually has data + a first analysis pass) — still open.
-4. Decide E-MTAB-12595 (Arutyunyan multiome, ~299GB raw FASTQ, no processed alternative) — default is skip, still open.
-5. **Data acquisition for Aim 1 is essentially done** (6/6 originally-missing datasets resolved, modulo the StomachEsophagus re-download and the 2 minor open questions above). Next real step: resume the 6-question framework (Q1–Q6) from `2026-GPT-TWEAKR-Oncofetal.md#定义清楚Placenta的问题` — recommended starting point Q1 — and start actually building P1/P2/P3/D signatures per the evidence-layer weighting table in `2026-GPT-TWEAKR-Oncofetal.md#Placenta数据集`.
+1. Vento-Tormo 2018: confirm `decidua-v3.h5ad` cell-type coverage (trophoblast included, or decidua-only?) — still open.
+2. Fix the stale docs on `2026_human_maternal_fetal_Nature` (`link.md` says skeleton_only, actually has data + a first analysis pass) — still open.
+3. Decide E-MTAB-12595 (Arutyunyan multiome, ~299GB raw FASTQ, no processed alternative) — default is skip, still open.
+4. **Data acquisition for Aim 1 is done.** All 6 originally-missing datasets resolved and byte-verified: Arutyunyan2023_MFI (+Visium), Greenbaum_NatMed_2024, VentoTormo_Nature_2018, HumanDevelopmentMultiomicAtlas (7/12 organs), HPA_trophoblast_proteome. Only the 2 minor open questions above remain (Vento-Tormo cell-type coverage, stale 2026-Nature docs) — neither blocks starting analysis. **Next real step: resume the 6-question framework (Q1–Q6) from `2026-GPT-TWEAKR-Oncofetal.md#定义清楚Placenta的问题`** — recommended starting point Q1 — and start actually building P1/P2/P3/D signatures per the evidence-layer weighting table in `2026-GPT-TWEAKR-Oncofetal.md#Placenta数据集`. This is genuinely the next thing to do; the last several turns were all infra/data setup, not signature-construction work.
 
 ### Repo layout (as of this session)
 
