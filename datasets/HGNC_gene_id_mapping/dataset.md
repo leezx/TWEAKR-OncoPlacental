@@ -12,15 +12,26 @@
 
 ## Correction to Step 1's coarse gene-ID characterization
 
-Step 1's inventory only checked whether `rownames(obj)[1]` started with `ENSG` — a single-gene spot check, not a real characterization. Verified against the actual full gene list for `HDMA_Adrenal` (loaded on Argos): HDMA gene names are **not purely Ensembl**, they're a mix — **76.5% already gene symbols** (19,368/25,314), **23.5% Ensembl IDs** (5,946/25,314) used only where no resolved symbol was available at the source pipeline's processing time. The placental h5ad datasets remain 100% symbol, as Step 1 found.
+Step 1's inventory only checked whether `rownames(obj)[1]` started with `ENSG` — a single-gene spot check, not a real characterization. Verified against the actual full gene lists for **all 7 HDMA organs** (Argos job 3620286, `scripts/02_gene_id_mapping/extract_all_organ_gene_lists.sh`), not just Adrenal as in the first pass: HDMA gene names are **not purely Ensembl**, they're a mix in every organ — native-symbol fraction ~68–81%, ENSG fallback fraction ~19–32% (e.g. Adrenal 23.5%, Skin 31.6%). The placental h5ad datasets remain 100% symbol, as Step 1 found. The union of distinct ENSG IDs across all 7 organs is 11,015.
 
-## Coverage check (real, not assumed)
+## Coverage check (real, not assumed — revised after PR #4 review, now full-organ + real biotype query)
 
-Of the 5,946 `ENSG...` fallback IDs in `HDMA_Adrenal`:
-- **651 (~11%) resolve** via this HGNC table
-- **5,295 (~89%) don't** — checked against the full raw dump (any HGNC status, both Ensembl-ID columns), same result. These aren't a gap in this specific table; they're **genuinely absent from HGNC entirely** — predominantly lncRNA/pseudogene/novel-locus Ensembl entries that Ensembl's gene model includes but HGNC hasn't curated an approved symbol for. This is expected: HGNC deliberately curates narrower than Ensembl's full annotation, especially for non-protein-coding loci.
+Of the 11,015 union `ENSG...` fallback IDs:
+- **1,023 (9.3%) resolve** via this HGNC table (any status, both Ensembl-ID columns)
+- **9,992 (90.7%) don't** — genuinely absent from HGNC entirely, not a gap in this table.
 
-**Practical read for Step 2**: don't chase the unresolvable ~89% with a different source — HGNC not having them is the ground truth. The protein-coding markers that actually matter for the trophoblast/placental signature work (`CGA`, `CGB`, `ERVFRD-1`, etc.) are almost certainly already in the 76.5% that's already a plain symbol, not in the ENSG-only tail. Genes that stay unresolved after this mapping should just be dropped from any symbol-keyed merge (or kept as their Ensembl ID if the downstream step doesn't require symbols) rather than treated as a blocker.
+**Biotype of the 9,992 unresolved IDs**, queried against the Ensembl REST API (`scripts/02_gene_id_mapping/query_biotype.py`, `results/02_gene_id_mapping/union_ensg_biotypes.tsv`) instead of assumed:
+
+| biotype | count | % |
+|---|---|---|
+| lncRNA | 8,808 | 88.2% |
+| NOT_FOUND_IN_ENSEMBL | 724 | 7.2% |
+| protein_coding | **459** | **4.6%** |
+| TR_V_gene | 1 | 0.0% |
+
+459 real protein-coding genes is **not negligible** — the first-pass "almost certainly" language overclaimed by not measuring this. Checked whether these 459 have an Ensembl-native `display_name` bypassing HGNC entirely: only 7/459 do; the other 452 are genuinely unnamed loci in Ensembl itself (novel/predicted genes, readthrough transcripts) — so no symbol source has them, confirming "not a coverage bug" but with the actual count now stated rather than assumed.
+
+**Handling**: none of these are dropped. `scripts/02_gene_id_mapping/build_canonical_feature_map.py` builds a per-organ `canonical_feature_map.tsv` that keeps every original feature — unresolved ENSG IDs keep their own ID as `canonical_symbol` (`mapping_status = unmapped_kept_as_ensembl_id`), so nothing is silently lost. Also checked for **symbol collisions** created by the mapping (two original features landing on the same `canonical_symbol` within one organ): found **29 across all 7 organs** (3–5 per organ, e.g. `PDE8B` present as both a native symbol and `ENSG00000284762`) — see `collision_report.tsv`. Small but real; Step 3 pseudobulk needs an explicit aggregation rule for these before summing counts by symbol (not yet decided).
 
 ## Full record
 

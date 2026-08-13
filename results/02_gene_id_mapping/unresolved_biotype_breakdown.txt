@@ -1,0 +1,17 @@
+Union ENSG total: 11015
+Resolved via HGNC (any status): 1023 (9.3%)
+Unresolved (genuinely absent from HGNC): 9992 (90.7%)
+
+--- Biotype breakdown of the UNRESOLVED (absent-from-HGNC) subset ---
+  lncRNA: 8808 (88.2%)
+  NOT_FOUND_IN_ENSEMBL: 724 (7.2%)
+  protein_coding: 459 (4.6%)
+  TR_V_gene: 1 (0.0%)
+
+protein_coding among unresolved: 459/9992 = 4.59%
+protein_coding among unresolved, as fraction of ALL 11015 union ENSG IDs: 4.167%
+
+--- Biotype breakdown of the RESOLVED subset (sanity check) ---
+  lncRNA: 992 (97.0%)
+  protein_coding: 24 (2.3%)
+  NOT_FOUND_IN_ENSEMBL: 7 (0.7%)
