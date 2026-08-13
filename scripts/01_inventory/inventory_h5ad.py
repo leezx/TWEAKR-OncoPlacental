@@ -69,6 +69,13 @@ def main():
     print(json.dumps(result, indent=2, default=str))
     print(f"Wrote: {out_path}")
 
+    # The JSON is still written on failure (useful for debugging), but the
+    # process exit code must reflect the real outcome — the caller (SGE job
+    # script) tracks per-file exit codes to decide overall job success, so a
+    # caught-and-logged read failure must not look like a clean exit here.
+    if "error" in result:
+        sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

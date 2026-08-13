@@ -57,3 +57,11 @@ write(toJSON(info, auto_unbox = TRUE, pretty = TRUE, force = TRUE), out_path)
 cat("===", label, "===\n")
 cat(toJSON(info, auto_unbox = TRUE, pretty = TRUE, force = TRUE), "\n")
 cat("Wrote:", out_path, "\n")
+
+# The JSON is still written on failure (useful for debugging), but the exit
+# status must reflect the real outcome — the caller (SGE job script) tracks
+# per-file exit codes to decide overall job success, so a caught-and-logged
+# readRDS() failure must not look like a clean exit here.
+if (!is.null(info$error)) {
+  quit(status = 1)
+}
