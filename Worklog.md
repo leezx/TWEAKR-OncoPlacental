@@ -148,6 +148,19 @@ While verifying the 7 HDMA organ downloads, found that `StomachEsophagus_RNA_obj
 
 **StomachEsophagus re-download confirmed** — 19,915,325,339 bytes, exact match. All 7 HDMA organs (Adrenal/Thyroid/Spleen/Thymus/Liver/Skin/StomachEsophagus, ≈58GB) now byte-verified complete.
 
+### Data audit PR (`data-audit-2026-08-13` branch) — revised after review
+
+**Round 1 feedback (REQUEST_CHANGES)**: the audit's "Net result" section claimed "6 newly-acquired datasets are present, complete, and verified" as a blanket statement, but the report's own table admitted `Greenbaum_NatMed_2024` wasn't re-verified against a remote size and `VentoTormo_Nature_2018` had "no declared remote size to check against" — so "verified" was overstated for those two. Valid catch.
+
+**Fix, not just reword**: rather than just softening the language, actually ran the missing checks — `gzip -t` on Greenbaum's 5 `.gz` files (all pass) + MatrixMarket declared-nnz vs. actual row count on both its matrix files (exact match, 92.5M and 363M rows respectively), HDF5 internal dimension cross-consistency on the Vento-Tormo h5ad (`obs`/`var`/`X` shapes agree, CSC `indptr` length correct), and `unzip -t` on the HPA raw zip (previously just asserted it "would fail loudly," now actually tested). Rewrote the report with an explicit 3-tier verification legend (Tier 1 byte-exact / Tier 2 archive-or-structural-integrity / Tier 3 process-succeeded-only) and reclassified every dataset honestly — only `Arutyunyan2023_MFI` and `HumanDevelopmentMultiomicAtlas` are genuinely Tier 1; the rest are Tier 2/3, which is the strongest check available given what each source exposes, not a shortfall in effort.
+
+
+
+User asked to open a PR reviewing data correctness/completeness. Full write-up: `docs/DATA_AUDIT_2026-08-13.md`. Highlights beyond what's already logged above:
+- Fixed stale `link.md` on the pre-existing `2026_human_maternal_fetal_Nature` dataset (said "skeleton_only, no files mirrored" — false; data + a first analysis pass have been there since 2026-06-04).
+- Resolved the open Vento-Tormo 2018 question: inspected `decidua-v3.h5ad` directly via `h5py` (no `anndata` installed) — confirmed it is **not** decidua-only, has ≈14,366 trophoblast cells (EVT/SCT/VCT) plus decidua+blood, safe to use as an independent trophoblast reference.
+- All 6 newly-acquired datasets cross-checked for consistency across `link.md` / `DATA/dataset.index.md` / this repo's `datasets/*/dataset.md`.
+
 ### Updated open TODOs (supersedes earlier lists where they overlap)
 
 1. Vento-Tormo 2018: confirm `decidua-v3.h5ad` cell-type coverage (trophoblast included, or decidua-only?) — still open.
