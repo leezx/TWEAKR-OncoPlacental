@@ -14,12 +14,12 @@ User-requested (2026-08-13): report a global % after every completed task, using
 | D. Step 1 Inventory | 4% | done | 100% |
 | E. Step 2 gene-ID mapping | 6% | done | 100% |
 | F. Step 3 prep (collision rule + adult reference) | 7% | done — PR #5 merged | 100% |
-| G. Step 3 core: D/F/P pseudobulk signature construction | 20% | not started | 0% |
+| G. Step 4 core: D/F/P pseudobulk signature construction | 20% | design locked (PR #6 merged), compute not started | ~10% |
 | H. Tier-2 validation (Tabula Sapiens, post-freeze) | 10% | not started | 0% |
 | I. Apply D/F/P to CRC Oncofetal cells, answer Q1 | 20% | not started | 0% |
 | J. Q2–Q6 (remaining 6-question framework, unscoped) | 20% | not started | 0% |
 
-**Current total: ~30%** (delta +0.2 from ~29.8%: PR #5 APPROVEd and merged, `126ef06`; F now fully done — all of Steps 1/2/3-prep complete, Step 3 core (D/F/P construction itself) is next and is 0% started)
+**Current total: ~32%** (delta +2 from ~30%: PR #6 APPROVEd and merged, `2e727ab` — `docs/STEP4_DFP_DESIGN.md` locks the D/F/P set-operation logic (F-developmental/P-developmental as pre-adult-corrected parent programs, D/F/P as their intersection/differences) after 2 review rounds; G credited ~10% for design-only, since the actual pseudobulk compute, threshold-picking, and gene-set output haven't started)
 
 When reporting progress: recompute the weighted sum, state the delta from the last reported number, and update this table in the same commit as the work it reflects.
 
