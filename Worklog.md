@@ -193,6 +193,33 @@ A third finding, not anticipated by the review but arguably the more important o
 
 Full revised doc: `docs/COMPUTE_FEASIBILITY.md`.
 
+### Step 1 kicked off: Argos-only analysis workflow established, inventory pass running
+
+**Standing workflow going forward (user directive, 2026-08-13)**: no analysis runs on the Mac mini anymore. Every step: submit via `qsub` on Argos → results land in `~/DATA`/`~/TWEAKR-OncoPlacental/results` on Argos → pull results back to local → summarize in this repo → open a PR for review → repeat until the project's done. This section documents Step 1 under that workflow: what problem it solves, what data it touches, exactly what was run and how.
+
+**Problem this step solves**: before building the actual D-shared/F-specific/P-specific pseudobulk comparison (Q1), we don't yet know, *for each of the 8 normal-development datasets*, what its cell-type/annotation columns are called, which values in them mean "trophoblast" vs. something else, whether genes are stored as symbols or Ensembl IDs (matters for merging across datasets later), or whether a file failed to load at all. Guessing this per-dataset while writing the real DE pipeline would be slow and error-prone. So Step 1 is a pure inventory/audit pass — read each file's metadata (not the full expression matrix where avoidable), dump obs/var schema + cell-type value counts to JSON, and stop there.
+
+**Data touched** (all 15 files across the 6 normal-development datasets acquired earlier this project):
+- Placental/trophoblast side (7 h5ad + 1 mtx bundle): `Arutyunyan2023_MFI` primary_tissue + 3 organoid files, `2026_human_maternal_fetal_Nature` (2 files), `VentoTormo_Nature_2018`, `Greenbaum_NatMed_2024` (RNA+ATAC mtx + metadata/cluster CSVs)
+- Fetal-somatic side (7 RDS): all 7 downloaded `HumanDevelopmentMultiomicAtlas` organs (Adrenal/Thyroid/Spleen/Thymus/Liver/Skin/StomachEsophagus)
+- **Adult reference: still an open gap**, not resolved yet (asked the user, got redirected to "solve environment first" — revisit once Step 1 results are in, needed before the actual 3-way D/F/P comparison can run)
+
+**What was actually done, in order:**
+
+1. **Confirmed data is on Argos** — user had already uploaded it; verified via SSH that `~/DATA/scRNAseq/{Arutyunyan2023_MFI,HumanDevelopmentMultiomicAtlas,Greenbaum_NatMed_2024,VentoTormo_Nature_2018,2026_human_maternal_fetal_Nature}` and `~/DATA/SpatialTranscriptomics/Arutyunyan2023_MFI_Visium` all match the local `DATA/` layout.
+2. **Environment reconnaissance** — none of the "obvious" conda envs on Argos (`r4p3`, `scRNA`, `r441`) had Seurat or scanpy/anndata installed. The user pointed at an existing `argos-codex` env (set up by unrelated prior tooling, `SOFTWARES/Argos-Server/env/install_argos_codex_env.sh`) — checked it and **it already has everything needed**: Python 3.11 + scanpy 1.11.5 + anndata 0.12.16, R 4.5.3 + Seurat 5.5.0 + SeuratObject 5.4.0 + Matrix 1.7.5 + data.table + tidyverse + jsonlite. No installation was needed at all — `install_argos_codex_env.sh extra` was never run.
+3. **Wrote 3 inventory scripts** (`scripts/01_inventory/`):
+   - `inventory_h5ad.py` — uses `anndata.read_h5ad(path, backed='r')` deliberately, not a full load, since this is metadata-only and the Arutyunyan primary_tissue file alone is a ~12GB full load; backed mode still gives shape, obs/var schema, value_counts, nnz, raw/layers/obsm/obsp presence.
+   - `inventory_greenbaum_mtx.py` — inspects the RNA+ATAC MatrixMarket matrices (shape/nnz/dtype) plus the SCP2601 metadata.csv and humanplacenta_cluster.csv column/value breakdown.
+   - `inventory_seurat_rds.R` — no backed-mode equivalent exists for RDS, so this does a full `readRDS()`; reports assay names, dims, gene-naming convention, meta.data columns + value counts, reductions, graphs, per-assay layers.
+   - `run_inventory.sh` — the SGE job script (`#$ -pe pvm 2`) that runs all 15 through the 3 scripts above sequentially, writing one JSON per dataset to `results/01_inventory/`.
+4. **Transfer to Argos**: `scp` and `rsync` both failed from this session's sandbox (`scp: Connection closed`, local `rsync` binary permission-denied) — worked around with `tar czf - dir | ssh host "tar xzf -"`, which uses only `ssh`/`tar` and succeeded. Noting this as a env quirk in case it recurs.
+5. **Submitted via qsub**: job `3620272` (`tweakr_01_inventory`), running under `argos-codex`, on `argos1`. Monitoring via `qstat -j 3620272` and tailing the SGE log — as of this Worklog entry, 12/15 files done (all 7 h5ad + Greenbaum + HDMA Adrenal/Thyroid/Spleen/Thymus), Liver in progress, Skin/StomachEsophagus still to come. No errors so far. `readRDS()` on the larger organs is markedly slower than the h5ad backed-mode reads (real I/O — confirmed via growing `io`/`vmem` in `qstat -j` between polls, not a hang).
+
+**Early finding already visible in the log before the job even finished**: `Greenbaum_NatMed_2024`'s `humanplacenta_cluster.csv` has an explicit `cell_type` column with `vCTB`/`STB`/`EVT`/`EVT-progenitor`/`STB-progenitor`/Hofbauer/fibroblast/endothelial/erythroblast labels — directly usable trophoblast-vs-other annotation, no guessing needed for this dataset.
+
+**Not done yet, still pending**: the job hadn't finished as of this Worklog entry — Liver/Skin/StomachEsophagus results aren't in `results/01_inventory/` yet. This PR documents the process and scripts; a follow-up commit (same PR, before merge, or a fast-follow PR) will add the actual inventory summary once the job completes and results are pulled back locally.
+
 ### Repo layout (as of this session)
 
 ```text
