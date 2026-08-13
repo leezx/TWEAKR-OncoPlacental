@@ -1,0 +1,84 @@
+=== Arutyunyan_primary_tissue ===
+        n_troph  n_total  n_non_troph  eligible
+donor                                          
+P13       44545    66038        21493      True
+Hrv43       599    56942        56343      True
+P14         905    32674        31769      True
+Hrv46       583    27311        26728      True
+8          3296    18662        15366      True
+10        10753    16833         6080      True
+9          1198    14088        12890      True
+12         5521    13615         8094      True
+P34         239    13499        13260      True
+Hrv100      193    12874        12681      True
+6            27    11082        11055      True
+Hrv98      1078    11013         9935      True
+Hrv99      3303     9552         6249      True
+7            47     8803         8756      True
+H2           75     5800         5725      True
+11         2677     3321          644      True
+R1            0     2309         2309     False
+R0            3     1249         1246      True
+n_eligible_donors (both groups present): 17 / 18
+
+=== Nature2026_scPlacenta_host ===
+           n_troph  n_total  n_non_troph  eligible
+sample_id                                         
+ZY011        14881    19449         4568      True
+ZY005          221    17227        17006      True
+ZY009          182    14409        14227      True
+ZY007        13070    13806          736      True
+ZY012         7346    12455         5109      True
+ZY003          262     9810         9548      True
+ZY013         7766     8587          821      True
+ZY014         5968     8317         2349      True
+ZY019         6769     8224         1455      True
+ZY028         7152     8200         1048      True
+ZY004           99     8114         8015      True
+ZY021         7010     7428          418      True
+ZY002          213     7237         7024      True
+ZY017         6003     7004         1001      True
+ZY001          893     6953         6060      True
+ZY020         4418     6902         2484      True
+ZY025         3727     5750         2023      True
+ZY018         3727     5750         2023      True
+ZY026         2594     5334         2740      True
+ZY016         3378     4130          752      True
+ZY015           72     2408         2336      True
+ZY024           79     2359         2280      True
+ZY023           42     1882         1840      True
+n_eligible_donors (both groups present): 23 / 23
+
+=== VentoTormo_decidua_v3 ===
+       n_troph  n_total  n_non_troph  eligible
+Fetus                                         
+F25       3229    17591        14362      True
+F27       1184    13327        12143      True
+F36       6265    10430         4165      True
+F19         28     8340         8312      True
+F20         26     6820         6794      True
+F40       1224     5724         4500      True
+F37       2127     2502          375      True
+F15        121     1573         1452      True
+F13         37     1263         1226      True
+F17         53     1240         1187      True
+F10         50      881          831      True
+F11         22      634          612      True
+n_eligible_donors (both groups present): 12 / 12
+
+Greenbaum: 1923 annotated cells cover only 3 of the full metadata.csv's 8 donors (the cluster-annotated subset is much smaller than the full ~36,456-cell RNA matrix, as already flagged in the replicate-structure audit).
+=== Greenbaum (annotated ~1.9K-cell subset, donor parsed from cluster.csv NAME prefix) ===
+       n_troph  n_total  n_non_troph  eligible
+donor                                         
+W8-2       596      868          272      True
+W11        211      639          428      True
+W9         231      416          185      True
+n_eligible_donors (both groups present): 3 / 3
+
+=== Summary ===
+Arutyunyan_primary_tissue: 17/18 donors have both trophoblast and non-trophoblast cells
+Nature2026_scPlacenta_host: 23/23 donors have both trophoblast and non-trophoblast cells
+VentoTormo_decidua_v3: 12/12 donors have both trophoblast and non-trophoblast cells
+Greenbaum (annotated ~1.9K-cell subset, donor parsed from cluster.csv NAME prefix): 3/3 donors have both trophoblast and non-trophoblast cells
+
+Datasets with >=2 eligible donors (minimum for any within-dataset donor-level contrast at all): 4 / 4

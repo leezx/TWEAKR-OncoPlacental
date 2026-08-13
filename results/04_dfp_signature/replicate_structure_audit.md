@@ -22,8 +22,22 @@ Resolves the first open item in `docs/STEP4_DFP_DESIGN.md`: "whether all 5 place
 - **3 organoid datasets structurally cannot contribute** to this specific DE, regardless of how much donor replication they have — there's no non-trophoblast population inside them to compare against. This is expected given what they are (trophoblast organoid cultures), not a data problem. They may still be useful elsewhere (e.g. as an independent trophoblast-positive expression reference, outside the DE test itself) but that's a separate question from this audit.
 - Revises `STEP4_DFP_DESIGN.md`'s placeholder quorum language ("≥3 of 5") to **≥3 of 4**, since only 4 datasets are actually eligible to vote.
 
+## Round 2 (PR #7 review): donor × trophoblast-status cross-tab, not just marginal totals
+
+Reviewer correctly caught that round 1 only checked marginal totals ("dataset has N donors" and "dataset has trophoblast + non-trophoblast cells overall") — not whether any single donor actually has both. If trophoblast status is confounded with donor identity (e.g. some donors contribute only trophoblast cells, others only non-trophoblast), a donor-level pseudobulk contrast is invalid regardless of how many nominal "donors"/"replicates" exist.
+
+**Method**: `scripts/04_dfp_signature/donor_troph_crosstab.py`, run on Argos (backed-mode `obs` reads for the 3 h5ad files, direct CSV read for Greenbaum) — this is genuinely new compute (the marginal counts in round 1 came from Step 1's existing inventory JSONs, but the joint donor × cell-type breakdown wasn't captured there and had to be computed fresh). Full log: `results/04_dfp_signature/donor_troph_crosstab.txt`.
+
+| Dataset | Donors with both groups | Total donors | Notes |
+|---|---|---|---|
+| Arutyunyan primary_tissue | 17 | 18 | Only `R1` (2,309 cells) has zero trophoblast cells — excluded from the paired contrast, doesn't affect the other 17 |
+| Nature2026 scPlacenta_host | 23 | 23 | Clean — every sample has both groups |
+| VentoTormo decidua-v3 | 12 | 12 | Clean **after** trimming the `Fetus` whitespace bug found in round 1 — confirms that fix was necessary (untrimmed, `" F15"` and a hypothetical clean `"F15"` would have silently split into two fake donors) |
+| Greenbaum | 3 | 3 (**not 8**) | Found and fixed a second real bug in the round-1 script: joining `cluster.csv`'s `NAME` to `metadata.csv`'s `NAME` fails 100% of the time — the two files use incompatible barcode schemes (`cluster.csv`: `W9_AAACCAACACCTGCCT`; `metadata.csv`: `JS34#ACGTCAAGTTGCAATG-1`, a different sample-ID system). Fixed: `cluster.csv`'s own `NAME` already embeds the donor ID as the prefix before the last `_` — parsed directly, no join needed. But this reveals the annotated ~1,923-cell subset only covers **3 of the full metadata's 8 donors** (W8-2, W9, W11), not all 8 — a real, smaller-than-hoped replicate count for this one dataset, not a bug to fix further |
+
+**Revised conclusion**: all 4 datasets are usable, but with real (not assumed) donor counts for the actual paired contrast — 17, 23, 12, and 3 respectively, not 18/23/12/8. Greenbaum's n=3 is thin; it can still vote in a `replicated_in_placenta` quorum but is the weakest-powered of the four and its result should be weighted accordingly when Step 4 actually runs the DE, not treated as equally strong evidence to the other three.
+
 ## Not yet resolved by this audit
 
 - Nature2026's `snRNA_raw_counts` file remains excluded (Step 1 Finding #3 — no usable annotation), so it was never a candidate for this DE regardless of replicate structure.
-- The exact statistical test and threshold for "elevated in trophoblast" within each dataset (Wilcoxon on donor-pseudobulk vs. some other test, effect-size cutoff) — this audit only confirms *that* a valid test is possible on 4 datasets, not *which* test/threshold to use. Left for the next Step 4 sub-task.
-- Greenbaum's cluster-file-vs-full-matrix cell-count mismatch (1,923 vs. ~36,456 per Step 1's shape record) needs a closer look before running the actual DE — is the clustered subset representative, or does it need re-deriving from the full matrix with proper cell-type calls first?
+- The exact statistical test and threshold for "elevated in trophoblast" within each dataset (Wilcoxon on donor-pseudobulk vs. some other test, effect-size cutoff) — this audit only confirms *that* a valid test is possible on 4 datasets, not *which* test/threshold to use, or how to weight Greenbaum's much smaller n=3. Left for the next Step 4 sub-task.

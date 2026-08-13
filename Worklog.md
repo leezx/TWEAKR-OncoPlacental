@@ -356,6 +356,17 @@ Also surfaced two minor real data-quality notes along the way: VentoTormo's `Fet
 
 Full writeup: `results/04_dfp_signature/replicate_structure_audit.md`. `docs/STEP4_DFP_DESIGN.md` updated to mark this open item resolved and cross-reference the audit.
 
+### PR #7 review round 1 (REQUEST_CHANGES) — fixed: marginal totals ≠ paired contrast, found two real bugs while fixing it
+
+Reviewer correctly caught that the audit only checked marginal totals (dataset has N donors; dataset has trophoblast + non-trophoblast cells overall) — not whether any single donor actually has both. If trophoblast status is confounded with donor identity, donor-level pseudobulk DE is invalid no matter how many nominal donors exist. Asked for a real `dataset | donor | n_trophoblast | n_non_trophoblast | eligible` table.
+
+Wrote `scripts/04_dfp_signature/donor_troph_crosstab.py`, ran on Argos (this genuinely needed new compute — the joint donor×cell-type breakdown wasn't in Step 1's existing inventory JSONs, only marginal value_counts were). Found two real bugs while building it, both caught by looking at actual output rather than trusting the first pass:
+
+1. **VentoTormo's whitespace bug confirmed real**: after trimming `Fetus`, all 12 donors cleanly have both groups — untrimmed, `" F15"` and a clean `"F15"` would have silently split into two fake single-group donors.
+2. **Greenbaum join was completely broken, 0/1923 cells matched**: `cluster.csv`'s `NAME` (`W9_AAACCAACACCTGCCT`) and `metadata.csv`'s `NAME` (`JS34#ACGTCAAGTTGCAATG-1`) use incompatible barcode schemes entirely — not almost-matching, not matching at all. Fixed by noticing `cluster.csv`'s own `NAME` already embeds the donor as the prefix before the last `_` — no join needed. This also revealed the annotated ~1,923-cell subset covers only **3 of the full 8 donors** (W8-2/W9/W11), not 8 as round 1's marginal-count table implied.
+
+**Final real numbers**: Arutyunyan 17/18 donors eligible, Nature2026 23/23, VentoTormo 12/12, Greenbaum 3/3 (not 8) — all 4 datasets remain usable, but Greenbaum's real replicate count is much thinner than round 1 suggested and should be weighted accordingly, not treated as equal-strength evidence. Updated `results/04_dfp_signature/replicate_structure_audit.md` with the full cross-tab and this correction, resubmitting.
+
 ### Repo layout (as of this session)
 
 ```text
