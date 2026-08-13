@@ -14,12 +14,12 @@ User-requested (2026-08-13): report a global % after every completed task, using
 | D. Step 1 Inventory | 4% | done | 100% |
 | E. Step 2 gene-ID mapping | 6% | done | 100% |
 | F. Step 3 prep (collision rule + adult reference) | 7% | done — PR #5 merged | 100% |
-| G. Step 4 core: D/F/P pseudobulk signature construction | 20% | design locked + replicate-structure audit done, DE compute not started | ~13% |
+| G. Step 4 core: D/F/P pseudobulk signature construction | 20% | design locked + real donor×trophoblast eligibility confirmed, DE compute not started | ~17% |
 | H. Tier-2 validation (Tabula Sapiens, post-freeze) | 10% | not started | 0% |
 | I. Apply D/F/P to CRC Oncofetal cells, answer Q1 | 20% | not started | 0% |
 | J. Q2–Q6 (remaining 6-question framework, unscoped) | 20% | not started | 0% |
 
-**Current total: ~32.6%** (delta +0.6 from ~32%: replicate-structure audit resolved one of `STEP4_DFP_DESIGN.md`'s open items with real data — 4 of 7 placental datasets usable for the trophoblast-vs-rest DE, 3 organoid datasets structurally excluded — no new compute needed, just re-reading Step 1's already-verified inventory JSONs; G bumped from ~10% to ~13% of its 20% weight)
+**Current total: ~33.4%** (delta +0.8 from ~32.6%: PR #7 APPROVEd and merged, `37adf04` — real donor×trophoblast-status cross-tab confirms 4 usable placental datasets with actual eligible-donor counts (17/23/12/3, not the marginal 18/23/12/8), catching two real bugs (VentoTormo whitespace, Greenbaum barcode-scheme mismatch) along the way; G bumped from ~13% to ~17% of its 20% weight — this is real per-donor compute now, not just a design doc)
 
 When reporting progress: recompute the weighted sum, state the delta from the last reported number, and update this table in the same commit as the work it reflects.
 
@@ -366,6 +366,30 @@ Wrote `scripts/04_dfp_signature/donor_troph_crosstab.py`, ran on Argos (this gen
 2. **Greenbaum join was completely broken, 0/1923 cells matched**: `cluster.csv`'s `NAME` (`W9_AAACCAACACCTGCCT`) and `metadata.csv`'s `NAME` (`JS34#ACGTCAAGTTGCAATG-1`) use incompatible barcode schemes entirely — not almost-matching, not matching at all. Fixed by noticing `cluster.csv`'s own `NAME` already embeds the donor as the prefix before the last `_` — no join needed. This also revealed the annotated ~1,923-cell subset covers only **3 of the full 8 donors** (W8-2/W9/W11), not 8 as round 1's marginal-count table implied.
 
 **Final real numbers**: Arutyunyan 17/18 donors eligible, Nature2026 23/23, VentoTormo 12/12, Greenbaum 3/3 (not 8) — all 4 datasets remain usable, but Greenbaum's real replicate count is much thinner than round 1 suggested and should be weighted accordingly, not treated as equal-strength evidence. Updated `results/04_dfp_signature/replicate_structure_audit.md` with the full cross-tab and this correction, resubmitting.
+
+### PR #7 approved and merged
+
+**APPROVE**: "上一轮唯一 blocker 已经被真正解决... 这次 audit 确实在检查真实结构，而不是为了得到预期答案." One non-blocking doc-sync note: the audit's top summary still echoed round-1's stale "Greenbaum 8 donors" framing even though round 2 had already corrected it to 3 — fixed by adding an explicit final-numbers callout at the very top and striking through the stale number in the round-1 table, so skimming only the top half can't mislead. Merged (`gh pr merge 7 --merge --delete-branch`), local `main` fast-forwarded to `37adf04`. Reviewer's suggested next step: "trophoblast pseudobulk DE 的 statistical-design/threshold audit" — i.e. now that dataset eligibility is settled, pick the actual test and thresholds before running it.
+
+### Step 4 statistical design: the actual test/threshold logic for all three evidence types
+
+New branch `step04-dfp-statdesign-2026-08-13`. Wrote `docs/STEP4_STATISTICAL_DESIGN.md` before writing any DE code — picks the concrete statistic for each evidence type in `STEP4_DFP_DESIGN.md`.
+
+**P-developmental (trophoblast positive evidence)**: leverages the donor pairing the replicate-structure audit just confirmed — paired Wilcoxon signed-rank per gene per dataset (log-CPM trophoblast vs. non-trophoblast, matched by donor), not an unpaired test that would throw the pairing away. Worked out a concrete, quantified reason Greenbaum's n=3 can't be a full quorum vote: an exact paired Wilcoxon on 3 pairs has only 2³=8 sign arrangements, so its smallest possible two-sided p-value is 2/8=0.25 — it mathematically cannot clear a conventional significance bar no matter how strong the true effect, a hard ceiling not just "weaker evidence." `replicated_in_placenta` quorum now scoped to the 3 adequately-powered datasets (Arutyunyan/Nature2026/VentoTormo); Greenbaum contributes only as an optional directional-concordance booster, never a required or sufficient vote.
+
+**F-developmental (fetal-somatic positive evidence)**: checked `meta_value_counts['Sample']` in Step 1's HDMA inventory JSONs (not assumed) and found each of the 7 organs actually has real individual-level replicate structure too (3–7 samples/organ: Adrenal 4, Thyroid/Spleen/Thymus/Skin 3 each, Liver/StomachEsophagus 7 each) — HDMA has no internal contrast population, but it does have within-organ individual replicates, so "elevated_in_fetal_somatic" is now defined as a within-organ percentile clearing a floor **and** detected in a majority of that organ's own samples, not a single pooled number driven by whichever sample happens to be largest. Also flagged that StomachEsophagus's 7 samples mix Stomach- and Esophagus-labeled tissue, which may need splitting before pseudobulking given GTEx/HPA already treat them as separate adult tissues.
+
+**`adult_excluded`**: reaffirmed within-dataset percentile only (no absolute number chosen yet), and added the missing distinction between organ-matched (F-developmental) and whole-body (P-developmental) exclusion — whole-body must clear the bar in essentially all 68 GTEx tissues, not just on average, otherwise a gene high in one specific adult tissue (testis, brain) but low elsewhere would incorrectly pass.
+
+No DE run yet, no percentile cutoffs locked to numbers — design/logic only, submitting for review before the next compute step (which will report real per-gene test-statistic and percentile distributions to actually set the cutoffs).
+
+### PR #8 review round 1 (REQUEST_CHANGES) — fixed: primary DE model must be count-based, not Wilcoxon on log-CPM
+
+Reviewer endorsed F-developmental and `adult_excluded` as-is, but caught a real statistical-methodology gap: paired Wilcoxon signed-rank on log-CPM was proposed as the *primary* trophoblast-vs-rest DE model, but that discards the RNA-seq count model information the pseudobulk data actually has, and its p-value behavior degrades under heavy zero/tie structure typical of pseudobulk counts. CNS-level rigor needs a proper count-based paired model.
+
+**Fixed**: primary DE model upgraded to edgeR quasi-likelihood F-test or DESeq2, fit independently per dataset with an explicit paired design (`~ donor + trophoblast_status`, donor as blocking factor) — the standard approach for paired pseudobulk RNA-seq DE, correctly modeling mean-variance/library-size/dispersion from raw counts. Paired Wilcoxon downgraded to a secondary sensitivity/direction-consistency check, not the primary engine.
+
+**Also fixed the now-mismatched Greenbaum justification**: the original "paired Wilcoxon's minimum p-value with n=3 is 0.25" reasoning was mathematically correct but no longer the right justification once Wilcoxon stopped being the primary model. Revised to the actual reason: n=3 is too thin to reliably estimate dispersion/effect size in an independent per-dataset edgeR/DESeq2 fit, regardless of test choice. Conclusion unchanged (Greenbaum stays an optional directional booster, never a required quorum vote), reasoning now matches the real primary model. Updated `docs/STEP4_STATISTICAL_DESIGN.md`, resubmitting.
 
 ### Repo layout (as of this session)
 
