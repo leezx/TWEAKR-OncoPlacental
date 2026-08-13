@@ -2,6 +2,27 @@
 
 Continuity log for this repo. Read this file first when resuming work — it should let you pick up without re-deriving context.
 
+## Progress Tracker (fixed weights, update after every completed step)
+
+User-requested (2026-08-13): report a global % after every completed task, using a stable weighting scheme rather than re-deriving one each time.
+
+| Phase | Weight | Status | Completion |
+|---|---|---|---|
+| A. Infra (repo/Argos/review loop) | 3% | done | 100% |
+| B. Data acquisition (6 core datasets + HDMA) | 7% | done | 100% |
+| C. Data audit + compute feasibility doc | 3% | done | 100% |
+| D. Step 1 Inventory | 4% | done | 100% |
+| E. Step 2 gene-ID mapping | 6% | done | 100% |
+| F. Step 3 prep (collision rule + adult reference) | 7% | PR #5 open, round-1 review addressed | ~97% |
+| G. Step 3 core: D/F/P pseudobulk signature construction | 20% | not started | 0% |
+| H. Tier-2 validation (Tabula Sapiens, post-freeze) | 10% | not started | 0% |
+| I. Apply D/F/P to CRC Oncofetal cells, answer Q1 | 20% | not started | 0% |
+| J. Q2–Q6 (remaining 6-question framework, unscoped) | 20% | not started | 0% |
+
+**Current total: ~29.8%** (delta +0.8 from ~29%: PR #5's REQUEST_CHANGES round 1 fixed with `docs/STEP3_METHOD_CONTRACT.md` + HPA/GTEx `role` column fix; still not merged, F stays <100% until approved)
+
+When reporting progress: recompute the weighted sum, state the delta from the last reported number, and update this table in the same commit as the work it reflects.
+
 ---
 
 ## 2026-08-12 — Session 1: framework definition + infra setup + first dataset
@@ -263,6 +284,34 @@ ChatGPT reviewer flagged the first Step 2 pass as insufficient on four concrete 
 5. **Softened the overclaiming language** in both `DATA/1.Databases/HGNC_gene_id_mapping/link.md` and `datasets/HGNC_gene_id_mapping/dataset.md` — replaced "almost certainly already resolved... don't spend more effort, HGNC not having them is the ground truth" with the actual measured numbers (9.3% resolve, 4.6% of the rest are real protein-coding genes, only 7 of those have any name anywhere) and the specific handling decision (kept as Ensembl ID, not dropped).
 
 Not yet done: Step 3's aggregation rule for the 29 collisions, and the still-open adult-reference gap. Both remain explicit open items, not silently deferred.
+
+### PR #4 approved and merged
+
+Resubmitted the round-2 fixes to the ChatGPT reviewer ("Fetal-胎盘-免疫" conversation) via Chrome automation. **APPROVE** — all four round-1 blockers confirmed closed with real data (full 7-organ check, real biotype query finding 459 protein-coding genes not just "almost certainly negligible," 29 collisions explicitly reported not silently resolved, canonical feature map keeps every feature). One non-blocking note from the reviewer: the PR *description* on GitHub still had the old round-1 "almost certainly already resolved... don't chase remaining 89%" phrasing even though `link.md`/`dataset.md`/Worklog had already been corrected — fixed via `gh pr edit` before merging, so the PR body matches what actually shipped. Merged (`gh pr merge --merge --delete-branch`, user-confirmed since GitHub merges are outward-facing/hard-to-reverse and the environment's auto-permission classifier blocks them without explicit confirmation), local `main` fast-forwarded to `c6fcbdd`.
+
+### Step 3 prep: collision aggregation rule quantified + two-tier adult reference acquired (branch `step03-pseudobulk-prep-2026-08-13`)
+
+Two prerequisites the reviewer flagged before real D/F/P construction can start: an explicit rule for the 29 symbol collisions, and the adult-reference gap repeatedly called out as missing.
+
+**Collision aggregation rule** — quantified rather than assumed. New qsub script `scripts/03_pseudobulk_prep/quantify_collision_count_mass.sh` (job 3620311, all 7 organs, ~23 min total) loads each organ's real RNA counts matrix and sums how much total UMI count sits on the colliding `original_features` vs. the organ's total. Result: **0.003%–0.01% of total counts** in every organ (range 3.1e-05–9.9e-05 as a fraction) — several orders of magnitude too small to matter regardless of aggregation choice. Independently re-verified per the established discipline: pulled the 7 per-organ TSVs + combined table from Argos and checked the numbers match the SGE log exactly before trusting them (also caught a false-positive `FAILED` match in my own monitoring script's `grep -c FAILED` — it was matching the literal text "FAILED (0): none" in the summary line, not an actual failure; the job itself succeeded cleanly, OK 7/7). **Decision**: Step 3 pseudobulk will sum counts across colliding features (standard convention, matches Cell Ranger/STARsolo's own handling of duplicate gene symbols) — documented in `results/03_pseudobulk_prep/SUMMARY.md`, not left as an open question for Step 3 to re-litigate.
+
+**Adult reference — two-tier design**, worked out with the user rather than picked unilaterally (mirrors the earlier HDMA-organ-scope decision): Tier 1 (bulk, mandatory, used now to *define* signatures) = GTEx + HPA; Tier 2 (single-cell, deferred, independent post-freeze *validation* only, never used to define signatures) = Tabula Sapiens. Rationale: GTEx/HPA give organ-matched (F-specific) and whole-body (P-specific) bulk comparisons cheaply; Tabula Sapiens checks afterward whether "P-specific" genes are actually absent across real adult cell types rather than just bulk-tissue-averaged low, and staying out of signature *definition* keeps that check from being circular.
+
+- **`[[GTEx_v11_median_tpm]]`** — found the exact file via the GCS JSON listing API (`storage.googleapis.com/storage/v1/b/adult-gtex/o?prefix=...`) since the GTEx Portal downloads page is a JS-rendered SPA a markdown-only fetch can't see. `GTEx_Analysis_2025-08-22_v11_RNASeQCv2.4.3_gene_median_tpm.gct.gz`, 74,628 genes × 68 adult tissues, byte-exact (10,129,906 bytes) + structural (GCT-declared row count matches actual, twice — raw file and the cleanup script's output). Built the HDMA-organ↔GTEx-tissue mapping by reading the real 68 column names, not assuming — found a genuine gap: **no Thymus column in GTEx at all** (adult donor population skews older, thymus involutes with age, so GTEx's collection doesn't have it).
+- **`[[HPA_RNA_tissue_consensus]]`** — before downloading anything, checked whether this was already on disk somewhere in the wider `DATA/` tree and found it was: `DATA/CRC-Atlas/phase2/03_data/raw/HPA_normal_tissue/rna_tissue_hpa.tsv.zip`, same public HPA file, downloaded for an unrelated project. Copied (not moved, to avoid breaking CRC-Atlas's references) into its own `DATA/1.Databases/` entry, md5-verified byte-exact against the source. 20,162 genes × 40 tissues, long format. **Fills GTEx's exact gap** — confirmed by direct inspection that HPA's tissue panel includes thymus, plus all 6 other HDMA organs + colon/rectum + a bonus placenta cross-check row.
+- **`[[TabulaSapiens]]`** — checked Figshare's full file list via its API (article 14267219) before deciding what to fetch, rather than downloading the full 15.6GB unified atlas. Downloaded only the 5 per-organ files relevant to this project (Liver/Skin/Spleen/Thymus/Large_Intestine, ~2.85GB), confirming along the way that **Tabula Sapiens has no Adrenal, Thyroid, or Stomach/Esophagus organ file** — a real gap, not assumed; GTEx/HPA remain the only adult reference for those 3 organs. Hit a genuine silent-failure trap on the first attempt: Figshare's `download_url` 302-redirects to a pre-signed S3 URL that **expires in 10 seconds**, and `curl -o` without `-L` "succeeds" (exit 0) while writing a 0-byte file instead of following the redirect — caught only because every download here is checked against Figshare's own `size`/`supplied_md5` rather than trusting curl's exit code, not by an obvious error message. Fixed with `-L`, re-verified byte-exact + MD5 on all 5 files.
+
+Also caught and fixed a bash bug of my own before it did any damage: the first download-manifest generator used Python's default `print(a, b, c)` (space-joined) while the download script's `read` expected tab-delimited fields — this silently produced empty `url` variables and `curl: (3) URL using bad/illegal format`, again caught by the explicit size/MD5 check rather than the script's own exit status.
+
+Updated `DATA/dataset.index.md` with all three new entries. Committed (`f7230f7`), pushed, opened as **PR #5** and submitted to the ChatGPT reviewer.
+
+### PR #5 review round 1 (REQUEST_CHANGES) — fixed: cross-platform comparison method contract
+
+Reviewer's collision-quantification and two-tier design were both endorsed with no changes needed ("collision 部分处理得很好... 这个结论足够稳，可以不再反复讨论" / "GTEx + HPA + held-out Tabula Sapiens 的两层设计本身我也赞成"). One real methodological blocker: HDMA is single-cell/Seurat counts, GTEx is bulk median TPM, HPA is bulk nTPM — three platforms/normalizations that can't be directly compared as fold-change or a merged DE model without platform/depth/composition effects contaminating the signature. The reviewer didn't ask for new data or for Step 3 to actually start — just for the comparison boundary to be locked down first.
+
+**Fixed by writing `docs/STEP3_METHOD_CONTRACT.md`**, which locks in: developmental evidence (F/P-specific candidate identification) computed entirely *within* the scRNA-seq data, never touching GTEx/HPA; GTEx/HPA used only to answer "is this gene still meaningfully expressed in the matched adult tissue?" via each dataset's own internal rank/percentile/threshold (never raw-magnitude cross-platform comparison); final signature = developmental evidence AND adult-depletion evidence as two independently-computed axes, not one merged model.
+
+**Also fixed a genuine inconsistency the reviewer caught**: `HPA_RNA_tissue_consensus` includes a `placenta` row among its "40 adult tissues," and earlier docs didn't carve it out — which would have let placenta count as adult-negative background for P-specific calls (circular: "gene isn't placenta-specific because it's high in placenta"). Fixed by adding an explicit `role` column to both `hdma_organ_to_hpa_tissue_map.tsv` (`placenta` → `positive_cross_check_ONLY_never_negative_reference`, everything else → `adult_negative_reference`) and `hdma_organ_to_gtex_tissue_map.tsv` (all rows `adult_negative_reference` — GTEx has no placenta column, so no exclusion case needed there) so Step 3 code has a machine-readable contract to filter on, not just prose. Re-pushed both updated processed tables to Argos, verified byte-for-byte via `cat` over ssh.
 
 ### Repo layout (as of this session)
 
