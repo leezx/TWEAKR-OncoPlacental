@@ -137,13 +137,22 @@ All 3 accessions confirmed complete by exact byte match, 2026-08-12 ~19:30:
 - `SpatialTranscriptomics/Arutyunyan2023_MFI_Visium/raw/` — 8/8 Visium `*_spaceranger_output.tar.gz` present
 - Total: 16GB (scRNAseq) + 2.2GB (Visium) = 18.2GB
 
+### ⚠️ Data-integrity bug found and fixed: `curl | tail` silently swallows download failures
+
+While verifying the 7 HDMA organ downloads, found that `StomachEsophagus_RNA_obj_clustered_final.rds` had silently truncated: expected 19,915,325,339 bytes, actual on-disk was only 10,667,018,304 bytes (~53%) — **but the background task still reported "completed, exit code 0."** Root cause: this session's download commands used `curl ... --progress-bar 2>&1 | tail -3`, and in a pipeline the overall exit status is `tail`'s (always 0), not curl's — a mid-transfer failure (SSL reset, connection drop) gets hidden. Saved as a standing lesson in Claude's cross-session memory (`curl_pipe_swallows_exit_code.md`) so future sessions don't repeat it: never pipe a background download through `tail`/`head`; verify completed downloads by exact byte size (or `gzip -t`/`tar -tzf` for archives when the remote size can't be re-checked).
+
+**Verification sweep done after finding this:**
+- HDMA: Adrenal/Thyroid/Spleen/Thymus/Liver/Skin all confirmed byte-exact against Zenodo's declared file size. Only StomachEsophagus was bad — re-downloading now (this time without the pipe, exit code checked directly).
+- `Arutyunyan2023_MFI_Visium` (8 tarballs): remote HEAD checks were flaky (EBI FTP host had intermittent SSL handshake failures during this check, unrelated to the download itself), so verified via local `gzip -t` + `tar -tzf` integrity instead — **all 8 passed, each with exactly 79 archive entries**. Confident these are fine.
+- `Arutyunyan2023_MFI` primary_tissue/organoid and HPA export were already confirmed byte-exact/integrity-checked earlier in the session (see prior sections) — not re-checked again here.
+
 ### Updated open TODOs (supersedes earlier lists where they overlap)
 
-1. Verify the 7 HDMA per-organ `.rds` downloads completed cleanly (background job still running as of this update — Adrenal + Thyroid confirmed done by exact-enough size match, Spleen in progress, Thymus/Liver/Skin/StomachEsophagus not yet started/checked; check `DATA/scRNAseq/HumanDevelopmentMultiomicAtlas/raw/per_organ_RNA_seurat/` file sizes against the table in `link.md`).
+1. **Confirm the StomachEsophagus re-download finished and matches 19,915,325,339 bytes exactly** — was in progress as of this update.
 2. Vento-Tormo 2018: confirm `decidua-v3.h5ad` cell-type coverage (trophoblast included, or decidua-only?) — still open.
 3. Fix the stale docs on `2026_human_maternal_fetal_Nature` (`link.md` says skeleton_only, actually has data + a first analysis pass) — still open.
 4. Decide E-MTAB-12595 (Arutyunyan multiome, ~299GB raw FASTQ, no processed alternative) — default is skip, still open.
-5. **Data acquisition for Aim 1 is essentially done** (6/6 originally-missing datasets resolved, modulo the HDMA download finishing and the 2 minor open questions above). Next real step: resume the 6-question framework (Q1–Q6) from `2026-GPT-TWEAKR-Oncofetal.md#定义清楚Placenta的问题` — recommended starting point Q1 — and start actually building P1/P2/P3/D signatures per the evidence-layer weighting table in `2026-GPT-TWEAKR-Oncofetal.md#Placenta数据集`.
+5. **Data acquisition for Aim 1 is essentially done** (6/6 originally-missing datasets resolved, modulo the StomachEsophagus re-download and the 2 minor open questions above). Next real step: resume the 6-question framework (Q1–Q6) from `2026-GPT-TWEAKR-Oncofetal.md#定义清楚Placenta的问题` — recommended starting point Q1 — and start actually building P1/P2/P3/D signatures per the evidence-layer weighting table in `2026-GPT-TWEAKR-Oncofetal.md#Placenta数据集`.
 
 ### Repo layout (as of this session)
 
