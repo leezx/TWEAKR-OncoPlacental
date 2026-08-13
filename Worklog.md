@@ -13,13 +13,13 @@ User-requested (2026-08-13): report a global % after every completed task, using
 | C. Data audit + compute feasibility doc | 3% | done | 100% |
 | D. Step 1 Inventory | 4% | done | 100% |
 | E. Step 2 gene-ID mapping | 6% | done | 100% |
-| F. Step 3 prep (collision rule + adult reference) | 7% | PR #5 open, round-1 review addressed | ~97% |
+| F. Step 3 prep (collision rule + adult reference) | 7% | done — PR #5 merged | 100% |
 | G. Step 3 core: D/F/P pseudobulk signature construction | 20% | not started | 0% |
 | H. Tier-2 validation (Tabula Sapiens, post-freeze) | 10% | not started | 0% |
 | I. Apply D/F/P to CRC Oncofetal cells, answer Q1 | 20% | not started | 0% |
 | J. Q2–Q6 (remaining 6-question framework, unscoped) | 20% | not started | 0% |
 
-**Current total: ~29.8%** (delta +0.8 from ~29%: PR #5's REQUEST_CHANGES round 1 fixed with `docs/STEP3_METHOD_CONTRACT.md` + HPA/GTEx `role` column fix; still not merged, F stays <100% until approved)
+**Current total: ~30%** (delta +0.2 from ~29.8%: PR #5 APPROVEd and merged, `126ef06`; F now fully done — all of Steps 1/2/3-prep complete, Step 3 core (D/F/P construction itself) is next and is 0% started)
 
 When reporting progress: recompute the weighted sum, state the delta from the last reported number, and update this table in the same commit as the work it reflects.
 
@@ -312,6 +312,12 @@ Reviewer's collision-quantification and two-tier design were both endorsed with 
 **Fixed by writing `docs/STEP3_METHOD_CONTRACT.md`**, which locks in: developmental evidence (F/P-specific candidate identification) computed entirely *within* the scRNA-seq data, never touching GTEx/HPA; GTEx/HPA used only to answer "is this gene still meaningfully expressed in the matched adult tissue?" via each dataset's own internal rank/percentile/threshold (never raw-magnitude cross-platform comparison); final signature = developmental evidence AND adult-depletion evidence as two independently-computed axes, not one merged model.
 
 **Also fixed a genuine inconsistency the reviewer caught**: `HPA_RNA_tissue_consensus` includes a `placenta` row among its "40 adult tissues," and earlier docs didn't carve it out — which would have let placenta count as adult-negative background for P-specific calls (circular: "gene isn't placenta-specific because it's high in placenta"). Fixed by adding an explicit `role` column to both `hdma_organ_to_hpa_tissue_map.tsv` (`placenta` → `positive_cross_check_ONLY_never_negative_reference`, everything else → `adult_negative_reference`) and `hdma_organ_to_gtex_tissue_map.tsv` (all rows `adult_negative_reference` — GTEx has no placenta column, so no exclusion case needed there) so Step 3 code has a machine-readable contract to filter on, not just prose. Re-pushed both updated processed tables to Argos, verified byte-for-byte via `cat` over ssh.
+
+### PR #5 approved and merged — Step 1/2/3-prep all complete
+
+Resubmitted round-2 fixes to the ChatGPT reviewer. **APPROVE**: "上一轮唯一 blocker 已经解决，而且修法是正确的." Confirmed the method contract's platform boundary is locked correctly, the machine-readable `role` column genuinely fixes the placenta logic error (not just prose), and reaffirmed the collision-mass finding needs no further work. Merged (`gh pr merge 5 --merge --delete-branch`), local `main` fast-forwarded to `126ef06`.
+
+**One non-blocking note carried forward into Step 3 core, not a PR #5 blocker**: the reviewer flagged that `STEP3_METHOD_CONTRACT.md` only locks the *platform*-comparison boundary — it does not yet define the actual orthogonal D-shared/F-specific/P-specific split. Specifically: "P-specific 最终必须体现 placenta/trophoblast 相对 fetal-somatic 的独立性，而不只是 trophoblast vs placenta 内其他细胞 + adult depletion." When Step 3 core is built, P-specific needs a third axis beyond (a) trophoblast-vs-other-placental-cells and (b) adult-depletion — specifically checking independence from fetal-somatic (HDMA) expression too, so a gene shared with fetal-somatic tissue doesn't get mislabeled placenta-specific just because it clears the adult-exclusion bar. Flagged here so Step 3's design doesn't silently drop this.
 
 ### Repo layout (as of this session)
 
