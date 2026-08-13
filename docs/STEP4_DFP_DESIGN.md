@@ -11,31 +11,41 @@ The two "developmental" data sources are not symmetric, and the design has to re
 
 This asymmetry is expected, not a design flaw — it falls directly out of what the two reference datasets actually are (Step 1 SUMMARY.md).
 
-## Three evidence axes, symmetric where the data allows it
+## Building blocks
 
-| Axis | Positive evidence source | Negative/exclusion evidence source |
+| Building block | Source | Role |
 |---|---|---|
-| Fetal-somatic | HDMA pseudobulk expression level, per organ (no internal DE needed — already pure) | — |
-| Trophoblast/placental | Trophoblast vs. other-placental-cells DE, computed **within each of the 5 placental datasets independently** (per `STEP3_METHOD_CONTRACT.md` — developmental evidence never touches GTEx/HPA) | — |
-| Adult | — | GTEx (organ-matched + whole-body) / HPA (fills GTEx's Thymus gap; `placenta` row excluded — `role` column in the processed mapping tables), each dataset's own internal rank/percentile/threshold, never raw cross-platform magnitude |
+| Fetal-somatic expression evidence | HDMA pseudobulk expression level, per organ (no internal DE needed — already pure per Step 1) | Half of F-developmental (below) — on its own, NOT developmental evidence (see round-1 fix) |
+| Trophoblast enrichment evidence | Trophoblast vs. other-placental-cells DE, computed **within each of the 5 placental datasets independently** (per `STEP3_METHOD_CONTRACT.md` — developmental evidence never touches GTEx/HPA), replicated across a quorum of datasets | Half of P-developmental (below) |
+| Adult-exclusion evidence | GTEx (organ-matched + whole-body) / HPA (fills GTEx's Thymus gap; `placenta` row excluded — `role` column in the processed mapping tables), each dataset's own internal rank/percentile/threshold, never raw cross-platform magnitude | The other half of *both* F-developmental and P-developmental — folded into each program's definition, not a final filter applied after the fact (round-1 fix, see below) |
 
-The key structural fix from the reviewer's note: **the fetal-somatic and trophoblast axes are used as *exclusion* references for each other**, exactly the way GTEx/HPA are used as an exclusion reference for "adult":
+Once F-developmental and P-developmental are each independently adult-corrected this way, D/F/P falls out as simple set operations between the two (below) — no separate "exclude against the other developmental side" step is needed, because a gene that's genuinely elevated in *both* programs is D-shared by construction, not something requiring a bespoke cross-check.
 
-- For **P-specific**, HDMA's own expression distribution is the fetal-somatic-exclusion check (is this gene *also* substantially expressed in fetal-somatic organs? if so, it's not placenta-specific, no matter how adult-depleted it is).
-- For **F-specific**, the placental datasets' trophoblast-vs-rest DE result is the trophoblast-exclusion check (is this gene *also* elevated in trophoblast? if so, it's not fetal-somatic-specific).
+## Definitions (revised per PR #6 round-1 review — see "Why adult-depletion has to be inside the developmental-evidence definition, not just a final filter" below)
 
-## Definitions
-
-- **elevated_in_fetal_somatic(gene, organ)**: gene's HDMA pseudobulk expression in that organ clears a threshold defined from HDMA's own distribution (e.g. top-X-percentile or a detection-rate + mean-expression floor — exact cutoff to be picked empirically against the real pseudobulk distribution, not assumed in advance).
+- **elevated_in_fetal_somatic(gene, organ)**: gene's HDMA pseudobulk expression in that organ clears a threshold defined from HDMA's own distribution (e.g. top-X-percentile or a detection-rate + mean-expression floor — exact cutoff to be picked empirically against the real pseudobulk distribution, not assumed in advance). **On its own this is NOT developmental evidence** — see below.
 - **elevated_in_trophoblast(gene, placental_dataset)**: gene is significantly higher in trophoblast-lineage pseudobulk vs. other-cell-type pseudobulk within that one placental dataset (Wilcoxon or equivalent on per-sample/per-donor pseudobulk values — requires checking each dataset actually has multiple donor/sample replicates for a valid test, not just multiple cells; to be verified per dataset before choosing the exact test).
-- **adult_excluded(gene, ...)**: gene's expression in the relevant GTEx/HPA adult-negative-reference tissue(s) falls below that dataset's own internal threshold/percentile (`role == adult_negative_reference` rows only — `placenta` never counts here per the fixed `role` column).
 - **replicated_in_placenta(gene)**: `elevated_in_trophoblast` holds in a **majority of the 5 placental datasets** it's tested in (not just one) — guards against one dataset's technical artifact driving a P-specific call. Exact quorum (e.g. ≥3 of 5, or ≥2 of however many actually have valid replicate structure) to be set once dataset-level DE is actually run and we see how many datasets clear the replicate-structure bar in the first place.
+- **adult_excluded(gene, matched_organ | whole_body)**: gene's expression in the relevant GTEx/HPA adult-negative-reference tissue(s) falls below that dataset's own internal threshold/percentile (`role == adult_negative_reference` rows only — `placenta` never counts here per the fixed `role` column).
 
-**D-shared** = `elevated_in_fetal_somatic` (any organ) AND `replicated_in_placenta` AND `adult_excluded` (both organ-matched *and* whole-body, since the gene is being claimed as shared across both domains).
+### Why adult-depletion has to be inside the developmental-evidence definition, not just a final filter
 
-**F-specific** = `elevated_in_fetal_somatic` (that organ) AND `adult_excluded` (organ-matched) AND NOT `replicated_in_placenta`.
+PR #6 round 1 caught a real conceptual error in the first draft: `elevated_in_fetal_somatic` alone was being treated as "fetal developmental evidence," but HDMA being trophoblast-free only proves it's a valid fetal-somatic *reference* — it says nothing about whether a gene highly expressed there is part of a genuine developmental program vs. a housekeeping gene, mature-organ-identity gene, or constitutive epithelial/metabolic gene (all of which would trivially satisfy `elevated_in_fetal_somatic`). Left uncorrected, this would have contaminated all three output sets: D-shared could collapse into "expressed in fetal tissue + trophoblast marker" rather than a real shared program; F-specific would absorb ordinary organ-identity genes; and P-specific's exclusion clause would over-prune — a genuine placenta gene with any normal expression in any one fetal organ would get wrongly excluded.
 
-**P-specific** = `replicated_in_placenta` AND `adult_excluded` (whole-body) AND NOT `elevated_in_fetal_somatic` (any organ) — **this NOT clause is the fix for the reviewer's flagged gap**; without it, a gene that's simply not adult-expressed anywhere (including being a normal fetal-somatic developmental gene) would incorrectly land in P-specific just because it also happens to be elevated in trophoblast.
+**Fix**: adult-depletion is folded into the definition of each developmental "program" itself, not applied only as a downstream filter:
+
+- **F-developmental(gene, organ)** = `elevated_in_fetal_somatic(gene, organ)` AND `adult_excluded(gene, matched_organ)`
+- **P-developmental(gene)** = `replicated_in_placenta(gene)` AND `adult_excluded(gene, whole_body)`
+
+Both are now pre-corrected for adult expression before any set operation runs. This still respects `STEP3_METHOD_CONTRACT.md`'s cross-platform boundary — no HDMA-UMI-vs-GTEx-TPM fold-change is computed; `adult_excluded` is still evaluated via each bulk dataset's own internal rank/percentile.
+
+### D/F/P as a clean three-way partition
+
+With F-developmental and P-developmental defined as above (each already adult-corrected), D/F/P become simple set operations on the same two adult-corrected programs, not three ad hoc gene lists with different conditions:
+
+- **D-shared** = F-developmental AND P-developmental
+- **F-specific** = F-developmental AND NOT P-developmental
+- **P-specific** = P-developmental AND NOT F-developmental
 
 ## What's explicitly left open, to decide against real data rather than assume
 

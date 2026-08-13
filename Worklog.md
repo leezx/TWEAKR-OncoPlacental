@@ -329,7 +329,18 @@ New branch `step04-dfp-signature-2026-08-13`. Rather than jump straight to qsub 
 - F-specific = elevated-in-fetal-somatic AND adult-excluded (organ-matched) AND NOT replicated-in-placenta
 - P-specific = replicated-in-placenta AND adult-excluded (whole-body) AND NOT elevated-in-fetal-somatic ← the new clause
 
-Left explicitly open rather than guessed at: exact percentile/threshold cutoffs (to be computed against real distributions, not assumed), whether all 5 placental datasets have enough donor/sample replicate structure for a valid DE test, the quorum for "replicated in placenta," and whether Nature2026's still-unannotated `snRNA_raw_counts` gets resolved before this step runs or is excluded. Not submitted for review yet — that's the immediate next action.
+Left explicitly open rather than guessed at: exact percentile/threshold cutoffs (to be computed against real distributions, not assumed), whether all 5 placental datasets have enough donor/sample replicate structure for a valid DE test, the quorum for "replicated in placenta," and whether Nature2026's still-unannotated `snRNA_raw_counts` gets resolved before this step runs or is excluded. Opened as PR #6, submitted for review.
+
+### PR #6 review round 1 (REQUEST_CHANGES) — fixed a real conceptual error: expression ≠ developmental evidence
+
+Reviewer endorsed the direction (P-specific's new `NOT elevated_in_fetal_somatic` clause genuinely fixes the orthogonality gap from PR #5) but caught something more fundamental: the first draft treated `elevated_in_fetal_somatic` alone as "fetal developmental evidence." That's wrong — HDMA being trophoblast-free only proves it's a valid fetal-somatic *reference*, not that a highly-expressed gene there is part of a developmental program rather than a housekeeping/organ-identity/constitutive-metabolic gene (all of which would trivially pass that check). Left uncorrected this would have: collapsed D-shared into "fetal-expressed + trophoblast marker" rather than a real shared program; let F-specific absorb ordinary organ-identity genes; and over-pruned P-specific (any placenta gene with normal expression in any one fetal organ would get wrongly excluded).
+
+**Fixed by restructuring**: adult-depletion is folded into the definition of each developmental program itself, not applied as a downstream filter —
+
+- F-developmental(gene, organ) = elevated_in_fetal_somatic AND adult_excluded(matched_organ)
+- P-developmental(gene) = replicated_in_placenta AND adult_excluded(whole_body)
+
+— then D/F/P become a clean three-way partition of these two already-adult-corrected programs: D-shared = F-developmental AND P-developmental; F-specific = F-developmental AND NOT P-developmental; P-specific = P-developmental AND NOT F-developmental. Reviewer's framing: "D/F/P 真正成为同一个 developmental universe 的三分解，而不是三个条件各异、可能留下大量灰区的 ad hoc gene lists." Still respects `STEP3_METHOD_CONTRACT.md` — no HDMA-UMI-vs-GTEx-TPM fold-change, `adult_excluded` still uses each dataset's own internal rank/percentile. Reviewer confirmed the no-internal-HDMA-DE decision was correct too — the blocker was never "HDMA needs its own control," it was "expression ≠ developmental specificity." Updated `docs/STEP4_DFP_DESIGN.md`, resubmitting.
 
 ### Repo layout (as of this session)
 
