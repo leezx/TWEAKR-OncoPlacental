@@ -1,0 +1,95 @@
+{
+  "label": "Arutyunyan_organoid_TSC",
+  "path": "/home/zz950/DATA/scRNAseq/Arutyunyan2023_MFI/raw/organoid/Organoid_TSC_cellxgene.h5ad",
+  "shape": [
+    9957,
+    22523
+  ],
+  "var_index_sample": [
+    "A1BG",
+    "A1BG-AS1",
+    "A2M",
+    "A2M-AS1",
+    "A2ML1",
+    "A2ML1-AS1",
+    "A4GALT",
+    "AAAS",
+    "AACS",
+    "AADAC"
+  ],
+  "looks_like_ensembl": false,
+  "obs_columns": [
+    "n_genes",
+    "time_point",
+    "Treatment",
+    "sample",
+    "percent_mito",
+    "leiden",
+    "S_score",
+    "G2M_score",
+    "phase",
+    "cell_annotation"
+  ],
+  "has_raw": true,
+  "raw_nnz": null,
+  "X_nnz": null,
+  "X_dtype": "float32",
+  "layers": [],
+  "obsm": [
+    "X_pca",
+    "X_umap"
+  ],
+  "obsp": [
+    "connectivities",
+    "distances"
+  ],
+  "obs_value_counts": {
+    "time_point": {
+      "D6": 4528,
+      "D0": 2972,
+      "D3": 2457
+    },
+    "Treatment": {
+      "BSA": 6985,
+      "TSC": 2972
+    },
+    "sample": {
+      "Pla_HDBR13146313": 4528,
+      "Pla_HDBR13146305": 2972,
+      "Pla_HDBR13146304": 2457
+    },
+    "leiden": {
+      "0": 1355,
+      "1": 1064,
+      "2": 855,
+      "3": 744,
+      "4": 689,
+      "5": 688,
+      "6": 627,
+      "7": 618,
+      "8": 612,
+      "9": 570,
+      "10": 549,
+      "11": 542,
+      "12": 445,
+      "13": 317,
+      "14": 150,
+      "15": 132
+    },
+    "phase": {
+      "G1": 7129,
+      "G2M": 1567,
+      "S": 1261
+    },
+    "cell_annotation": {
+      "EVT-1": 2735,
+      "VCT-p-TSC": 1599,
+      "EVT-2": 1380,
+      "VCT-TSC": 1259,
+      "VCT-fusing": 1161,
+      "EVT-2 early": 1064,
+      "VCT-CCC": 627,
+      "iEVT": 132
+    }
+  }
+}

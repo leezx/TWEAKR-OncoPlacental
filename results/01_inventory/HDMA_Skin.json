@@ -1,0 +1,139 @@
+{
+  "label": "HDMA_Skin",
+  "path": "/home/zz950/DATA/scRNAseq/HumanDevelopmentMultiomicAtlas/raw/per_organ_RNA_seurat/Skin_RNA_obj_clustered_final.rds",
+  "class": "Seurat",
+  "assays": ["RNA", "SCT", "decontX"],
+  "dims": {
+    "genes": 34185,
+    "cells": 57801
+  },
+  "gene_sample": ["ENSG00000238009", "ENSG00000239906", "ENSG00000241860", "ENSG00000286448", "ENSG00000236601", "ENSG00000235146", "LINC01409", "FAM87B", "LINC00115", "LINC01128"],
+  "looks_like_ensembl": true,
+  "reductions": ["pca", "umap"],
+  "graphs": ["SCT_nn", "SCT_snn", "decontX_nn", "decontX_snn"],
+  "meta_columns": ["orig.ident", "nCount_RNA", "nFeature_RNA", "percent.mt", "passfilter", "Sample", "sex", "PCW", "PCD", "age", "S.Score", "G2M.Score", "Phase", "nCount_SCT", "nFeature_SCT", "SCT_snn_res.0.3", "seurat_clusters", "Clusters", "estConp", "nCount_decontX", "nFeature_decontX", "decontX_snn_res.0.3", "annotv1", "keepcell"],
+  "meta_value_counts": {
+    "orig.ident": {
+      "CL141": 7186,
+      "CL142": 7380,
+      "CL143": 7610,
+      "CL144": 7134,
+      "CL145": 6704,
+      "CL146": 7399,
+      "CL147": 7257,
+      "CL148": 7131
+    },
+    "Sample": {
+      "T11_b19_Skin_PCW19": 22386,
+      "T408S_b19_Skin_PCW19": 13860,
+      "T45_b19_Skin_PCW17": 21555
+    },
+    "PCW": {
+      "PCW17": 21555,
+      "PCW19": 36246
+    },
+    "PCD": {
+      "PCD122": 21555,
+      "PCD133": 36246
+    },
+    "age": {
+      "PCW17": 21555,
+      "PCW19": 36246
+    },
+    "Phase": {
+      "G1": 29372,
+      "G2M": 9849,
+      "S": 18580
+    },
+    "SCT_snn_res.0.3": {
+      "0": 14963,
+      "1": 11571,
+      "10": 1178,
+      "11": 767,
+      "12": 634,
+      "13": 323,
+      "14": 244,
+      "15": 229,
+      "2": 6464,
+      "3": 4884,
+      "4": 4157,
+      "5": 3369,
+      "6": 3112,
+      "7": 2260,
+      "8": 1878,
+      "9": 1768
+    },
+    "seurat_clusters": {
+      "0": 9770,
+      "1": 6716,
+      "2": 6480,
+      "3": 5251,
+      "4": 4889,
+      "5": 4846,
+      "6": 3366,
+      "7": 3111,
+      "8": 2354,
+      "9": 2251,
+      "10": 1878,
+      "11": 1799,
+      "12": 1731,
+      "13": 1171,
+      "14": 764,
+      "15": 632,
+      "16": 323,
+      "17": 243,
+      "18": 226
+    },
+    "Clusters": {
+      "0": 9770,
+      "1": 6716,
+      "2": 6480,
+      "3": 5251,
+      "4": 4889,
+      "5": 4846,
+      "6": 3366,
+      "7": 3111,
+      "8": 2354,
+      "9": 2251,
+      "10": 1878,
+      "11": 1799,
+      "12": 1731,
+      "13": 1171,
+      "14": 764,
+      "15": 632,
+      "16": 323,
+      "17": 243,
+      "18": 226
+    },
+    "decontX_snn_res.0.3": {
+      "0": 9770,
+      "1": 6716,
+      "2": 6480,
+      "3": 5251,
+      "4": 4889,
+      "5": 4846,
+      "6": 3366,
+      "7": 3111,
+      "8": 2354,
+      "9": 2251,
+      "10": 1878,
+      "11": 1799,
+      "12": 1731,
+      "13": 1171,
+      "14": 764,
+      "15": 632,
+      "16": 323,
+      "17": 243,
+      "18": 226
+    },
+    "annotv1": {
+      "SK_end": 6060,
+      "SK_epi": 14433,
+      "SK_imm": 632,
+      "SK_str": 36676
+    }
+  },
+  "assay_RNA_layers": ["counts", "data"],
+  "assay_SCT_layers": ["counts", "data", "scale.data"],
+  "assay_decontX_layers": ["counts", "data", "scale.data"]
+}
