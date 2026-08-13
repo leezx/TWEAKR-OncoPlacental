@@ -18,9 +18,16 @@
 - `decidua-v3.h5ad` (800MB) — processed AnnData, downloaded from the data.teichlab.org portal
 - `source_notes.md` — the paper's data-availability paragraph, saved verbatim
 
-## Open question
+## Cell-type coverage — resolved 2026-08-13 (data-audit PR)
 
-The filename `decidua-v3.h5ad` suggests this might be **decidua (maternal) cells only**, not trophoblast. This paper's title is about the whole maternal-fetal interface (which does include trophoblast), but the specific portal file downloaded needs to be checked before treating it as a trophoblast reference. **TODO next session:** load once, inspect `obs` cell-type column, document findings in `link.md` (same pattern as `DATA/scRNAseq/2026_human_maternal_fetal_Nature/raw/README.md`). If it turns out to be decidua-only, it's still useful as a maternal-negative-reference, just not as a trophoblast-positive reference.
+Despite the `decidua-v3.h5ad` filename, this is **not** decidua-only. Inspected via `h5py` directly (`obs['CellType']`, 32 categories):
+
+- Trophoblast: `EVT` 3,626 + `SCT` 1,261 + `VCT` 9,479 ≈ **14,366 cells**
+- Decidual stromal/immune: `dS1-3`, `dP1-2`, `dM1-3`, `dNK1-3`/`dNK p`, etc.
+- Fetal fibroblasts (`fFB1-2`), endothelium (`Endo (f)`/`Endo (m)`/`Endo L`), and more (32 types total)
+- `obs['Location']`: `Blood` 11,266 / `Decidua` 40,512 / `Placenta` 18,547
+
+Safe to use as an independent trophoblast reference, not just a maternal/decidual-negative one.
 
 ## Full record
 
