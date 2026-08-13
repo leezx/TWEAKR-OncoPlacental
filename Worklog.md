@@ -319,6 +319,18 @@ Resubmitted round-2 fixes to the ChatGPT reviewer. **APPROVE**: "上一轮唯一
 
 **One non-blocking note carried forward into Step 3 core, not a PR #5 blocker**: the reviewer flagged that `STEP3_METHOD_CONTRACT.md` only locks the *platform*-comparison boundary — it does not yet define the actual orthogonal D-shared/F-specific/P-specific split. Specifically: "P-specific 最终必须体现 placenta/trophoblast 相对 fetal-somatic 的独立性，而不只是 trophoblast vs placenta 内其他细胞 + adult depletion." When Step 3 core is built, P-specific needs a third axis beyond (a) trophoblast-vs-other-placental-cells and (b) adult-depletion — specifically checking independence from fetal-somatic (HDMA) expression too, so a gene shared with fetal-somatic tissue doesn't get mislabeled placenta-specific just because it clears the adult-exclusion bar. Flagged here so Step 3's design doesn't silently drop this.
 
+### Step 4 (`results/04_dfp_signature`) kicked off: D/F/P design doc, before any compute
+
+New branch `step04-dfp-signature-2026-08-13`. Rather than jump straight to qsub jobs, wrote `docs/STEP4_DFP_DESIGN.md` first — same pattern that worked for `STEP3_METHOD_CONTRACT.md` (design reviewed once, before a compute run, instead of after a wasted one).
+
+**Core design point, directly resolving the open item from PR #5's APPROVE**: HDMA (fetal-somatic) and the placental scRNA-seq datasets are structurally asymmetric — HDMA organs are already pure fetal-somatic tissue (no internal DE needed, "developmental evidence" = expression level), while placental datasets are a mix of trophoblast and non-trophoblast cells (Hofbauer, endothelial, maternal decidual/immune) requiring an internal trophoblast-vs-rest DE to isolate the placental signal. The fix for the missing third axis: **use each developmental side as an exclusion reference for the other**, symmetric to how GTEx/HPA are used as an adult-exclusion reference — HDMA's own expression distribution excludes genes from P-specific if they're also fetal-somatic-elevated; the placental trophoblast-DE result excludes genes from F-specific if they're also trophoblast-elevated. This makes:
+
+- D-shared = elevated-in-fetal-somatic AND replicated-in-placenta AND adult-excluded (both organ-matched + whole-body)
+- F-specific = elevated-in-fetal-somatic AND adult-excluded (organ-matched) AND NOT replicated-in-placenta
+- P-specific = replicated-in-placenta AND adult-excluded (whole-body) AND NOT elevated-in-fetal-somatic ← the new clause
+
+Left explicitly open rather than guessed at: exact percentile/threshold cutoffs (to be computed against real distributions, not assumed), whether all 5 placental datasets have enough donor/sample replicate structure for a valid DE test, the quorum for "replicated in placenta," and whether Nature2026's still-unannotated `snRNA_raw_counts` gets resolved before this step runs or is excluded. Not submitted for review yet — that's the immediate next action.
+
 ### Repo layout (as of this session)
 
 ```text
