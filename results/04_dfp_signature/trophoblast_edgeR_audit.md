@@ -49,19 +49,63 @@ being a broader/less trophoblast-adjacent cell mix — worth keeping in mind
 when picking a single cross-dataset effect-size cutoff below, since a fixed
 logFC threshold will behave asymmetrically across the two datasets).
 
+## Correction (PR #9 round 1 review): effect-size criterion must be directional
+
+The first draft of this doc proposed `abs(logFC)≥1` as the pass criterion
+and claimed "all 9 markers clear it several-fold." Both statements were
+wrong, caught by review:
+
+1. **`abs(logFC)` is the wrong statistic.** The edgeR contrast is
+   `troph vs nontroph`; a large *negative* logFC means strongly
+   depleted-in-trophoblast. PTPRC and PECAM1 above are exactly this case —
+   they clear `abs(logFC)≥1` by a wide margin precisely because they go the
+   *wrong* direction. An absolute-value threshold would have let
+   immune/endothelial-depletion signal masquerade as placenta-developmental
+   evidence. The correct criterion is **`logFC ≥ cutoff`** (positive,
+   trophoblast-enriched only). Negative-logFC genes can be tracked
+   separately as a `trophoblast_depleted` QC set but never enter the
+   P-developmental positive program this way. Fixed in
+   `docs/STEP4_STATISTICAL_DESIGN.md` §1.
+2. **The "all 9 markers clear +1" claim was checked wrong.** Re-checked
+   directly against the per-dataset logFC values: in Nature2026, ERVFRD-1
+   (+0.93) and KRT7 (+0.89) do **not** clear a +1 cutoff — only 7/9 canonical
+   markers survive at that threshold in that dataset (Arutyunyan clears all
+   9/9 at every cutoff tested below, since its effect sizes run much larger
+   — see the asymmetry noted above).
+
+## Calibration curve (directional `logFC ≥ cutoff` & FDR<0.05), computed before freezing anything
+
+| Cutoff | Arutyunyan pass | Nature2026 pass | 2-of-2 overlap | Canonical markers retained (Arutyunyan / Nature2026 / both) |
+|---|---|---|---|---|
+| 0.5 | 3,684 | 3,775 | 1,742 | 9/9 / 9/9 / 9/9 |
+| 0.75 | 2,819 | 2,227 | 1,007 | 9/9 / 9/9 / 9/9 |
+| 1.0 | 2,216 | 1,293 | 536 | 9/9 / 7/9 / 7/9 (Nature2026 loses ERVFRD-1, KRT7) |
+
+Computed directly from the two edgeR result tables (no new DE run needed —
+same discipline the reviewer confirmed: "本轮只需要修改 threshold 逻辑和 audit
+的错误表述，不需要重跑 edgeR").
+
 ## What this unlocks for the still-placeholder cutoffs
 
-- **Effect-size minimum** (§1 "TBD"): the marker panel above suggests
-  |logFC|≥1 is comfortably conservative for real trophoblast biology in both
-  datasets (all 9 markers clear it several-fold), while still leaving a
-  sizeable but not overwhelming candidate set (6,806 / 4,848 genes at
-  FDR<0.05). Proposing **|logFC|≥1 and FDR<0.05 per dataset** as the
-  per-dataset pass criterion feeding the 2-of-2 quorum vote — flagged here
-  for reviewer sign-off before it's locked into the design doc.
+- **Effect-size minimum** (§1 "TBD"): **not frozen yet.** The calibration
+  curve shows 0.5 and 0.75 both retain all 9 canonical markers in both
+  datasets, while 1.0 loses 2 markers in Nature2026 — consistent with the
+  cross-dataset effect-size scale asymmetry already noted (Arutyunyan's
+  non-trophoblast comparator likely being a broader/less trophoblast-adjacent
+  mix than Nature2026's). **0.75 is the current leading candidate**
+  (full marker retention, meaningfully tighter than 0.5's larger candidate
+  set), but per reviewer guidance this should not be locked until an
+  independent check is also run: HPA trophoblast/placenta known-gene
+  enrichment against the pass sets at each cutoff (not yet done — needs the
+  HPA processed mapping table from Step 3, `datasets/HPA_RNA_tissue_consensus/`,
+  which hasn't been joined against these results yet). That HPA-enrichment
+  check is the next concrete sub-task before this number freezes.
 - **Quorum**: with only 2 usable datasets (see raw-counts audit), "≥2 of 3"
-  from the original design collapses to a **2-of-2** requirement (both must
-  pass) as the strict interim rule, consistent with the recommendation in
-  `raw_counts_availability_audit.md`.
+  from the original design collapses to a **2-of-2 interim discovery rule**
+  (both must pass) — explicitly *not* CNS-grade replication with only 2
+  independent primary datasets left. VentoTormo/Greenbaum/HPA/organoid
+  follow-up validation become correspondingly more important as secondary
+  support, per reviewer note.
 
 No gene list is finalized here — this is the distribution/threshold audit
 step the reviewer asked for after PR #8's approval, reporting what the real
