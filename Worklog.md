@@ -415,6 +415,16 @@ Drafted a threshold proposal (not yet reviewer-approved) in `results/04_dfp_sign
 
 Not yet done: F-developmental's within-organ percentile compute, `adult_excluded`'s GTEx/HPA percentile compute, final D/F/P gene-list assembly. Submitting this round (raw-counts audit + real DE + threshold proposal) for review before continuing.
 
+### PR #9 review round 1 (REQUEST_CHANGES) — fixed: effect-size criterion must be directional, and a false claim in the audit doc
+
+Reviewer caught two real issues in the draft threshold proposal: (1) `abs(logFC)≥1` was proposed as the `replicated_in_placenta` pass criterion, but the edgeR contrast is `troph vs nontroph` — a large *negative* logFC means depleted-in-trophoblast (exactly what PTPRC/PECAM1 showed in the marker sanity check), so an absolute-value threshold would let immune/endothelial-depletion signal masquerade as placenta-developmental evidence; (2) the audit doc's claim "all 9 canonical markers clear |logFC|≥1" was checked wrong — Nature2026's ERVFRD-1 (+0.93) and KRT7 (+0.89) don't actually clear +1.
+
+**Fixed**: criterion changed to directional `logFC ≥ cutoff` (troph-enriched only) in both `STEP4_STATISTICAL_DESIGN.md` and `trophoblast_edgeR_audit.md`; negative-logFC genes tracked separately as a `trophoblast_depleted` QC set, never part of the positive program. Replaced the premature +1 proposal with a real calibration curve computed directly from the existing edgeR results (no rerun needed): cutoff 0.5 → 2-of-2 overlap 1,742 genes, 9/9 markers retained both datasets; 0.75 → overlap 1,007, 9/9 both; 1.0 → overlap 536, only 7/9 in Nature2026. **0.75 flagged as current leading candidate, not frozen** — pending an HPA trophoblast/placenta known-gene enrichment check (next sub-task).
+
+### PR #9 approved and merged (`d510260`)
+
+**APPROVE**: both blockers resolved — directional criterion correct, +1 claim retracted with a real calibration curve computed from existing results rather than freezing prematurely. Reviewer reconfirmed the raw-counts audit, Nature2026 barcode-alignment fix, and edgeR implementation as correct/matching PR #8's locked method, no blockers there. Endorsed 2-of-2 as an *interim discovery rule*, explicitly not CNS-grade replication — flagged that VentoTormo/Greenbaum/HPA/organoid follow-up validation now carry more weight as secondary support. One non-blocking note (PR description still showed the stale `|logFC|≥1` proposal) fixed by syncing the PR body before merge. Explicit next step: **HPA trophoblast/placenta enrichment calibration**, then freeze the P-developmental effect-size cutoff.
+
 ### Repo layout (as of this session)
 
 ```text
