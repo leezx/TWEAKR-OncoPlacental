@@ -236,6 +236,16 @@ Also a scoping caution worth flagging explicitly: Nature2026's `origin` column (
 
 Committed the 15 JSONs + `SUMMARY.md` to this PR.
 
+### Step 2 kicked off: gene-ID mapping resolved (HGNC), correcting Step 1's coarse characterization along the way
+
+User supplied an HGNC custom-download URL (symbol/Ensembl/previous-symbol/alias columns) to resolve Step 1 Finding #1 (placental datasets use symbols, HDMA uses Ensembl IDs). Downloaded to `DATA/1.Databases/HGNC_gene_id_mapping/` (new dataset, registered in `dataset.index.md`): `raw/hgnc_custom_download.tsv` (50,321 rows, all statuses), `processed/v0.1/hgnc_symbol_ensembl_map.tsv` (45,032 `Approved` rows, 42,348 with an Ensembl ID). Pushed to Argos too.
+
+**Verified against real data before trusting it, and found Step 1's `looks_like_ensembl` check was misleading**: that check only looked at `rownames(obj)[1]` — one gene, not a real characterization. Loaded the actual full gene list for `HDMA_Adrenal` on Argos: HDMA is **not purely Ensembl**, it's a mix — 76.5% already symbols (19,368/25,314), 23.5% Ensembl IDs used only as a fallback (5,946/25,314).
+
+**Coverage-checked the HGNC table against those 5,946 fallback IDs rather than assuming it "solves" the problem**: only 651 (~11%) resolve, checked both `Approved`-only and any-status (same result — status filtering wasn't the limiter). The other 5,295 are genuinely absent from HGNC entirely — mostly lncRNA/pseudogene/novel-locus Ensembl entries HGNC hasn't curated a symbol for, which is expected (HGNC curates narrower than Ensembl's full gene model) and isn't a gap in this specific table or something a different source would fix. Practical takeaway: the actually-relevant protein-coding trophoblast markers are almost certainly already in the resolved 76.5%, not the unresolvable tail — don't chase the remaining ~89% further, just drop or Ensembl-ID-keep them in the Step 2 merge.
+
+Full writeup: `datasets/HGNC_gene_id_mapping/dataset.md`. Coverage-check script (run on Argos, not qsub — small enough for the login node): `scripts/02_gene_id_mapping/check_hdma_gene_id_coverage.sh`.
+
 ### Repo layout (as of this session)
 
 ```text
