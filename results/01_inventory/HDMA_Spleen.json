@@ -1,0 +1,133 @@
+{
+  "label": "HDMA_Spleen",
+  "path": "/home/zz950/DATA/scRNAseq/HumanDevelopmentMultiomicAtlas/raw/per_organ_RNA_seurat/Spleen_RNA_obj_clustered_final.rds",
+  "class": "Seurat",
+  "assays": ["RNA", "SCT", "decontX"],
+  "dims": {
+    "genes": 32513,
+    "cells": 33177
+  },
+  "gene_sample": ["ENSG00000238009", "ENSG00000239906", "ENSG00000241860", "ENSG00000286448", "ENSG00000236601", "ENSG00000235146", "LINC01409", "FAM87B", "LINC00115", "LINC01128"],
+  "looks_like_ensembl": true,
+  "reductions": ["pca", "umap"],
+  "graphs": ["SCT_nn", "SCT_snn", "decontX_nn", "decontX_snn"],
+  "meta_columns": ["orig.ident", "nCount_RNA", "nFeature_RNA", "percent.mt", "passfilter", "Sample", "sex", "PCW", "PCD", "age", "S.Score", "G2M.Score", "Phase", "nCount_SCT", "nFeature_SCT", "SCT_snn_res.0.3", "seurat_clusters", "Clusters", "estConp", "nCount_decontX", "nFeature_decontX", "decontX_snn_res.0.3", "annotv1", "keepcell", "annotv2"],
+  "meta_value_counts": {
+    "orig.ident": {
+      "CL115": 2078,
+      "CL116": 2843,
+      "CL117": 230,
+      "CL118": 2360,
+      "CL119": 2467,
+      "CL120": 2190,
+      "CL121": 1887,
+      "CL122": 1833,
+      "CL123": 2364,
+      "CL124": 2323,
+      "CL125": 645,
+      "CL126": 2195,
+      "CL127": 2286,
+      "CL128": 2147,
+      "CL129": 3034,
+      "CL130": 2295
+    },
+    "Sample": {
+      "T165_b17_Spleen_PCW19": 17874,
+      "T270_b17_Spleen_PCW18": 12366,
+      "T88_b17_Spleen_PCW18": 2937
+    },
+    "sex": {
+      "F": 2937,
+      "M": 30240
+    },
+    "PCW": {
+      "PCW18": 15303,
+      "PCW19": 17874
+    },
+    "PCD": {
+      "PCD126": 12366,
+      "PCD127": 2937,
+      "PCD133": 17874
+    },
+    "age": {
+      "PCW18": 15303,
+      "PCW19": 17874
+    },
+    "Phase": {
+      "G1": 13540,
+      "G2M": 9324,
+      "S": 10313
+    },
+    "SCT_snn_res.0.3": {
+      "0": 11517,
+      "1": 5937,
+      "2": 4424,
+      "3": 3866,
+      "4": 2634,
+      "5": 1462,
+      "6": 1412,
+      "7": 1312,
+      "8": 613
+    },
+    "seurat_clusters": {
+      "0": 6992,
+      "1": 4525,
+      "2": 3925,
+      "3": 3866,
+      "4": 2645,
+      "5": 2635,
+      "6": 2012,
+      "7": 1787,
+      "8": 1462,
+      "9": 1413,
+      "10": 1310,
+      "11": 605
+    },
+    "Clusters": {
+      "0": 6992,
+      "1": 4525,
+      "2": 3925,
+      "3": 3866,
+      "4": 2645,
+      "5": 2635,
+      "6": 2012,
+      "7": 1787,
+      "8": 1462,
+      "9": 1413,
+      "10": 1310,
+      "11": 605
+    },
+    "decontX_snn_res.0.3": {
+      "0": 6992,
+      "1": 4525,
+      "2": 3925,
+      "3": 3866,
+      "4": 2645,
+      "5": 2635,
+      "6": 2012,
+      "7": 1787,
+      "8": 1462,
+      "9": 1413,
+      "10": 1310,
+      "11": 605
+    },
+    "annotv1": {
+      "SP_end": 5937,
+      "SP_imm": 10686,
+      "SP_str": 16554
+    },
+    "annotv2": {
+      "B cells": 3866,
+      "Endothelial progenitor": 5937,
+      "Erythroblast": 1310,
+      "Fibroblast": 15949,
+      "Macrophage": 2635,
+      "Megakaryocyte": 1462,
+      "NK T cells": 1413,
+      "Pericyte": 605
+    }
+  },
+  "assay_RNA_layers": ["counts", "data"],
+  "assay_SCT_layers": ["counts", "data", "scale.data"],
+  "assay_decontX_layers": ["counts", "data", "scale.data"]
+}

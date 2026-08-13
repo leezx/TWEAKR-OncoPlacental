@@ -1,0 +1,119 @@
+{
+  "label": "HDMA_Adrenal",
+  "path": "/home/zz950/DATA/scRNAseq/HumanDevelopmentMultiomicAtlas/raw/per_organ_RNA_seurat/Adrenal_RNA_obj_clustered_final.rds",
+  "class": "Seurat",
+  "assays": ["RNA", "SCT", "decontX"],
+  "dims": {
+    "genes": 25314,
+    "cells": 2883
+  },
+  "gene_sample": ["ENSG00000238009", "ENSG00000241860", "ENSG00000236601", "LINC01409", "LINC00115", "LINC01128", "ENSG00000272438", "LINC02593", "SAMD11", "NOC2L"],
+  "looks_like_ensembl": true,
+  "reductions": ["pca", "umap"],
+  "graphs": ["SCT_nn", "SCT_snn", "decontX_nn", "decontX_snn"],
+  "meta_columns": ["orig.ident", "nCount_RNA", "nFeature_RNA", "percent.mt", "passfilter", "Sample", "sex", "PCW", "PCD", "age", "S.Score", "G2M.Score", "Phase", "nCount_SCT", "nFeature_SCT", "SCT_snn_res.0.3", "seurat_clusters", "Clusters", "estConp", "nCount_decontX", "nFeature_decontX", "decontX_snn_res.0.3", "annotv1", "keepcell", "annotv2"],
+  "meta_value_counts": {
+    "orig.ident": {
+      "CL131": 1770,
+      "CL132": 1113
+    },
+    "Sample": {
+      "T273_b16_Adr_PCW18": 612,
+      "T318_b16_Adr_PCW21": 1381,
+      "T390_b16_Adr_PCW13": 112,
+      "T40_b16_Adr_PCW17": 778
+    },
+    "sex": {
+      "F": 890,
+      "M": 1993
+    },
+    "PCW": {
+      "PCW13": 112,
+      "PCW17": 778,
+      "PCW18": 612,
+      "PCW21": 1381
+    },
+    "PCD": {
+      "PCD122": 778,
+      "PCD126": 612,
+      "PCD151": 1381,
+      "PCD96": 112
+    },
+    "age": {
+      "PCW13": 112,
+      "PCW17": 778,
+      "PCW18": 612,
+      "PCW21": 1381
+    },
+    "Phase": {
+      "G1": 1530,
+      "G2M": 254,
+      "S": 1099
+    },
+    "SCT_snn_res.0.3": {
+      "0": 823,
+      "1": 576,
+      "2": 511,
+      "3": 483,
+      "4": 155,
+      "5": 115,
+      "6": 89,
+      "7": 77,
+      "8": 29,
+      "9": 25
+    },
+    "seurat_clusters": {
+      "0": 823,
+      "1": 576,
+      "2": 511,
+      "3": 483,
+      "4": 155,
+      "5": 115,
+      "6": 89,
+      "7": 77,
+      "8": 29,
+      "9": 25
+    },
+    "Clusters": {
+      "0": 823,
+      "1": 576,
+      "2": 511,
+      "3": 483,
+      "4": 155,
+      "5": 115,
+      "6": 89,
+      "7": 77,
+      "8": 29,
+      "9": 25
+    },
+    "decontX_snn_res.0.3": {
+      "0": 823,
+      "1": 576,
+      "2": 511,
+      "3": 483,
+      "4": 155,
+      "5": 115,
+      "6": 89,
+      "7": 77,
+      "8": 29,
+      "9": 25
+    },
+    "annotv1": {
+      "AG_end": 115,
+      "AG_epi": 2602,
+      "AG_imm": 89,
+      "AG_str": 77
+    },
+    "annotv2": {
+      "adrenal cortex": 2393,
+      "endothelial": 115,
+      "macrophages": 89,
+      "schwann cell precursors": 25,
+      "stromal": 77,
+      "sympathoadrenal lineage": 184
+    }
+  },
+  "assay_RNA_layers": ["counts", "data"],
+  "assay_SCT_layers": ["counts", "data", "scale.data"],
+  "assay_decontX_layers": ["counts", "data", "scale.data"]
+}

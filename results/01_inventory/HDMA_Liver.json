@@ -1,0 +1,154 @@
+{
+  "label": "HDMA_Liver",
+  "path": "/home/zz950/DATA/scRNAseq/HumanDevelopmentMultiomicAtlas/raw/per_organ_RNA_seurat/Liver_RNA_obj_clustered_final.rds",
+  "class": "Seurat",
+  "assays": ["RNA", "SCT", "decontX"],
+  "dims": {
+    "genes": 32748,
+    "cells": 71807
+  },
+  "gene_sample": ["ENSG00000238009", "ENSG00000241860", "ENSG00000236601", "LINC01409", "LINC00115", "LINC01128", "ENSG00000288531", "FAM41C", "ENSG00000272438", "LINC02593"],
+  "looks_like_ensembl": true,
+  "reductions": ["pca", "umap"],
+  "graphs": ["SCT_nn", "SCT_snn", "decontX_nn", "decontX_snn"],
+  "meta_columns": ["orig.ident", "nCount_RNA", "nFeature_RNA", "percent.mt", "passfilter", "Sample", "sex", "PCW", "PCD", "age", "S.Score", "G2M.Score", "Phase", "nCount_SCT", "nFeature_SCT", "SCT_snn_res.0.3", "seurat_clusters", "Clusters", "estConp", "nCount_decontX", "nFeature_decontX", "decontX_snn_res.0.3", "annotv1", "keepcell", "annotv2"],
+  "meta_value_counts": {
+    "orig.ident": {
+      "CL105": 6520,
+      "CL106": 6358,
+      "CL107": 9040,
+      "CL108": 7785,
+      "CL109": 7219,
+      "CL110": 7671,
+      "CL111": 6592,
+      "CL112": 6858,
+      "CL113": 6755,
+      "CL114": 7009
+    },
+    "Sample": {
+      "T166_b15_Liver_PCW19": 7702,
+      "T235_b15_Liver_PCW21": 12271,
+      "T275_b15_Liver_PCW18": 6963,
+      "T350_b15_Liver_PCW21": 6279,
+      "T375_b15_Liver_PCW15": 16280,
+      "T398_b15_Liver_PCW17": 14781,
+      "T71_b15_Liver_PCW18": 7531
+    },
+    "sex": {
+      "F": 34583,
+      "M": 37224
+    },
+    "PCW": {
+      "PCW15": 16280,
+      "PCW17": 14781,
+      "PCW18": 14494,
+      "PCW19": 7702,
+      "PCW21": 18550
+    },
+    "PCD": {
+      "PCD107": 16280,
+      "PCD119": 14781,
+      "PCD126": 6963,
+      "PCD127": 7531,
+      "PCD133": 7702,
+      "PCD150": 12271,
+      "PCD151": 6279
+    },
+    "age": {
+      "PCW15": 16280,
+      "PCW17": 14781,
+      "PCW18": 14494,
+      "PCW19": 7702,
+      "PCW21": 18550
+    },
+    "Phase": {
+      "G1": 38691,
+      "G2M": 14613,
+      "S": 18503
+    },
+    "SCT_snn_res.0.3": {
+      "0": 17938,
+      "1": 16417,
+      "2": 11055,
+      "3": 8171,
+      "4": 3751,
+      "5": 3731,
+      "6": 3465,
+      "7": 2225,
+      "8": 1680,
+      "9": 1157,
+      "10": 1094,
+      "11": 1044,
+      "12": 79
+    },
+    "seurat_clusters": {
+      "0": 16461,
+      "1": 14247,
+      "2": 8716,
+      "3": 8171,
+      "4": 3807,
+      "5": 3762,
+      "6": 3701,
+      "7": 3467,
+      "8": 2362,
+      "9": 2239,
+      "10": 1674,
+      "11": 1154,
+      "12": 1042,
+      "13": 1004
+    },
+    "Clusters": {
+      "0": 16461,
+      "1": 14247,
+      "2": 8716,
+      "3": 8171,
+      "4": 3807,
+      "5": 3762,
+      "6": 3701,
+      "7": 3467,
+      "8": 2362,
+      "9": 2239,
+      "10": 1674,
+      "11": 1154,
+      "12": 1042,
+      "13": 1004
+    },
+    "decontX_snn_res.0.3": {
+      "0": 16461,
+      "1": 14247,
+      "2": 8716,
+      "3": 8171,
+      "4": 3807,
+      "5": 3762,
+      "6": 3701,
+      "7": 3467,
+      "8": 2362,
+      "9": 2239,
+      "10": 1674,
+      "11": 1154,
+      "12": 1042,
+      "13": 1004
+    },
+    "annotv1": {
+      "LI_end": 1674,
+      "LI_epi": 30930,
+      "LI_imm": 36964,
+      "LI_str": 2239
+    },
+    "annotv2": {
+      "B cell progenitor": 1154,
+      "cholangiocyte": 1004,
+      "cycling erythroblast": 16461,
+      "early erythroblast": 3762,
+      "endothelial": 1674,
+      "erythroblast": 11078,
+      "hepatocyte": 29926,
+      "Kupffer": 3467,
+      "megakaryocyte": 1042,
+      "stellate": 2239
+    }
+  },
+  "assay_RNA_layers": ["counts", "data"],
+  "assay_SCT_layers": ["counts", "data", "scale.data"],
+  "assay_decontX_layers": ["counts", "data", "scale.data"]
+}

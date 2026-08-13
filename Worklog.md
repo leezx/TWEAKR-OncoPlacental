@@ -222,6 +222,20 @@ Full revised doc: `docs/COMPUTE_FEASIBILITY.md`.
 
 **Review round 1 (REQUEST_CHANGES) — fixed**: `run_inventory.sh` used `set -uo pipefail` without `-e`, and both inventory scripts caught read failures, wrote an `error` field to the JSON, then returned/exited normally — so the SGE job could print `=== Done ===` and exit 0 even if a dataset's inventory silently failed, with no reliable machine-checkable success signal. Fixed by explicitly tracking each of the 15 invocations' exit codes in the shell driver (kept `set -uo pipefail`, deliberately not `-e`, since one failing dataset shouldn't stop the other 14 from being attempted), printing an OK/FAILED summary, and exiting non-zero if anything failed; `inventory_h5ad.py`/`inventory_seurat_rds.R` now `sys.exit(1)`/`quit(status=1)` when their `error` field is set instead of returning cleanly. Pushed the fixed scripts to Argos for future runs. The already-running job 3620272 was submitted with the old script version (can't retroactively fix a job mid-run) — independently verified its correctness the hard way instead of trusting its exit code: checked all completed JSONs for an `error` key directly, none present through 13/15 as of this note.
 
+### Step 1 results — job 3620272 finished, 15/15 confirmed clean
+
+Job finished ~13:03. Same independent-verification approach carried through to the end (not trusting the old script's own printed status): pulled all 15 JSONs and checked each for an `error` key directly — **zero errors, 15/15 genuinely succeeded**. Pulled the full `results/01_inventory/` directory back to local via the same tar-over-ssh workaround. Full findings: `results/01_inventory/SUMMARY.md`.
+
+**Three real findings, not just "everything loaded fine":**
+
+1. **Gene-ID convention mismatch, blocks Step 2 until resolved**: every placental h5ad dataset (Arutyunyan ×4, both 2026-Nature files, VentoTormo, Greenbaum) uses gene symbols; all 7 HDMA RDS objects use Ensembl IDs. Cross-dataset comparison needs a symbol↔Ensembl mapping decision before any pseudobulk merge.
+2. **Trophoblast nomenclature is consistent across 5 independent studies** (Arutyunyan, Nature2026, VentoTormo, Greenbaum all independently use VCT/EVT/SCT + close variants — `iEVT`/`eEVT`/`proEVT`, `VCT_p`/`VCT_CCC`/`VCT_fusing`, `SCT_A`/`SCT_B`/`proSCT`) — one canonical trophoblast filter can cover all 5 rather than 5 bespoke ones. HDMA's `annotv1`/`annotv2` columns confirm the fetal-somatic organs have zero trophoblast contamination, as expected.
+3. **`2026_human_maternal_fetal_Nature`'s `snRNA_raw_counts` file has no usable annotation** (`obs` columns are just `ID`/`dataset`/`BC`) — needs a follow-up check (barcode overlap with the sibling `scPlacenta_host` file, which does have full annotation) before Step 2 can use it.
+
+Also a scoping caution worth flagging explicitly: Nature2026's `origin` column (`Fetal`/`Maternal`/`Unknown`) labels which *side of the placenta* a cell came from, not "fetal somatic organ" — don't conflate `origin=="Fetal"` placental cells (fetal endothelium, Hofbauer cells) with the HDMA fetal-somatic-organ reference when building the F-specific module.
+
+Committed the 15 JSONs + `SUMMARY.md` to this PR.
+
 ### Repo layout (as of this session)
 
 ```text

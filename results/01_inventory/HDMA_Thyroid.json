@@ -1,0 +1,120 @@
+{
+  "label": "HDMA_Thyroid",
+  "path": "/home/zz950/DATA/scRNAseq/HumanDevelopmentMultiomicAtlas/raw/per_organ_RNA_seurat/Thyroid_RNA_obj_clustered_final.rds",
+  "class": "Seurat",
+  "assays": ["RNA", "SCT", "decontX"],
+  "dims": {
+    "genes": 26163,
+    "cells": 9299
+  },
+  "gene_sample": ["ENSG00000241860", "ENSG00000236601", "LINC01409", "LINC00115", "LINC01128", "ENSG00000272438", "LINC02593", "SAMD11", "NOC2L", "KLHL17"],
+  "looks_like_ensembl": true,
+  "reductions": ["pca", "umap"],
+  "graphs": ["SCT_nn", "SCT_snn", "decontX_nn", "decontX_snn"],
+  "meta_columns": ["orig.ident", "nCount_RNA", "nFeature_RNA", "percent.mt", "passfilter", "Sample", "sex", "PCW", "PCD", "age", "S.Score", "G2M.Score", "Phase", "nCount_SCT", "nFeature_SCT", "SCT_snn_res.0.3", "seurat_clusters", "Clusters", "estConp", "nCount_decontX", "nFeature_decontX", "decontX_snn_res.0.3", "annotv1", "keepcell", "annotv2"],
+  "meta_value_counts": {
+    "orig.ident": {
+      "CL131": 2031,
+      "CL132": 1975,
+      "CL165": 2524,
+      "CL166": 2769
+    },
+    "Sample": {
+      "T136_b16_Thyroid_PCW21": 2109,
+      "T136_b22_Thyroid_PCW21": 5293,
+      "T176_b16_Thyroid_PCW19": 1897
+    },
+    "sex": {
+      "F": 7402,
+      "M": 1897
+    },
+    "PCW": {
+      "PCW19": 1897,
+      "PCW21": 7402
+    },
+    "PCD": {
+      "PCD133": 1897,
+      "PCD148": 7402
+    },
+    "age": {
+      "PCW19": 1897,
+      "PCW21": 7402
+    },
+    "Phase": {
+      "G1": 3379,
+      "G2M": 2914,
+      "S": 3006
+    },
+    "SCT_snn_res.0.3": {
+      "0": 5293,
+      "1": 1480,
+      "2": 855,
+      "3": 674,
+      "4": 642,
+      "5": 102,
+      "6": 101,
+      "7": 75,
+      "8": 40,
+      "9": 37
+    },
+    "seurat_clusters": {
+      "0": 2956,
+      "1": 1833,
+      "2": 1280,
+      "3": 842,
+      "4": 781,
+      "5": 643,
+      "6": 299,
+      "7": 205,
+      "8": 200,
+      "9": 118,
+      "10": 104,
+      "11": 38
+    },
+    "Clusters": {
+      "0": 2956,
+      "1": 1833,
+      "2": 1280,
+      "3": 842,
+      "4": 781,
+      "5": 643,
+      "6": 299,
+      "7": 205,
+      "8": 200,
+      "9": 118,
+      "10": 104,
+      "11": 38
+    },
+    "decontX_snn_res.0.3": {
+      "0": 2956,
+      "1": 1833,
+      "2": 1280,
+      "3": 842,
+      "4": 781,
+      "5": 643,
+      "6": 299,
+      "7": 205,
+      "8": 200,
+      "9": 118,
+      "10": 104,
+      "11": 38
+    },
+    "annotv1": {
+      "TR_end": 104,
+      "TR_epi": 6606,
+      "TR_str": 2589
+    },
+    "annotv2": {
+      "endothelial": 104,
+      "fibroblast": 781,
+      "parathyroid": 38,
+      "skeletal muscle": 643,
+      "smooth muscle": 118,
+      "stromal": 842,
+      "thyroid follicular": 6773
+    }
+  },
+  "assay_RNA_layers": ["counts", "data"],
+  "assay_SCT_layers": ["counts", "data", "scale.data"],
+  "assay_decontX_layers": ["counts", "data", "scale.data"]
+}

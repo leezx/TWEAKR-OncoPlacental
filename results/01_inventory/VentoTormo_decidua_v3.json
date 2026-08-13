@@ -1,0 +1,92 @@
+{
+  "label": "VentoTormo_decidua_v3",
+  "path": "/home/zz950/DATA/scRNAseq/VentoTormo_Nature_2018/raw/decidua-v3.h5ad",
+  "shape": [
+    70325,
+    31764
+  ],
+  "var_index_sample": [
+    "TNMD_ENSG00000000005",
+    "DPM1_ENSG00000000419",
+    "SCYL3_ENSG00000000457",
+    "C1orf112_ENSG00000000460",
+    "FGR_ENSG00000000938",
+    "CFH_ENSG00000000971",
+    "FUCA2_ENSG00000001036",
+    "GCLC_ENSG00000001084",
+    "NFYA_ENSG00000001167",
+    "STPG1_ENSG00000001460"
+  ],
+  "looks_like_ensembl": false,
+  "obs_columns": [
+    "CellType",
+    "Fetus",
+    "Location",
+    "nGene",
+    "nUMI",
+    "percent.mito"
+  ],
+  "has_raw": false,
+  "X_nnz": null,
+  "X_dtype": "float32",
+  "layers": [],
+  "obsm": [
+    "X_UMAP"
+  ],
+  "obsp": [],
+  "obs_value_counts": {
+    "CellType": {
+      "Tcells": 10833,
+      "VCT": 9479,
+      "dS1": 7261,
+      "dNK2": 5661,
+      "dS2": 4760,
+      "dNK1": 4047,
+      "EVT": 3626,
+      "dM2": 3473,
+      "dM1": 3006,
+      "dNK3": 2219,
+      "fFB1": 2188,
+      "NK CD16+": 1591,
+      "HB": 1372,
+      "SCT": 1261,
+      "MO": 1227,
+      "dP1": 1081,
+      "dS3": 938,
+      "dM3": 930,
+      "Endo (m)": 917,
+      "dP2": 841,
+      "dNK p": 777,
+      "Plasma": 367,
+      "DC1": 359,
+      "DC2": 354,
+      "Endo L": 350,
+      "Granulocytes": 269,
+      "NK CD16-": 263,
+      "Epi1": 226,
+      "ILC3": 220,
+      "Epi2": 216,
+      "fFB2": 113,
+      "Endo (f)": 100
+    },
+    "Fetus": {
+      "F25": 17591,
+      "F27": 13327,
+      "F36": 10430,
+      "F19": 8340,
+      "F20": 6820,
+      "F40": 5724,
+      "F37": 2502,
+      " F15": 1573,
+      " F13": 1263,
+      " F17": 1240,
+      " F10": 881,
+      " F11": 634
+    },
+    "Location": {
+      "Decidua": 40512,
+      "Placenta": 18547,
+      "Blood": 11266
+    }
+  }
+}

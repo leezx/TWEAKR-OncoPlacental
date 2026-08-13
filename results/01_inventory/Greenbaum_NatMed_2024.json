@@ -1,0 +1,155 @@
+{
+  "rna_matrix": {
+    "shape": [
+      36546,
+      36456
+    ],
+    "nnz": 92502573,
+    "dtype": "float64"
+  },
+  "atac_matrix": {
+    "shape": [
+      444087,
+      36456
+    ],
+    "nnz": 362992363,
+    "dtype": "int64"
+  },
+  "rna_gene_sample": [
+    "MIR1302-2HG",
+    "FAM138A",
+    "OR4F5",
+    "AL627309.3",
+    "AL627309.1",
+    "AL627309.2",
+    "AL627309.5",
+    "AL627309.4",
+    "AP006222.2",
+    "AL732372.1"
+  ],
+  "rna_looks_like_ensembl": false,
+  "metadata_columns": [
+    "NAME",
+    "biosample_id",
+    "donor_id",
+    "species",
+    "species__ontology_label",
+    "disease",
+    "disease__ontology_label",
+    "organ",
+    "organ__ontology_label",
+    "library_preparation_protocol",
+    "library_preparation_protocol__ontology_label",
+    "sex",
+    "cluster"
+  ],
+  "metadata_nrows": 36457,
+  "metadata_value_counts": {
+    "biosample_id": {
+      "W8-2": 6889,
+      "W7-1": 5781,
+      "W9": 4467,
+      "W10-1": 4293,
+      "W10-2": 4257,
+      "W11": 3949,
+      "W6": 3712,
+      "W8-1": 3108,
+      "group": 1
+    },
+    "donor_id": {
+      "W8-2": 6889,
+      "W7-1": 5781,
+      "W9": 4467,
+      "W10-1": 4293,
+      "W10-2": 4257,
+      "W11": 3949,
+      "W6": 3712,
+      "W8-1": 3108,
+      "group": 1
+    },
+    "species": {
+      "NCBITaxon_9606": 36456,
+      "group": 1
+    },
+    "species__ontology_label": {
+      "Homo sapiens": 36456,
+      "group": 1
+    },
+    "disease": {
+      "PATO_0000461": 36456,
+      "group": 1
+    },
+    "disease__ontology_label": {
+      "normal": 36456,
+      "group": 1
+    },
+    "organ": {
+      "UBERON:0001987": 36456,
+      "group": 1
+    },
+    "organ__ontology_label": {
+      "placenta": 36456,
+      "group": 1
+    },
+    "library_preparation_protocol": {
+      "EFO_0030059": 36456,
+      "group": 1
+    },
+    "library_preparation_protocol__ontology_label": {
+      "10x multiome": 36456,
+      "group": 1
+    },
+    "sex": {
+      "unknown": 36456,
+      "group": 1
+    },
+    "cluster": {
+      "vCTB2": 15497,
+      "Fibroblast2": 5509,
+      "vCTBp": 5188,
+      "EVT2": 2344,
+      "STB": 1985,
+      "Fibroblast1": 1571,
+      "vCTB3": 910,
+      "vCTB1": 708,
+      "Endothelial_cells": 687,
+      "EVT3": 602,
+      "maternal macrophages ": 439,
+      "unknown2": 379,
+      "EVT1": 224,
+      "Hofbauer cells": 183,
+      "Maternal fibroblast": 111,
+      "unknown1": 78,
+      "myeloid_unknown": 41,
+      "group": 1
+    }
+  },
+  "cluster_file_columns": [
+    "NAME",
+    "X",
+    "Y",
+    "cell_type"
+  ],
+  "cluster_file_nrows": 1924,
+  "cluster_value_counts": {
+    "cell_type": {
+      "vCTB": 477,
+      "FIB2": 415,
+      "STB": 396,
+      "Hofbauer cells": 270,
+      "FIB1": 111,
+      "EVT": 62,
+      "EVT-progenitor": 60,
+      "Endothelial": 56,
+      "STB-progenitor": 43,
+      "Erythroblasts": 33,
+      "group": 1
+    }
+  },
+  "spatial_file_columns": [
+    "NAME",
+    "X",
+    "Y",
+    "cell_type"
+  ]
+}

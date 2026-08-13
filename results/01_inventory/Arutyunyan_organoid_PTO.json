@@ -1,0 +1,113 @@
+{
+  "label": "Arutyunyan_organoid_PTO",
+  "path": "/home/zz950/DATA/scRNAseq/Arutyunyan2023_MFI/raw/organoid/Organoid_PTO_cellxgene.h5ad",
+  "shape": [
+    26853,
+    23281
+  ],
+  "var_index_sample": [
+    "A1BG",
+    "A1BG-AS1",
+    "A2M",
+    "A2M-AS1",
+    "A2ML1",
+    "A2ML1-AS1",
+    "A2ML1-AS2",
+    "A4GALT",
+    "AAAS",
+    "AACS"
+  ],
+  "looks_like_ensembl": false,
+  "obs_columns": [
+    "n_genes",
+    "time_point",
+    "media",
+    "sample",
+    "percent_mito",
+    "barcode",
+    "donor",
+    "leiden",
+    "S_score",
+    "G2M_score",
+    "phase",
+    "cell_annotation"
+  ],
+  "has_raw": true,
+  "raw_nnz": null,
+  "X_nnz": null,
+  "X_dtype": "float32",
+  "layers": [],
+  "obsm": [
+    "X_pca",
+    "X_umap"
+  ],
+  "obsp": [
+    "connectivities",
+    "distances"
+  ],
+  "obs_value_counts": {
+    "time_point": {
+      "48H": 6683,
+      "96H": 6338,
+      "24H": 5510,
+      "3H": 3236,
+      "0H": 3159,
+      "-48H": 1927
+    },
+    "media": {
+      "EVTM": 21570,
+      "TOM": 5283
+    },
+    "sample": {
+      "6044STDY8640563": 5510,
+      "Pla_Camb10123934": 5283,
+      "6044STDY8640565": 4354,
+      "6044STDY8640561": 3236,
+      "Pla_Camb10123929": 3159,
+      "Pla_Camb10123930": 2329,
+      "Pla_Camb10123928": 1927,
+      "Pla_Camb10123932": 1055
+    },
+    "donor": {
+      "4": 9536,
+      "2": 8102,
+      "3": 3752,
+      "5": 3054,
+      "1": 1246,
+      "6": 1163
+    },
+    "leiden": {
+      "0": 3415,
+      "1": 2677,
+      "2": 2417,
+      "3": 2335,
+      "4": 2259,
+      "5": 2219,
+      "6": 1913,
+      "7": 1785,
+      "8": 1744,
+      "9": 1512,
+      "10": 1257,
+      "11": 1089,
+      "12": 1000,
+      "13": 807,
+      "14": 424
+    },
+    "phase": {
+      "G1": 22453,
+      "G2M": 2427,
+      "S": 1973
+    },
+    "cell_annotation": {
+      "EVT-2 early": 5540,
+      "VCT": 4633,
+      "VCT-CCC": 4191,
+      "VCT-p": 3417,
+      "EVT-2": 3219,
+      "iEVT": 1720,
+      "VCT-fusing": 1615,
+      "preSCT": 1430,
+      "EVT-1": 1088
+    }
+  }
+}
