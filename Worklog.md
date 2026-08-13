@@ -14,12 +14,12 @@ User-requested (2026-08-13): report a global % after every completed task, using
 | D. Step 1 Inventory | 4% | done | 100% |
 | E. Step 2 gene-ID mapping | 6% | done | 100% |
 | F. Step 3 prep (collision rule + adult reference) | 7% | done — PR #5 merged | 100% |
-| G. Step 4 core: D/F/P pseudobulk signature construction | 20% | design locked + replicate-structure audit done, DE compute not started | ~13% |
+| G. Step 4 core: D/F/P pseudobulk signature construction | 20% | design locked + real donor×trophoblast eligibility confirmed, DE compute not started | ~17% |
 | H. Tier-2 validation (Tabula Sapiens, post-freeze) | 10% | not started | 0% |
 | I. Apply D/F/P to CRC Oncofetal cells, answer Q1 | 20% | not started | 0% |
 | J. Q2–Q6 (remaining 6-question framework, unscoped) | 20% | not started | 0% |
 
-**Current total: ~32.6%** (delta +0.6 from ~32%: replicate-structure audit resolved one of `STEP4_DFP_DESIGN.md`'s open items with real data — 4 of 7 placental datasets usable for the trophoblast-vs-rest DE, 3 organoid datasets structurally excluded — no new compute needed, just re-reading Step 1's already-verified inventory JSONs; G bumped from ~10% to ~13% of its 20% weight)
+**Current total: ~33.4%** (delta +0.8 from ~32.6%: PR #7 APPROVEd and merged, `37adf04` — real donor×trophoblast-status cross-tab confirms 4 usable placental datasets with actual eligible-donor counts (17/23/12/3, not the marginal 18/23/12/8), catching two real bugs (VentoTormo whitespace, Greenbaum barcode-scheme mismatch) along the way; G bumped from ~13% to ~17% of its 20% weight — this is real per-donor compute now, not just a design doc)
 
 When reporting progress: recompute the weighted sum, state the delta from the last reported number, and update this table in the same commit as the work it reflects.
 
@@ -366,6 +366,10 @@ Wrote `scripts/04_dfp_signature/donor_troph_crosstab.py`, ran on Argos (this gen
 2. **Greenbaum join was completely broken, 0/1923 cells matched**: `cluster.csv`'s `NAME` (`W9_AAACCAACACCTGCCT`) and `metadata.csv`'s `NAME` (`JS34#ACGTCAAGTTGCAATG-1`) use incompatible barcode schemes entirely — not almost-matching, not matching at all. Fixed by noticing `cluster.csv`'s own `NAME` already embeds the donor as the prefix before the last `_` — no join needed. This also revealed the annotated ~1,923-cell subset covers only **3 of the full 8 donors** (W8-2/W9/W11), not 8 as round 1's marginal-count table implied.
 
 **Final real numbers**: Arutyunyan 17/18 donors eligible, Nature2026 23/23, VentoTormo 12/12, Greenbaum 3/3 (not 8) — all 4 datasets remain usable, but Greenbaum's real replicate count is much thinner than round 1 suggested and should be weighted accordingly, not treated as equal-strength evidence. Updated `results/04_dfp_signature/replicate_structure_audit.md` with the full cross-tab and this correction, resubmitting.
+
+### PR #7 approved and merged
+
+**APPROVE**: "上一轮唯一 blocker 已经被真正解决... 这次 audit 确实在检查真实结构，而不是为了得到预期答案." One non-blocking doc-sync note: the audit's top summary still echoed round-1's stale "Greenbaum 8 donors" framing even though round 2 had already corrected it to 3 — fixed by adding an explicit final-numbers callout at the very top and striking through the stale number in the round-1 table, so skimming only the top half can't mislead. Merged (`gh pr merge 7 --merge --delete-branch`), local `main` fast-forwarded to `37adf04`. Reviewer's suggested next step: "trophoblast pseudobulk DE 的 statistical-design/threshold audit" — i.e. now that dataset eligibility is settled, pick the actual test and thresholds before running it.
 
 ### Repo layout (as of this session)
 
