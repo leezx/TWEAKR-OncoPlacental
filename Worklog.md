@@ -168,6 +168,31 @@ User asked to open a PR reviewing data correctness/completeness. Full write-up: 
 3. Decide E-MTAB-12595 (Arutyunyan multiome, ~299GB raw FASTQ, no processed alternative) — default is skip, still open.
 4. **Data acquisition for Aim 1 is done.** All 6 originally-missing datasets resolved and byte-verified: Arutyunyan2023_MFI (+Visium), Greenbaum_NatMed_2024, VentoTormo_Nature_2018, HumanDevelopmentMultiomicAtlas (7/12 organs), HPA_trophoblast_proteome. Only the 2 minor open questions above remain (Vento-Tormo cell-type coverage, stale 2026-Nature docs) — neither blocks starting analysis. **Next real step: resume the 6-question framework (Q1–Q6) from `2026-GPT-TWEAKR-Oncofetal.md#定义清楚Placenta的问题`** — recommended starting point Q1 — and start actually building P1/P2/P3/D signatures per the evidence-layer weighting table in `2026-GPT-TWEAKR-Oncofetal.md#Placenta数据集`. This is genuinely the next thing to do; the last several turns were all infra/data setup, not signature-construction work.
 
+### Compute feasibility: Mac mini (16GB) vs. Argos — new standing reference, 2026-08-13
+
+User's Mac mini only has 16GB RAM; some datasets in this project can't be loaded locally at all. Asked for a feasibility judgment per dataset before each analysis, with Argos (DFCI HPC) as the fallback. Full doc: `docs/COMPUTE_FEASIBILITY.md` — **read that before starting any analysis step**, not just this summary.
+
+Key facts gathered (measured, not assumed):
+- Mac mini: nominal 16GB, actual 17.18GB physical, but live-checked real availability was only ~109MB free at one point (`top -l 1`) — real-world safe budget is ~6-8GB per local analysis process, not the full nominal amount.
+- Argos: SSH-reachable (`argos.dfci.harvard.edu`), SGE scheduler (not SLURM/LSF — `qsub -pe pvm`), nodes are argos1-8 (64 CPU/376.6GB RAM each) and argos9-10 (160 CPU/629.3GB RAM each), CPU-only (no GPU). Existing project tooling (`SOFTWARES/bin/argos-submit-cluster`, `SOFTWARES/Argos-Server/`) already wraps job submission — reuse it, don't rebuild.
+- For h5ad/mtx files, computed exact `nnz` (non-zero count) via `h5py`/MatrixMarket headers rather than guessing from on-disk size — this gives a reliable memory-floor formula (`nnz × 8 bytes`, ×2 if a duplicate `raw` layer exists). Result: `Arutyunyan2023_MFI` primary_tissue (~12GB base load, has a duplicate `raw.X`) needs Argos; everything else in the h5ad/mtx set fits the Mac mini alone (though `2026_human_maternal_fetal_Nature`'s `snRNA_raw_counts` is tight, ~4.6GB base, treat any heavy downstream step on it as Argos-first).
+- For the HDMA RDS Seurat objects (no cheap way to peek nnz — RDS has no header), actually calibrated empirically instead of guessing: loaded `Adrenal` (650MB) and `Thyroid` (1.58GB) locally, measured real process RSS delta (174MB and 675MB respectively). Extrapolated conservatively (×1.5 safety buffer on the higher per-cell ratio) to the 5 untested organs: Spleen/Thymus estimated borderline-OK locally (~4-6GB, plausible with caution), Skin/Liver/StomachEsophagus estimated to exceed the safe budget (~8-11GB) → Argos. These 5 are estimates, not measurements — flagged as such in the doc, with instructions to redo the calibration properly on Argos (where a wrong guess is free) if any of them becomes analytically important.
+- Also noted `object.size()` in R is unreliable for Seurat's S4 objects (over-counted ~2x vs. the real RSS delta in both calibration runs) — process RSS is the number that actually matters for "will this crash the machine."
+
+### Compute feasibility PR — revised after review (2026-08-13)
+
+**Round 1 feedback (REQUEST_CHANGES)**: the `nnz × 8 bytes` formula was only the sparse-matrix core (data+indices), didn't account for indptr/obs/var/layers/categoricals/graphs/reductions/allocator overhead/dtype upcasting/copies — so classifying `snRNA_raw_counts` (~4.63GB) and the Greenbaum ATAC matrix (~2.90GB) as flat "Mac mini OK" was too optimistic for a standing decision this close to the local budget.
+
+**Fix, empirically, not just reworded** — same pattern as the data-audit PR's review round: actually loaded files and inspected real dtypes/nbytes instead of arguing from the formula.
+
+Two real findings, one in each direction:
+1. **The formula itself was accurate for h5ad files** — cross-checked `snRNA_raw_counts`: formula predicted 4.63GB, actual measured (sparse payload nbytes + obs/var, dtype-verified via h5py as float32/int32) was 4.67GB, within 1%. h5ad stores its own dtype, and it happened to be float32 for every file in this project.
+2. **The formula was wrong for the two mtx files, and not by a small margin** — `scipy.io.mmread` (the generic way to load `.mtx`) silently upcasts to `float64`/`int64` (not the assumed float32/int32) and returns COO format (not CSR/CSC) until explicitly converted. Measured: Greenbaum RNA matrix 1.11GB actual vs. 0.74GB estimated; ATAC matrix 4.36GB (CSR) / 5.81GB (COO, as initially loaded) vs. 2.90GB estimated — the ATAC matrix reclassified from "Mac mini OK" to "Argos-first."
+
+A third finding, not anticipated by the review but arguably the more important one for this specific machine: **live process RSS itself is unreliable here.** The Mac mini is chronically memory-pressured (confirmed via repeated `top -l 1` checks showing only 88-116MB free), and macOS's background memory compression means `ps`-reported RSS can dramatically underreport true footprint — measured the dtype-verified-4.67GB `snRNA_raw_counts` object showing only 994MB-1.8GB RSS delta across repeated runs. This means the original RSS-based HDMA calibration (Adrenal/Thyroid) is now flagged as a lower bound, not a confident estimate, and the extrapolated Spleen/Thymus verdicts were tightened from "plausible locally" to "Argos-first."
+
+Full revised doc: `docs/COMPUTE_FEASIBILITY.md`.
+
 ### Repo layout (as of this session)
 
 ```text
