@@ -220,6 +220,8 @@ Full revised doc: `docs/COMPUTE_FEASIBILITY.md`.
 
 **Not done yet, still pending**: the job hadn't finished as of this Worklog entry — Liver/Skin/StomachEsophagus results aren't in `results/01_inventory/` yet. This PR documents the process and scripts; a follow-up commit (same PR, before merge, or a fast-follow PR) will add the actual inventory summary once the job completes and results are pulled back locally.
 
+**Review round 1 (REQUEST_CHANGES) — fixed**: `run_inventory.sh` used `set -uo pipefail` without `-e`, and both inventory scripts caught read failures, wrote an `error` field to the JSON, then returned/exited normally — so the SGE job could print `=== Done ===` and exit 0 even if a dataset's inventory silently failed, with no reliable machine-checkable success signal. Fixed by explicitly tracking each of the 15 invocations' exit codes in the shell driver (kept `set -uo pipefail`, deliberately not `-e`, since one failing dataset shouldn't stop the other 14 from being attempted), printing an OK/FAILED summary, and exiting non-zero if anything failed; `inventory_h5ad.py`/`inventory_seurat_rds.R` now `sys.exit(1)`/`quit(status=1)` when their `error` field is set instead of returning cleanly. Pushed the fixed scripts to Argos for future runs. The already-running job 3620272 was submitted with the old script version (can't retroactively fix a job mid-run) — independently verified its correctness the hard way instead of trusting its exit code: checked all completed JSONs for an `error` key directly, none present through 13/15 as of this note.
+
 ### Repo layout (as of this session)
 
 ```text
