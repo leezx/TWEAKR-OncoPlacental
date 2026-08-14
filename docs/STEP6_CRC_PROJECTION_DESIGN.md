@@ -2,6 +2,16 @@
 
 ## Purpose
 
+**PR #16 review round 2 (REQUEST_CHANGES) caught a definitional-circularity blocker**
+in everything below this point, before it was ever run: the original plan defined
+"Oncofetal cells" *via* the D/F/P projection itself ("Oncofetal must be
+operationally defined via the D/F/P projection"), then proposed asking whether
+those same D/F/P-selected cells are F/P/D-dominant — a circular measurement,
+since the yardstick used to find "Oncofetal" cells was itself F/P/D. Fixed by
+adding an explicit **Layer 1 / Layer 2 structure** (see the new section below,
+"Independent Oncofetal anchor (Layer 1)") — Layer 1 locates/defines Oncofetal
+status using a gene signature with zero overlap in construction with D/F/P;
+only Layer 2 projects the frozen D/F/P signature onto Layer-1-identified cells.
 This is the step that finally answers the project's original Q1 (`docs/PROJECT_SUMMARY.md:9-13`):
 
 > Is CRC's "Oncofetal" malignant epithelial cell state actually one program, or a
@@ -33,17 +43,94 @@ availability from documentation elsewhere):
 | **CRLM_NMP_ATLAS** | 75,104 | 30,257 (Ensembl) | `.raw.X`, 100% integer (confirmed) | `cell_type`: `malignant cell` only 4,051 of 75,104 — dataset is TME/immune-focused (T cell, neutrophil, NK, macrophage dominate) | 6 donors, liver-metastasis-focused (`timepoint`: Before/After NMP) |
 | **GSE178318** | 140,281 | 33,694 (Ensembl+symbol pairs in `genes.tsv`) | Raw 10x mtx, 100% integer (confirmed) | **None** — raw matrix only, no cell-type calls; barcode suffix encodes sample (e.g. `_COL07_CRC`), but no metadata table inventoried yet | 9 patients (15 GSM samples per prior registry note, not independently re-verified this round) |
 
-**No dataset carries a pre-existing "Oncofetal" (or "revCSC"/"M11") label.** A
+**No dataset carries a pre-existing "Oncofetal" (or "revCSC"/"M11") *column*.** A
 keyword scan of every low-cardinality obs column for
 `oncofetal|fetal|placent|trophoblast|revcsc|m11` returned only coincidental
 substring matches inside random-looking auto-generated join IDs and one dataset
-name (`...LM112`) — not a real annotation. This confirms the Explore-agent
-finding from before this design: "Oncofetal" must be **operationally defined**
-via the D/F/P projection itself, not read off an existing column. (The
-KB-strategy doc's M11/revCSC meta-program, computed separately on this same
-meta-atlas via NMF, was not found as an `obsm`/`uns` entry in `adata_nmf.h5ad` —
-it likely lives in a separate results file in that directory tree; worth locating
-later as an independent cross-check, but not required to start this step.)
+name (`...LM112`) — not a real annotation.
+
+## Independent Oncofetal anchor (Layer 1) — fixes the circularity blocker
+
+**Round 1 of this design proposed defining "Oncofetal" via the D/F/P projection
+itself, then asking whether D/F/P-selected cells are F/P/D-dominant — reviewer
+correctly identified this as circular** (the yardstick used to find "Oncofetal"
+cells would be the same yardstick used to characterize them). Fixed by locating
+real, pre-existing, independently-computed evidence in the
+`CRC_single_cell_atlas_2025` meta-atlas's own directory tree (same machine, not
+previously checked in this repo) — **not re-derived by this project, used as-is**,
+same discipline as reusing published cell-type calls:
+
+- `NMF/metamodule_fnmf/MM_alt_clean_byscore_wardD2/deliver.mm_top_genes.csv` —
+  21 NMF meta-programs (M01-M21) independently decomposed from the meta-atlas's
+  malignant-cell expression variance, each with a ranked gene list (Ensembl IDs,
+  50 genes/MP in the "top50" version, larger top100/top200 versions also exist).
+  This decomposition used **no input from this project's D/F/P developmental
+  atlas** — it is pure NMF on CRC malignant-cell expression.
+- `NMF/dual_workflow_annotation/CRC_21MP_dual_workflow_annotation.csv` —
+  independent functional annotation of each MP by two different published
+  classification schemes (a TNBC-derived and a 3CA-derived taxonomy). **M11's
+  representative genes are `KRT19, KRT8, KRT18, ANXA2, S100A11, S100A10`**,
+  annotated by both schemes as "Basal / partial EMT" / "EMT-like /
+  mesenchymal-like."
+- `NMF/csc_signature_jaccard/` + `NMF/revCSC_overlap_tables/` — a **prior,
+  independent Jaccard-overlap validation** of all 21 MPs against a published
+  mouse-intestinal-regeneration-derived CRC cancer-stem-cell subtype signature
+  set (`Lgr5CSC`/`proCSC`/`revCSC`, human-ortholog-mapped, 31/42 revCSC genes
+  successfully mapped). **M11 is the best- or near-best-matching MP to `revCSC`
+  across every robustness check run** (unique-gene and repeated-gene top-gene
+  list versions, at cutoffs 50/100/200 — `revCSC_overlap_summary.md`): e.g. at
+  top50 (unique-gene version), M11 has the highest Jaccard (0.085,
+  overlap genes `ANXA1;KRT18;SFN;TMSB4X;TNFRSF12A`) of all 21 MPs. `TNFRSF12A`
+  is the TWEAK receptor (TWEAKR) — directly relevant to this project's broader
+  SPP1-TWEAK-TWEAKR mechanistic interest, independently of the D/F/P question.
+
+**This is a legitimate Layer-1 anchor**: M11's gene identity and its match to
+the published revCSC signature were both established using zero information
+from this project's D/F/P developmental-atlas construction (HDMA/GTEx/HPA/
+Arutyunyan/Nature2026/etc. never enter this NMF or Jaccard-overlap computation).
+
+**One real gap found, not glossed over**: the readily-available per-cell module
+score table (`NMF/viz_signature_MM_alt_clean_byscore_wardD2/addmodulescore.df.tsv`,
+297,307 rows) covers 13 of 21 MPs (M01, M04, M05, M08, M10, M12, M13, M15, M16,
+M17, M18, M19, M20) — **M11 is not among them** (so are M02/M03/M06/M07/M09/M14/M21;
+likely dropped in a redundancy-collapse step unrelated to Oncofetal relevance,
+not investigated further since M11 is the one that matters here). Rather than
+searching further for a possibly-nonexistent precomputed M11 score, Layer 1
+compute will score M11 directly from its own already-independently-derived gene
+list (top50/top100/top200 versions available) using the same `scanpy.tl.score_genes`
++ expression-matched-null-calibration mechanics being built for D/F/P (Layer 2) —
+**sharing the scoring *method* across layers is fine and intentional (consistency,
+comparability); what must stay independent is the *gene content* defining
+"Oncofetal," which it does: M11's gene list has no construction-time dependency
+on D/F/P.**
+
+## Revised analysis structure: Layer 1 → Layer 2
+
+1. **Layer 1 (independent of D/F/P)**: score every malignant cell in
+   `CRC_single_cell_atlas_2025` for the M11 gene signature (using the top50 list
+   as primary, top100/top200 as sensitivity checks) via the null-calibrated
+   `score_genes` framework below. Define "Oncofetal-high" cells/patients from
+   this M11 score alone (percentile-based threshold, calibrated the same way as
+   every other threshold in this project — not picked to make a downstream
+   result look clean).
+2. **Layer 2 (D/F/P projection)**: onto the Layer-1-identified Oncofetal-high
+   cells/patients (and, per reviewer's suggestion, across the *entire* malignant
+   population as a continuous check, not only the hard-thresholded subset),
+   project the frozen D-shared / F-specific (global + per-organ modules) /
+   P-specific signatures using the same null-calibrated scoring. Test: (a) do
+   Oncofetal-high cells show elevated D/F/P enrichment relative to Oncofetal-low
+   malignant cells and to normal epithelial cells (within-patient contrast); (b)
+   does the M11 score correlate continuously with F/P/D enrichment across all
+   malignant cells, independent of any hard threshold; (c) *which* per-organ F
+   module (if any) is elevated — this is what actually answers "is CRC's
+   Oncofetal program fetal-somatic, and if so, from which fetal lineage."
+
+Only after Layer 1 + Layer 2 both run can the project's original Q1 be answered
+with a non-circular measurement. If Layer 1's M11 anchor turns out to have some
+unresolvable problem once compute starts (e.g., too few cells clear a sensible
+Oncofetal-high threshold), the fallback is to rename the deliverable "CRC
+developmental-program projection" rather than claim to have resolved Oncofetal
+composition — per the reviewer's explicit fallback instruction.
 
 ## Proposed dataset plan
 
@@ -110,16 +197,21 @@ one could resolve.
 
    **Revised scoring contract**: for each dataset, independently build an
    expression-matched null distribution *per signature* (D-shared, F-specific,
-   P-specific, and each per-organ F module below) — directly analogous to the
-   matched-permutation-null design just approved in Step 5: sample many
-   random gene panels of the same size from the same expression-detectability
-   strata as the real signature, compute the same `score_genes`-style statistic
-   for each, and convert every cell/sample's *observed* raw score into a
-   **standardized enrichment (z-score relative to the null) or empirical
-   percentile within that signature's own null** before any cross-signature
-   comparison. Only these null-calibrated, common-scale values (not raw
-   `score_genes` output) may be used to say a cell/sample looks more
-   F-like vs. P-like vs. D-like.
+   P-specific, each per-organ F module below, and Layer 1's M11 signature) —
+   directly analogous to the matched-permutation-null design just approved in
+   Step 5: sample many random gene panels of the same size from the same
+   expression-detectability strata as the real signature, compute the same
+   `score_genes`-style statistic for each, and convert every cell/sample's
+   *observed* raw score into a common-scale value before any cross-signature
+   comparison. **Empirical percentile within each signature's own null is the
+   primary common scale** (per review: D-shared has only 6 genes, so its null
+   distribution is more discrete/sparse and a z-score would be more sensitive
+   to null-distribution shape than a percentile is; percentile's interpretation
+   stays stable across signatures of very different size). Z-score is computed
+   as a secondary sensitivity check, not the primary comparison metric. Only
+   these null-calibrated, common-scale values (not raw `score_genes` output)
+   may be used to say a cell/sample looks more F-like vs. P-like vs. D-like vs.
+   M11(Oncofetal)-like.
 
    **Lineage-resolved F modules, not one monolithic F-specific score
    (blocker fix)**: Step 4 already established F-developmental is strongly
@@ -168,10 +260,11 @@ one could resolve.
 ## What this step is not
 
 Not a re-derivation of "Oncofetal" via new clustering/NMF on this project's own
-compute — existing published cell-type calls are used as-is. Not a re-calibration
-of Step 4's frozen D/F/P cutoffs. Not yet a spatial-transcriptomics analysis
-(no spatial CRC dataset has been inventoried in this round — single-cell only
-for this first pass).
+compute — both the malignant-cell-type calls *and* the M11 Oncofetal anchor
+(Layer 1) are existing, independently-computed, published/prior work, used
+as-is, not re-derived. Not a re-calibration of Step 4's frozen D/F/P cutoffs.
+Not yet a spatial-transcriptomics analysis (no spatial CRC dataset has been
+inventoried in this round — single-cell only for this first pass).
 
 Submitting this design for review before running any real gene-ID mapping or
 scoring compute.
