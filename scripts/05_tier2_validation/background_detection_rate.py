@@ -171,9 +171,11 @@ for organ in F_MATCHED_ORGANS:
     result.insert(0, "organ", organ)
     rows.append(result)
 
-    n_sig = int((result.empirical_p_value < 0.05).sum())
-    print(f"{organ}: {n_sig}/{len(result)} cell types have observed F-specific rate significantly "
-          f"above the {N_PERM}-permutation expression-matched null (p<0.05, one-sided)")
+    n_nominal = int((result.empirical_p_value < 0.05).sum())
+    print(f"{organ}: {n_nominal}/{len(result)} cell types have observed F-specific rate at NOMINAL "
+          f"p<0.05 (uncorrected, one-sided) above the {N_PERM}-permutation expression-matched null "
+          f"-- multiple-testing correction (BH-FDR) is applied below across all organs combined "
+          f"before anything is called significant")
 
 final = pd.concat(rows, ignore_index=True)
 
