@@ -2,6 +2,8 @@
 
 Builds on `docs/STEP4_DFP_DESIGN.md` / `docs/STEP4_STATISTICAL_DESIGN.md` (the frozen D/F/P logic and its statistical design) and directly addresses a scope mismatch the user flagged after reviewing the mike_verzi enrichment result: HDMA's 7-organ F-developmental reference (Adrenal/Liver/Skin/Spleen/StomachEsophagus/Thymus/Thyroid — `datasets/HumanDevelopmentMultiomicAtlas/dataset.md`) has **zero gut/colon representation**, which is scientifically mismatched for a CRC project. This doc defines `F_Colon-developmental` and `F_SI-developmental` — built from real human fetal gut single-cell data — as the new primary F-axis for CRC-facing work, before any qsub compute runs, matching the review-before-compute discipline that produced `STEP4_DFP_DESIGN.md`.
 
+**Revised per round-1 REQUEST_CHANGES**: the reviewer's core correction — since the Gut Cell Atlas itself spans fetal through adult intestine in one processed object (`epi_raw_counts02_v2.h5ad`, epithelium-only, full lifespan), the primary construction method should be a **same-atlas fetal-vs-adult epithelial pseudobulk DE**, not a mechanical port of HDMA's single-population "elevated-in-fetal percentile + external GTEx/HPA adult-percentile-exclusion" design. GTEx/HPA/Tabula Sapiens are demoted further, to **external adult-negative validation only** (they were adult-exclusion *co-inputs* to the definition in the first draft below; they're not that anymore). See "Revised primary construction" below — the first-draft percentile-based definitions are kept struck through/superseded rather than deleted, so the review history stays legible.
+
 ## What changes and what doesn't
 
 - **P-developmental is unchanged.** It was already computed as a whole-body (not organ-scoped) program — `replicated_in_placenta(gene)` AND `adult_excluded(gene, whole_body)` — so it needs no gut-specific rebuild. It's reused as-is from the frozen Step 4 output (`results/04_dfp_signature/dfp_gene_sets/`).
@@ -16,14 +18,30 @@ Builds on `docs/STEP4_DFP_DESIGN.md` / `docs/STEP4_STATISTICAL_DESIGN.md` (the f
   - (Colon and SI versions computed the same way against the same unchanged `P_developmental`, before any Colon/SI pooling decision.)
 - **The existing pan-organ HDMA-based D/F/P is not deleted.** It's demoted to a secondary "pan-fetal / non-gut developmental validation framework" — useful for asking "is this gene generically fetal, anywhere in the body" but no longer the primary CRC coordinate system.
 
-## Reference data: Gut Cell Atlas fetal object (Elmentaite et al., Nature 2021)
+## Reference data: Gut Cell Atlas (Elmentaite et al., Nature 2021; first-trimester fetal object originally Elmentaite et al., Developmental Cell 2020)
 
-Downloaded and verified this session (`scripts/04a_dfp_gut/download_gutcellatlas_fetal.sh`, `scripts/04a_dfp_gut/inventory_gutcellatlas_fetal.py`), both files byte-exact and md5-exact against source:
+**Provenance correction (round-1 review)**: the 62,849-cell, 6–11 PCW `fetal_RAWCOUNTS_cellxgene.h5ad` object is first-trimester data **previously published in Elmentaite et al., Developmental Cell 2020**, which the Nature 2021 Space-Time Gut Cell Atlas paper integrated alongside its own newly-generated second-trimester (12–17 PCW) and adult (29–69 yr) samples. Citing it as "Elmentaite et al., Nature 2021" alone (as the first draft of this doc did) is imprecise — both citations are now given.
 
-| File | Cells | Genes | Role |
-|---|---|---|---|
-| `fetal_RAWCOUNTS_cellxgene.h5ad` | 62,849 | 33,694 | Raw counts (verified integer, `X_integer_fraction=1.0`) — used for pseudobulk construction |
-| `final_fetal_object_cellxgene.h5ad` | 62,849 | 26,757 (HVG subset) | Normalized, has `X_pca`/`X_umap` — metadata cross-check only, not used for counts |
+Three files, two download rounds:
+
+| File | Cells | Genes | Age range | Role |
+|---|---|---|---|---|
+| `fetal_RAWCOUNTS_cellxgene.h5ad` | 62,849 | 33,694 | 6–11 PCW (first-trimester only, Dev Cell 2020 cohort) | Raw counts (verified integer, `X_integer_fraction=1.0`) — early-fetal developmental-stage sensitivity/validation arm (see revised layering below), not primary construction |
+| `final_fetal_object_cellxgene.h5ad` | 62,849 | 26,757 (HVG subset) | 6–11 PCW | Normalized, has `X_pca`/`X_umap` — metadata cross-check only |
+| `epi_raw_counts02_v2.h5ad` | 142,113 | 33,538 | Full lifespan: Adult 77,341, First trim 31,689, Second trim 20,495, Pediatric 8,157, Pediatric_IBD 4,398, Adult_MLN 23, Second trim_MLN 10 | Raw counts, epithelium-only (`category`: Epithelial 142,104 / Mesenchymal 9, negligible) — **primary construction data**, downloaded this round (job 3620693) and inventoried (job 3620698), size/md5 verified byte-exact against source: 666,604,440 bytes / `2a149b8cf04567569707e9d1fab27209` |
+
+Real structure confirmed by direct inventory (not assumed):
+
+- **Raw counts confirmed** (`X_integer_fraction=1.0`); gene IDs: symbols in `var_names` + `gene_ids`/`feature_types` columns in `var`.
+- **Region** (`obs['Region']`, 5 categories): `SmallInt` 73,023 / `LargeInt` 47,020 / `REC` (rectum) 17,348 / `APD` (appendix) 4,689 / `lymph node` 33. Finer `Region code` (18 categories, e.g. `DUO`/`JEJ`/`ILE`/`CAE`/`SCL`/`TCL`/`ACL`/`FPIL`/`FTIL`/`FMIL`/`FLI`) available for sub-region granularity if needed later.
+- **Age × Region cross-tab (the fact that actually determines the primary contrast)**: fetal samples (First trim + Second trim) only have `LargeInt` and `SmallInt` — **no `REC`/`APD` fetal samples exist in this atlas**. So "colon" for the primary fetal-vs-adult contrast must be `LargeInt` specifically (not `REC`, which is adult-only and therefore can't be part of a fetal-vs-adult comparison):
+  | Age_group | APD | LargeInt | REC | SmallInt |
+  |---|---|---|---|---|
+  | Adult | 4,689 | 38,612 | 17,348 | 16,692 |
+  | First trim | 0 | 4,927 | 0 | 26,762 |
+  | Second trim | 0 | 3,481 | 0 | 17,014 |
+- **Chemistry claim, checked and partially revised**: the reviewer's claim (Second trim + Adult share 10x 5′ chemistry, First trim is a separate mostly-3′ batch) is **directionally correct but not a clean/exclusive split** — real cross-tab: Adult is 39,738/77,341 (51.4%) 5′ vs 37,603 (48.6%) 3′ (a genuine mix, not uniformly 5′); Second trim is 17,055/20,495 (83.2%) 5′; First trim is 27,578/31,689 (87.0%) 3′. So Second trim does skew heavily 5′ like Adult, and First trim does skew heavily 3′ unlike both — the qualitative "First trim is the more different batch" conclusion holds, but "Second trim and Adult share chemistry" is an approximation, not exact — the primary DE model should account for `10X` chemistry as a covariate/blocking factor rather than assume it away by cohort choice alone.
+- **Donor overlap with the already-downloaded fetal-only object, confirmed**: First trim's 10 donors here (`BRC2121`, `BRC2043`, `BRC2133`, `BRC2258`, `BRC2134`, `BRC2119`, `BRC2046`, `BRC2049`, `BRC2026`, `BRC2029`) directly match (modulo the `BRC` prefix) 9 of the 9 `Donor_id`s already inventoried in `fetal_RAWCOUNTS_cellxgene.h5ad` (2026/2029/2043/2046/2049/2119/2121/2133/2134), plus one new donor (`BRC2258`) not in that file. **This confirms real donor/data overlap between the two downloaded files** — expected, since both trace back to the same Dev Cell 2020 first-trimester cohort integrated into the Nature 2021 atlas, but worth stating explicitly rather than treating the two files as independent evidence of anything.
 
 Real structure confirmed by direct inventory, not assumed:
 
@@ -45,21 +63,39 @@ Real structure confirmed by direct inventory, not assumed:
 
 Per the user's explicit direction, `cell_type_group == 'epithelium'` is the primary subset for the fetal-gut side of this analysis — it matches the CRC malignant-epithelial-cell-state focus the whole D/F/P signature exists to serve. Mesenchymal/vasculature/immune populations in this atlas are not used for `F_Colon-developmental`/`F_SI-developmental` construction (they may be useful later for stroma-context questions, out of scope here).
 
-## Definitions (direct port of `STEP4_DFP_DESIGN.md` / `STEP4_STATISTICAL_DESIGN.md`'s F-developmental logic, gut regions substituted for HDMA organs)
+## Revised primary construction: same-atlas fetal-vs-adult epithelial DE (round-1 review fix)
 
-Same asymmetry as before: this atlas, like HDMA, is a **single population per region** (no internal non-fetal-somatic contrast), so F-developmental's positive evidence uses the same "consistency across the region's own individual samples" design as Step 4's HDMA arm — not a fresh statistical framework.
+**The first-draft definitions below this point (§"Superseded: HDMA-style percentile port") are struck through, not deleted** — the reviewer's fix isn't a small patch, it changes the primary evidence model entirely, and the review history should stay visible in the doc rather than silently vanish.
 
-- **`elevated_in_fetal_gut_epithelium(gene, region)`**: gene's expression in per-sample epithelial pseudobulk for that region clears a within-region percentile threshold, computed from the region's own sample distribution — same `elevated_pct` logic as HDMA (frozen at 75 in PR #12, to be re-validated against this dataset's own real distribution before reuse, not assumed to transfer unchanged).
-  - **Pseudobulk construction**: per individual `Sample`, restricted to `cell_type_group == 'epithelium'`, sum raw counts, CPM-normalize within-region (never cross-region/cross-dataset raw magnitude, per `STEP3_METHOD_CONTRACT.md`'s standing boundary).
-  - Region = `colon` for `F_Colon-developmental`; region = `duojejunum ∪ ileum` (pooled sample set) for `F_SI-developmental` — with duojejunum-vs-ileum internal concordance checked and reported (same "is a sub-split needed" question Step 4 resolved for StomachEsophagus, not assumed answered).
-- **`adult_excluded(gene, matched_organ)`**: unchanged definition from `STEP4_STATISTICAL_DESIGN.md` §3 — gene's expression in the matched adult reference falls below that dataset's own internal percentile, `role == adult_negative_reference` rows only.
-  - **Colon-matched adult reference**: GTEx v11 whole-body file (already in-project, `results/... GTEx_v11_median_tpm`) columns `Colon_Sigmoid`, `Colon_Transverse` (+`_Mucosa`/`_Muscularis`), plus HPA `colon`/`rectum` rows — same references already used for the CRC sanity check in Step 4.
-  - **SI-matched adult reference**: GTEx v11's `Small_Intestine_Terminal_Ileum` (+`_Lymphoid_Aggregate`/`_Mixed_Cell`) column, plus HPA's `small intestine` row — **confirmed present in the already-downloaded GTEx v11 whole-body file** (verified this session via direct column-header check; this atlas contains all 68 GTEx tissues, not just the 4 columns previously pulled for the colon sanity check). **No new adult-reference download is needed for the SI arm** — this corrects an earlier assumption (surfaced when the gut-data gap was first discussed) that only colon-matched adult references were available in-project.
-  - Tabula Sapiens `TS_Large_Intestine.h5ad` (already downloaded) remains available as a **Tier-2 independent validation** reference per the existing GTEx-v11 `link.md` design note — not used to define the signature, consistent with the project's standing adult-reference tiering.
-- **`F_Colon-developmental(gene)` = `elevated_in_fetal_gut_epithelium(gene, colon)` AND `adult_excluded(gene, colon-matched)`**
-- **`F_SI-developmental(gene)` = `elevated_in_fetal_gut_epithelium(gene, duojejunum ∪ ileum)` AND `adult_excluded(gene, SI-matched)`**
+The correction: `epi_raw_counts02_v2.h5ad` already contains matched fetal *and* adult epithelium in one processed object, from the same atlas/pipeline. Using this internal contrast — the same "positive evidence from a real DE, not an isolated percentile against an external platform" logic already used for P-developmental's trophoblast-vs-rest arm in `STEP4_STATISTICAL_DESIGN.md` §1 — is strictly stronger than HDMA's design (which had no choice but to reach for an external adult reference, because HDMA itself is fetal-only). Reusing HDMA's percentile-based recipe here would have been "matching Step 4's *code*" at the cost of not matching Step 4's *actual statistical intent* (positive evidence should come from the best real contrast available, and here a same-cohort contrast is available).
 
-Both are pre-corrected for adult expression before any set operation, same as the HDMA arm — no bespoke "exclude against P" step, `D_Gut-shared` falls out of the set intersection by construction.
+- **Primary comparison**: fetal-`LargeInt`-epithelium vs. adult-`LargeInt`-epithelium, donor/sample pseudobulk, within `epi_raw_counts02_v2.h5ad`. **Not donor-paired** — confirmed via inventory: First-trim/Second-trim donors (`BRC2xxx` codes) and Adult donors (`A2x`/`A3x`/`T0xx` codes) are structurally disjoint (different individuals, as expected for fetal-vs-adult), so the model fits `~ 10X_chemistry + age_group` (unpaired two-group edgeR/DESeq2 quasi-likelihood, chemistry as an explicit covariate — see below) rather than a donor-blocked paired design — same statistical family as `STEP4_STATISTICAL_DESIGN.md` §1, adapted to this dataset's real (unpaired) structure rather than assumed paired in advance.
+  - **Chemistry, checked against the reviewer's claim (see inventory table above)**: Second-trim skews 83.2% 5′ and Adult is a genuine 51.4%/48.6% 5′/3′ mix — not the clean "Second trim and Adult share chemistry, First trim doesn't" split the reviewer proposed. Revised plan: **use all fetal samples (First trim + Second trim pooled) vs. all Adult samples as the primary contrast** (not a Second-trim-only subset — restricting to Second trim alone would throw away most of the fetal `LargeInt` signal: First trim contributes 4,927 of the 8,408 total fetal `LargeInt` cells, more than Second trim's 3,481), with `10X` chemistry included as an explicit covariate in the DE model to absorb the batch effect directly rather than trying to dodge it via cohort selection.
+  - **Region**: `LargeInt` primary (not `REC` — fetal has zero `REC` samples, so rectum can't be part of a fetal-vs-adult contrast; `REC` stays available as an adult-only descriptive/exploratory note, never a D/F/P input), `SmallInt` secondary parallel.
+  - **Population**: `category == 'Epithelial'` (142,104/142,113 cells) — unchanged in spirit from the first draft's `cell_type_group == 'epithelium'` choice, now applied to this atlas's own column name.
+- **Continuous statistic**: `T_g = fetal-vs-adult-colon-epithelium DE statistic` (signed logFC or an equivalent effect-size+significance combination from the edgeR/DESeq2 fit) — this is the exact continuous ranking statistic the later preranked-GSEA validation plan needs, and it now falls directly out of the primary construction itself rather than needing to be separately invented later.
+- **`F_Colon-developmental(gene)` = {g : logFC_fetal/adult(g) > c, FDR(g) < q}** — real `c`/`q` cutoffs to be calibrated against this dataset's actual DE-statistic distribution (marker-panel-check discipline, e.g. LGR5/OLFM4 for crypt stem, MUC2 for goblet, plus the DLK1/IGF2/H19/LIN28B/PEG10 cross-tissue panel used for HDMA's calibration in PR #12), not assumed to transfer from HDMA's `elevated_pct=75`/`adult_excl_pct=25` (those percentile parameters don't even apply to a DE-statistic-based definition — a genuinely new calibration step, not a reused number).
+- **`F_SI-developmental(gene)`**: identical method, fetal-vs-adult SI epithelium contrast within the same atlas object.
+
+### Revised role of GTEx/HPA/Tabula Sapiens: external adult-negative validation only
+
+These stay in the project, but move one tier down from what the first draft proposed: they are **not** part of `F_Colon-developmental`/`F_SI-developmental`'s definition anymore (the same-atlas adult epithelium supplies that role now). Their role is now purely a downstream *sanity check* — "does a gene called `F_Colon-developmental` also stay low in fully independent, bulk, adult-population-level colon data (GTEx `Colon_Sigmoid`/`Colon_Transverse`, HPA `colon`/`rectum`) and SI data (GTEx `Small_Intestine_Terminal_Ileum`, HPA `small intestine`)?" — reported alongside the primary result, never substituted for it. Tabula Sapiens `TS_Large_Intestine.h5ad` stays at the same Tier-2 validation role it already had.
+
+## Revised layering (round-1 review)
+
+1. **Primary discovery**: `epi_raw_counts02_v2.h5ad` fetal-vs-adult epithelial pseudobulk DE (Colon primary, SI secondary parallel).
+2. **Early-fetal developmental-stage sensitivity/validation**: the already-downloaded 6–11 PCW, 62,849-cell first-trimester-only fetal object (`fetal_RAWCOUNTS_cellxgene.h5ad`) — checks whether `F_Colon-developmental`/`F_SI-developmental` genes are also elevated at this earlier developmental stage, not primary evidence.
+3. **External adult-negative validation**: GTEx colon/terminal-ileum, HPA colon/rectum/small-intestine, Tabula Sapiens Large Intestine — sanity-check only, per the demotion above.
+4. **External fetal replication (later, deferred)**: GSE158702 (Fawkner-Corbett et al., Cell 2021), GSE95630/GSE103239 (Nature Cell Biology 2018) — not downloaded yet; a donor/dataset-provenance overlap audit against Gut Cell Atlas is required before either can be called "independent replication" (Gut Cell Atlas's own first-trimester arm is itself previously-published Dev Cell 2020 data, so overlap is a real, not hypothetical, risk to check).
+
+## §ARCHIVED — Superseded: HDMA-style percentile port (first draft, kept for review-history legibility only, not used)
+
+~~- **`elevated_in_fetal_gut_epithelium(gene, region)`**: gene's expression in per-sample epithelial pseudobulk for that region clears a within-region percentile threshold, computed from the region's own sample distribution — same `elevated_pct` logic as HDMA (frozen at 75 in PR #12).~~
+~~- **`adult_excluded(gene, matched_organ)`**: gene's expression in the matched adult reference (GTEx/HPA) falls below that dataset's own internal percentile.~~
+~~- **`F_Colon-developmental(gene)` = `elevated_in_fetal_gut_epithelium(gene, colon)` AND `adult_excluded(gene, colon-matched)`**~~
+~~- **`F_SI-developmental(gene)` = `elevated_in_fetal_gut_epithelium(gene, duojejunum ∪ ileum)` AND `adult_excluded(gene, SI-matched)`**~~
+
+The GTEx v11 whole-body file's `Small_Intestine_Terminal_Ileum` column and HPA's `small intestine` row (discovered this session, no new download needed) remain a real, useful finding — they're just repurposed into the "external adult-negative validation" tier above instead of the (now-superseded) primary-definition role.
 
 ## Non-circularity boundary (explicit, per user directive)
 
@@ -67,11 +103,12 @@ The 5 `mike_verzi_fetal_signature.gmt` mouse gene sets (YAP_SIGNALING_GENES, REV
 
 ## What this design does NOT do yet
 
-No qsub jobs, no gene lists, no thresholds chosen — same discipline as `STEP4_DFP_DESIGN.md`. Explicitly left open, to decide against real data:
+No qsub DE compute, no gene lists, no thresholds chosen — same discipline as `STEP4_DFP_DESIGN.md`. Explicitly left open, to decide against real data:
 
-- Whether `elevated_pct=75` / `adult_excl_pct=25` (frozen for HDMA in PR #12) transfer unchanged to this dataset's own distribution, or need independent calibration — the marker-panel-check discipline from PR #12 (DLK1/IGF2/H19/LIN28B/PEG10 + gut-appropriate markers, e.g. LGR5/OLFM4 for crypt stem, MUC2 for goblet) should be re-run against this dataset before locking, not assumed to transfer.
-- Whether duojejunum and ileum need to stay split (like HDMA's per-organ F-developmental) with a union/consensus reconciliation step, or can be pooled directly into one SI sample set — decide once the two regions' real elevated-gene overlap is visible (same "let real distribution decide" precedent as Step 4's F-specific union-vs-consensus resolution).
-- Exact quorum for "detected in the region's own samples" (Step 4 used 0.5 vs 1.0, found it made almost no difference vs. the percentile cutoff) — to be re-checked, not assumed to transfer.
+- ~~`epi_raw_counts02_v2.h5ad`'s real structure~~ — **resolved this round** (job 3620693 download + job 3620698 inventory): 142,113 cells, `Diagnosis`/`Age_group`/`Region`/`10X`/`Sample name` columns confirmed, fetal-vs-adult unpaired (disjoint donors), chemistry claim partially revised (see above), region resolved to `LargeInt`/`SmallInt` as the usable fetal-vs-adult-matched categories.
+- Real `c`/`q` cutoffs for `F_Colon-developmental`/`F_SI-developmental`'s DE-statistic-based definition — a new calibration against this dataset's actual fetal-vs-adult DE distribution, not a reused HDMA percentile (the percentile parameters don't even apply to a different statistic family). Requires the actual edgeR/DESeq2 fit to run first, not part of this design doc.
+- Whether the `10X` chemistry covariate adequately absorbs the batch effect in an unpaired `~ chemistry + age_group` model, or whether a chemistry-stratified sensitivity analysis (e.g. 5′-only subset) is also needed — to be checked against the real fit's diagnostics, not assumed adequate in advance.
+- Whether duojejunum and ileum need to stay split with a union/consensus reconciliation step, or can be pooled directly into one SI sample set — decide once the two regions' real DE-gene overlap is visible.
 - Whether pooled `F_Gut-developmental` (Colon ∪ SI or ∩) is reported at all — contingent on Colon/SI concordance once both are built.
-- The three-layer statistical validation (hypergeometric enrichment with CI/OR, preranked GSEA against a continuous fetal-vs-adult-colon differential statistic, size-and-expression-matched permutation nulls) against the 5 mike_verzi signatures — this is the next design doc after `F_Colon-developmental`/`F_SI-developmental` gene sets exist, not part of this one.
-- Donor/dataset-provenance overlap audit between Gut Cell Atlas and the two other candidate fetal-gut datasets (GSE158702, GSE95630/GSE103239) — needed before any future "independent replication" claim across those atlases; not required to build `F_Colon-developmental` itself since only Gut Cell Atlas is used here.
+- The three-layer statistical validation (hypergeometric enrichment with CI/OR, preranked GSEA against the continuous fetal-vs-adult-colon DE statistic, size-and-expression-matched permutation nulls) against the 5 mike_verzi signatures — this is the next design doc after `F_Colon-developmental`/`F_SI-developmental` gene sets exist, not part of this one.
+- Donor/dataset-provenance overlap audit between Gut Cell Atlas and the two other candidate fetal-gut datasets (GSE158702, GSE95630/GSE103239) — needed before any future "independent replication" claim across those atlases; deferred per the reviewer's round-1 note that this isn't a current blocker.
