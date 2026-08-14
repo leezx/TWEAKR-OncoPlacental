@@ -48,6 +48,12 @@ Reviewer approved F-developmental union-vs-consensus and `pct=25/all_but_1` as-i
 
 **Not confident enough in either direction to write a bespoke combination rule** without further validation — took the reviewer's own stated fallback: **P-developmental primary = the 84-gene both-platforms-agree set**, with a 174-gene extended tier (84 + 15 + 75) reported explicitly separately, never merged into one confidence level. **Revised final D/F/P (primary-84 × F-union)**: D-shared=6 (`IL1RAPL2`, `KCNH5`, `PCDH11X`, `TMC1`, `TRIM71`, `ZNF730` — TRIM71 survives even this stricter cut), F-specific=2,504, P-specific=78. Written up in `whole_body_disagreement_audit.md`, resubmitting.
 
+### PR #13 review round 2 (REQUEST_CHANGES) — corrected: reproducibility gap, two scripts gave two different answers
+
+Reviewer endorsed the round-1 scientific fix (84-gene primary tier is "a conservative and defensible freeze strategy," no new scientific blocker) but caught a real reproducibility gap: the corrected 84-gene assembly logic lived only in the standalone `whole_body_disagreement_audit.py`, while `build_dfp_gene_sets.py` — the script that looks like "the" official assembly pipeline — still hardcoded the original, superseded GTEx-only-primary logic and would silently reproduce the stale 158-gene/14-D-shared/2,496-F-specific/144-P-specific numbers if anyone reran it.
+
+**Fixed**: consolidated everything into a single, re-runnable `build_dfp_gene_sets.py` with the coverage-aware disagreement logic built in directly, and hard `assert` statements on every output's cardinality (1,007/84/174/2,510/6/2,504/78) so a future rerun cannot silently drift back to a superseded definition. Removed the stale files from both the original superseded draft (`P_developmental.txt`, `D_shared_union.txt`, `F_specific_union.txt`, `P_specific_union.txt`) and an intermediate consensus-based variant (`*_consensus.txt` D/F/P files, also built on the superseded P-developmental definition) — only the correctly-named, currently-frozen files remain. Reran on Argos, all assertions passed, results verified byte-exact against the previous manual computation. Resubmitting.
+
 When reporting progress: recompute the weighted sum, state the delta from the last reported number, and update this table in the same commit as the work it reflects.
 
 ---

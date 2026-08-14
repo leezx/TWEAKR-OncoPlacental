@@ -1,20 +1,26 @@
 # Final D-shared / F-specific / P-specific gene set assembly
 
-**Superseded in part — see `whole_body_disagreement_audit.md`.** The PR #13
-reviewer correctly caught that this doc's original whole-body choice
-(picking GTEx as an unjustified "primary" reference, 158 genes, with HPA
-only reported alongside) needed real justification given GTEx-pass and
-HPA-pass sets only overlapped by about half. The disagreement audit found
-that most of that apparent overlap gap was itself a coverage-gap artifact
-(only 815 of 1,007 genes are measured by both platforms at all), and of
-the true disagreement population, real genuine disagreement is much
-smaller (90/815 = 11%). **Final P-developmental uses the 84-gene
-both-platforms-agree set as primary** (not the original 158-gene
-GTEx-only set), with a 174-gene extended tier reported separately. The
-"Final assembly" numbers directly below are from the superseded GTEx-only
-version — see `whole_body_disagreement_audit.md`'s "Revised final D/F/P
-assembly" section for the corrected numbers (D-shared=6, F-specific=2,504,
-P-specific=78 using the primary-84/union combination).
+**Superseded in part, now fully consolidated — see
+`whole_body_disagreement_audit.md`.** The PR #13 reviewer correctly caught
+two real issues in sequence: (1) this doc's original whole-body choice
+picked GTEx as an unjustified "primary" reference (158 genes) with HPA
+only reported alongside, needing real justification given GTEx-pass and
+HPA-pass sets only overlapped by about half; (2) after that was fixed with
+a real disagreement audit, the fix initially lived in a *separate* script
+from the main assembly, so re-running `build_dfp_gene_sets.py` would have
+silently regressed to the superseded 158-gene definition — a real
+reproducibility gap. **Both are now fixed**: `build_dfp_gene_sets.py` is
+the single, re-runnable source of truth, with the coverage-aware
+disagreement logic built in and cardinality assertions on every output
+(84/174/2,510/6/2,504/78) so a future rerun can't silently drift. Stale
+files from both superseded versions (`P_developmental.txt`,
+`D_shared_union.txt`, etc., and the `*_consensus.txt` D/F/P variants) have
+been removed. The "Final assembly" numbers directly below are from the
+first superseded draft — see `whole_body_disagreement_audit.md`'s
+"Revised final D/F/P assembly" section, or just
+`P_developmental_primary84.txt` / `D_shared_FINAL.txt` /
+`F_specific_FINAL.txt` / `P_specific_FINAL.txt` directly, for the frozen
+numbers (D-shared=6, F-specific=2,504, P-specific=78).
 
 Both halves of the D/F/P partition are now frozen at the per-dataset/
 per-organ evidence level: P-developmental's `replicated_in_placenta`
