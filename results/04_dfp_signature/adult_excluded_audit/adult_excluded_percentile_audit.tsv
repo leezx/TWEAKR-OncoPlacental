@@ -1,0 +1,41 @@
+check	organ	percentile_cutoff	gtex_cols	hpa_tissues	n_pass_gtex	n_universe_gtex	n_pass_hpa	n_universe_hpa	n_pass_both_AND	n_universe_both
+organ_matched	Adrenal	5	Adrenal_Gland	adrenal gland	58842.0	73321.0	7764	20151	6421.0	19569.0
+organ_matched	Adrenal	10	Adrenal_Gland	adrenal gland	59604.0	73321.0	8411	20151	6876.0	19569.0
+organ_matched	Adrenal	25	Adrenal_Gland	adrenal gland	61890.0	73321.0	10305	20151	8266.0	19569.0
+organ_matched	Adrenal	50	Adrenal_Gland	adrenal gland	65700.0	73321.0	13585	20151	11336.0	19569.0
+organ_matched	Thyroid	5	Thyroid	thyroid gland	55440.0	73321.0	8112	20151	5822.0	19569.0
+organ_matched	Thyroid	10	Thyroid	thyroid gland	56381.0	73321.0	8778	20151	6140.0	19569.0
+organ_matched	Thyroid	25	Thyroid	thyroid gland	59204.0	73321.0	10626	20151	7251.0	19569.0
+organ_matched	Thyroid	50	Thyroid	thyroid gland	63910.0	73321.0	13807	20151	10243.0	19569.0
+organ_matched	Spleen	5	Spleen	spleen	56197.0	73321.0	7624	20151	5885.0	19569.0
+organ_matched	Spleen	10	Spleen	spleen	57098.0	73321.0	8322	20151	6237.0	19569.0
+organ_matched	Spleen	25	Spleen	spleen	59802.0	73321.0	10260	20151	7505.0	19569.0
+organ_matched	Spleen	50	Spleen	spleen	64308.0	73321.0	13551	20151	10538.0	19569.0
+organ_matched	Thymus	5	NONE	thymus			7826	20151		
+organ_matched	Thymus	10	NONE	thymus			8501	20151		
+organ_matched	Thymus	25	NONE	thymus			10425	20151		
+organ_matched	Thymus	50	NONE	thymus			13636	20151		
+organ_matched	Liver	5	Liver;Liver_Hepatocyte;Liver_Mixed_Cell;Liver_Portal_Tract	liver	55003.0	73321.0	8198	20151	5107.0	19569.0
+organ_matched	Liver	10	Liver;Liver_Hepatocyte;Liver_Mixed_Cell;Liver_Portal_Tract	liver	55970.0	73321.0	8818	20151	5445.0	19569.0
+organ_matched	Liver	25	Liver;Liver_Hepatocyte;Liver_Mixed_Cell;Liver_Portal_Tract	liver	58813.0	73321.0	10682	20151	6636.0	19569.0
+organ_matched	Liver	50	Liver;Liver_Hepatocyte;Liver_Mixed_Cell;Liver_Portal_Tract	liver	63300.0	73321.0	13836	20151	9637.0	19569.0
+organ_matched	Skin	5	Skin_Not_Sun_Exposed_Suprapubic;Skin_Sun_Exposed_Lower_leg	skin	56964.0	73321.0	7565	20151	5840.0	19569.0
+organ_matched	Skin	10	Skin_Not_Sun_Exposed_Suprapubic;Skin_Sun_Exposed_Lower_leg	skin	57857.0	73321.0	8296	20151	6250.0	19569.0
+organ_matched	Skin	25	Skin_Not_Sun_Exposed_Suprapubic;Skin_Sun_Exposed_Lower_leg	skin	60394.0	73321.0	10278	20151	7605.0	19569.0
+organ_matched	Skin	50	Skin_Not_Sun_Exposed_Suprapubic;Skin_Sun_Exposed_Lower_leg	skin	64661.0	73321.0	13548	20151	10732.0	19569.0
+organ_matched	StomachEsophagus	5	Stomach;Stomach_Mucosa;Stomach_Muscularis;Stomach_Mixed_Cell;Esophagus_Mucosa;Esophagus_Muscularis;Esophagus_Gastroesophageal_Junction	stomach;esophagus	55090.0	73321.0	6282	20151	4569.0	19569.0
+organ_matched	StomachEsophagus	10	Stomach;Stomach_Mucosa;Stomach_Muscularis;Stomach_Mixed_Cell;Esophagus_Mucosa;Esophagus_Muscularis;Esophagus_Gastroesophageal_Junction	stomach;esophagus	56031.0	73321.0	6830	20151	4894.0	19569.0
+organ_matched	StomachEsophagus	25	Stomach;Stomach_Mucosa;Stomach_Muscularis;Stomach_Mixed_Cell;Esophagus_Mucosa;Esophagus_Muscularis;Esophagus_Gastroesophageal_Junction	stomach;esophagus	58761.0	73321.0	8809	20151	6161.0	19569.0
+organ_matched	StomachEsophagus	50	Stomach;Stomach_Mucosa;Stomach_Muscularis;Stomach_Mixed_Cell;Esophagus_Mucosa;Esophagus_Muscularis;Esophagus_Gastroesophageal_Junction	stomach;esophagus	62873.0	73321.0	12211	20151	8965.0	19569.0
+whole_body	ALL	5	quorum=all (GTEx 68 tissues, no Thymus)	quorum=all (HPA 39 non-placenta tissues, includes Thymus)	37295.0	73321.0	1719	20151		
+whole_body	ALL	5	quorum=all_but_1 (GTEx 68 tissues, no Thymus)	quorum=all_but_1 (HPA 39 non-placenta tissues, includes Thymus)	46221.0	73321.0	3061	20151		
+whole_body	ALL	5	quorum=all_but_2 (GTEx 68 tissues, no Thymus)	quorum=all_but_2 (HPA 39 non-placenta tissues, includes Thymus)	48387.0	73321.0	3772	20151		
+whole_body	ALL	10	quorum=all (GTEx 68 tissues, no Thymus)	quorum=all (HPA 39 non-placenta tissues, includes Thymus)	39104.0	73321.0	1972	20151		
+whole_body	ALL	10	quorum=all_but_1 (GTEx 68 tissues, no Thymus)	quorum=all_but_1 (HPA 39 non-placenta tissues, includes Thymus)	47668.0	73321.0	3452	20151		
+whole_body	ALL	10	quorum=all_but_2 (GTEx 68 tissues, no Thymus)	quorum=all_but_2 (HPA 39 non-placenta tissues, includes Thymus)	49706.0	73321.0	4242	20151		
+whole_body	ALL	25	quorum=all (GTEx 68 tissues, no Thymus)	quorum=all (HPA 39 non-placenta tissues, includes Thymus)	44705.0	73321.0	2829	20151		
+whole_body	ALL	25	quorum=all_but_1 (GTEx 68 tissues, no Thymus)	quorum=all_but_1 (HPA 39 non-placenta tissues, includes Thymus)	51834.0	73321.0	4744	20151		
+whole_body	ALL	25	quorum=all_but_2 (GTEx 68 tissues, no Thymus)	quorum=all_but_2 (HPA 39 non-placenta tissues, includes Thymus)	53456.0	73321.0	5738	20151		
+whole_body	ALL	50	quorum=all (GTEx 68 tissues, no Thymus)	quorum=all (HPA 39 non-placenta tissues, includes Thymus)	52614.0	73321.0	4925	20151		
+whole_body	ALL	50	quorum=all_but_1 (GTEx 68 tissues, no Thymus)	quorum=all_but_1 (HPA 39 non-placenta tissues, includes Thymus)	57128.0	73321.0	7439	20151		
+whole_body	ALL	50	quorum=all_but_2 (GTEx 68 tissues, no Thymus)	quorum=all_but_2 (HPA 39 non-placenta tissues, includes Thymus)	58344.0	73321.0	8684	20151		
