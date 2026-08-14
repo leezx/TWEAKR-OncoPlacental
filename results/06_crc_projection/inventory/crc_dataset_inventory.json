@@ -1,0 +1,1621 @@
+{
+  "GSE178318": {
+    "label": "GSE178318",
+    "matrix_shape_as_stored": [
+      33694,
+      140281
+    ],
+    "n_genes_file": 33694,
+    "n_barcodes_file": 140281,
+    "orientation_matches_genes_rows": true,
+    "gene_id_columns_sample": [
+      [
+        "ENSG00000243485",
+        "RP11-34P13.3"
+      ],
+      [
+        "ENSG00000237613",
+        "FAM138A"
+      ],
+      [
+        "ENSG00000186092",
+        "OR4F5"
+      ],
+      [
+        "ENSG00000238009",
+        "RP11-34P13.7"
+      ],
+      [
+        "ENSG00000239945",
+        "RP11-34P13.8"
+      ]
+    ],
+    "barcode_sample": [
+      "AAACCTGAGAAACCTA_COL07_CRC",
+      "AAACCTGAGACAATAC_COL07_CRC",
+      "AAACCTGAGACGCAAC_COL07_CRC",
+      "AAACCTGAGCAGATCG_COL07_CRC",
+      "AAACCTGAGCTATGCT_COL07_CRC"
+    ],
+    "X_integer_fraction": 1.0,
+    "barcode_suffix_sample": [
+      "AAACCTGAGAAACCTA_COL07_CRC",
+      "AAACCTGAGACAATAC_COL07_CRC",
+      "AAACCTGAGACGCAAC_COL07_CRC",
+      "AAACCTGAGCAGATCG_COL07_CRC",
+      "AAACCTGAGCTATGCT_COL07_CRC",
+      "AAACCTGAGGACATTA_COL07_CRC",
+      "AAACCTGAGGATGGTC_COL07_CRC",
+      "AAACCTGAGGATTCGG_COL07_CRC",
+      "AAACCTGAGGCTAGCA_COL07_CRC",
+      "AAACCTGAGGCTCAGA_COL07_CRC",
+      "AAACCTGAGGGCACTA_COL07_CRC",
+      "AAACCTGAGTGCGATG_COL07_CRC",
+      "AAACCTGCACTCGACG_COL07_CRC",
+      "AAACCTGCAGCTGTAT_COL07_CRC",
+      "AAACCTGCATCATCCC_COL07_CRC",
+      "AAACCTGCATCGACGC_COL07_CRC",
+      "AAACCTGCATCTCGCT_COL07_CRC",
+      "AAACCTGGTACTCAAC_COL07_CRC",
+      "AAACCTGGTATATCCG_COL07_CRC",
+      "AAACCTGGTCATGCCG_COL07_CRC"
+    ]
+  },
+  "HTAN_CRC_progressive_plasticity": {
+    "label": "HTAN_CRC_progressive_plasticity",
+    "shape": {
+      "n_obs": 47107,
+      "n_vars": 25344
+    },
+    "var_names_sample": [
+      "ENSG00000000003",
+      "ENSG00000000005",
+      "ENSG00000000419",
+      "ENSG00000000457",
+      "ENSG00000000460",
+      "ENSG00000000938",
+      "ENSG00000000971",
+      "ENSG00000001036",
+      "ENSG00000001084",
+      "ENSG00000001167"
+    ],
+    "looks_like_ensembl": true,
+    "obs_columns": [
+      "total_counts",
+      "log1p_total_counts",
+      "Sample ID",
+      "PhenoGraph_clusters",
+      "Patient",
+      "Primary Site",
+      "Sample Type",
+      "Site",
+      "Tumor Status",
+      "Treatment",
+      "donor_id",
+      "development_stage_ontology_term_id",
+      "sex_ontology_term_id",
+      "self_reported_ethnicity_ontology_term_id",
+      "disease_ontology_term_id",
+      "tissue_type",
+      "tissue_ontology_term_id",
+      "cell_type_ontology_term_id",
+      "assay_ontology_term_id",
+      "suspension_type",
+      "Author Cell Type",
+      "is_primary_data",
+      "cell_type",
+      "assay",
+      "disease",
+      "sex",
+      "tissue",
+      "self_reported_ethnicity",
+      "development_stage",
+      "observation_joinid"
+    ],
+    "layers": [],
+    "has_raw": true,
+    "raw_shape": {
+      "n_obs": 47107,
+      "n_vars": 25344
+    },
+    "low_cardinality_obs_columns": {
+      "Sample ID": {
+        "n_unique": 80,
+        "top10": {
+          "KG203N": 6280,
+          "KG150P": 1945,
+          "KG190N": 1757,
+          "KG75P2": 1728,
+          "KG82M2": 1582,
+          "KG181N": 1546,
+          "KG136N": 1516,
+          "KG146M": 1448,
+          "KG150N": 1257,
+          "KG11P": 1241
+        }
+      },
+      "PhenoGraph_clusters": {
+        "n_unique": 39,
+        "top10": {
+          "0": 3967,
+          "1": 3737,
+          "2": 2587,
+          "3": 2478,
+          "4": 2153,
+          "5": 1931,
+          "6": 1698,
+          "7": 1695,
+          "8": 1637,
+          "9": 1604
+        }
+      },
+      "Patient": {
+        "n_unique": 29,
+        "top10": {
+          "203": 6296,
+          "146": 4044,
+          "150": 3888,
+          "136": 2997,
+          "181": 2703,
+          "151": 2435,
+          "190": 2041,
+          "75": 2009,
+          "119": 1858,
+          "74": 1831
+        }
+      },
+      "Primary Site": {
+        "n_unique": 9,
+        "top10": {
+          "Sigmoid": 22112,
+          "Rectum": 14938,
+          "Transverse": 3288,
+          "Descending": 2435,
+          "Cecum": 1955,
+          "Hepatic Flexure": 1657,
+          "Upper Rectum": 566,
+          "Appendix": 153,
+          "Splenic Flexure": 3
+        }
+      },
+      "Sample Type": {
+        "n_unique": 3,
+        "top10": {
+          "Non-Tumor": 18117,
+          "Primary": 16838,
+          "Metastasis": 12152
+        }
+      },
+      "Site": {
+        "n_unique": 4,
+        "top10": {
+          "Liver": 10332,
+          "Lung": 975,
+          "Chest Wall": 799,
+          "Peritoneum": 46
+        }
+      },
+      "Tumor Status": {
+        "n_unique": 3,
+        "top10": {
+          "Non-Tumor": 21026,
+          "Primary Tumor": 13929,
+          "Metastasis": 12152
+        }
+      },
+      "Treatment": {
+        "n_unique": 2,
+        "top10": {
+          "True": 33264,
+          "False": 13843
+        }
+      },
+      "donor_id": {
+        "n_unique": 29,
+        "top10": {
+          "HTA8_6029": 6296,
+          "HTA8_6017": 4044,
+          "HTA8_6018": 3888,
+          "HTA8_6016": 2997,
+          "HTA8_6021": 2703,
+          "HTA8_6019": 2435,
+          "HTA8_6026": 2041,
+          "HTA8_6010": 2009,
+          "HTA8_6015": 1858,
+          "HTA8_6009": 1831
+        }
+      },
+      "development_stage_ontology_term_id": {
+        "n_unique": 23,
+        "top10": {
+          "HsapDv:0000162": 6413,
+          "HsapDv:0000144": 5929,
+          "HsapDv:0000139": 5280,
+          "HsapDv:0000168": 2997,
+          "HsapDv:0000149": 2976,
+          "HsapDv:0000143": 2763,
+          "HsapDv:0000172": 2703,
+          "HsapDv:0000147": 2009,
+          "HsapDv:0000164": 1858,
+          "HsapDv:0000159": 1831
+        }
+      },
+      "sex_ontology_term_id": {
+        "n_unique": 2,
+        "top10": {
+          "PATO:0000384": 24048,
+          "PATO:0000383": 23059
+        }
+      },
+      "self_reported_ethnicity_ontology_term_id": {
+        "n_unique": 5,
+        "top10": {
+          "HANCESTRO:0590": 32295,
+          "HANCESTRO:0612": 5574,
+          "unknown": 4179,
+          "HANCESTRO:0847": 3114,
+          "HANCESTRO:0568": 1945
+        }
+      },
+      "disease_ontology_term_id": {
+        "n_unique": 2,
+        "top10": {
+          "MONDO:0005575": 28990,
+          "PATO:0000461": 18117
+        }
+      },
+      "tissue_ontology_term_id": {
+        "n_unique": 10,
+        "top10": {
+          "UBERON:0001159": 15508,
+          "UBERON:0001052": 11535,
+          "UBERON:0002107": 10332,
+          "UBERON:0001157": 2905,
+          "UBERON:0001158": 2018,
+          "UBERON:0001153": 1989,
+          "UBERON:0022277": 1000,
+          "UBERON:0002048": 975,
+          "UBERON:0016435": 799,
+          "UBERON:0002358": 46
+        }
+      },
+      "cell_type_ontology_term_id": {
+        "n_unique": 9,
+        "top10": {
+          "CL:0001064": 26551,
+          "CL:4047018": 6778,
+          "CL:0000151": 5457,
+          "CL:0009043": 2203,
+          "CL:1000347": 2030,
+          "CL:0009039": 1711,
+          "CL:4047052": 1363,
+          "CL:0009041": 828,
+          "CL:0009042": 186
+        }
+      },
+      "Author Cell Type": {
+        "n_unique": 10,
+        "top10": {
+          "Primary Tumor": 14399,
+          "Metastasis": 12152,
+          "Absorptive Precursor": 6778,
+          "Secretory Precursor": 5457,
+          "ISC": 2203,
+          "Enterocytes": 2030,
+          "Goblet": 1711,
+          "BEST4+ Enterocytes": 1363,
+          "Tuft": 828,
+          "Enteroendocrine": 186
+        }
+      },
+      "cell_type": {
+        "n_unique": 9,
+        "top10": {
+          "malignant cell": 26551,
+          "early colonocyte": 6778,
+          "secretory cell": 5457,
+          "intestinal crypt stem cell of colon": 2203,
+          "colonocyte": 2030,
+          "colon goblet cell": 1711,
+          "BEST4+ colonocyte": 1363,
+          "tuft cell of colon": 828,
+          "enteroendocrine cell of colon": 186
+        }
+      },
+      "disease": {
+        "n_unique": 2,
+        "top10": {
+          "colorectal cancer": 28990,
+          "normal": 18117
+        }
+      },
+      "sex": {
+        "n_unique": 2,
+        "top10": {
+          "male": 24048,
+          "female": 23059
+        }
+      },
+      "tissue": {
+        "n_unique": 10,
+        "top10": {
+          "sigmoid colon": 15508,
+          "rectum": 11535,
+          "liver": 10332,
+          "transverse colon": 2905,
+          "descending colon": 2018,
+          "caecum": 1989,
+          "hepatic flexure of colon": 1000,
+          "lung": 975,
+          "chest wall": 799,
+          "peritoneum": 46
+        }
+      },
+      "self_reported_ethnicity": {
+        "n_unique": 5,
+        "top10": {
+          "European American": 32295,
+          "Hispanic or Latin": 5574,
+          "unknown": 4179,
+          "Asian": 3114,
+          "African American": 1945
+        }
+      },
+      "development_stage": {
+        "n_unique": 23,
+        "top10": {
+          "68-year-old stage": 6413,
+          "50-year-old stage": 5929,
+          "45-year-old stage": 5280,
+          "74-year-old stage": 2997,
+          "55-year-old stage": 2976,
+          "49-year-old stage": 2763,
+          "78-year-old stage": 2703,
+          "53-year-old stage": 2009,
+          "70-year-old stage": 1858,
+          "65-year-old stage": 1831
+        }
+      }
+    },
+    "X_integer_fraction": 0.0,
+    "raw_X_integer_fraction": 1.0,
+    "keyword_hits_in_obs": {
+      "observation_joinid": [
+        "Q1L(A?;m11"
+      ]
+    }
+  },
+  "CRLM_NMP_ATLAS": {
+    "label": "CRLM_NMP_ATLAS",
+    "shape": {
+      "n_obs": 75104,
+      "n_vars": 30257
+    },
+    "var_names_sample": [
+      "ENSG00000121410",
+      "ENSG00000268895",
+      "ENSG00000175899",
+      "ENSG00000245105",
+      "ENSG00000166535",
+      "ENSG00000128274",
+      "ENSG00000118017",
+      "ENSG00000094914",
+      "ENSG00000081760",
+      "ENSG00000114771"
+    ],
+    "looks_like_ensembl": true,
+    "obs_columns": [
+      "donor_id",
+      "timepoint",
+      "leiden",
+      "disease_ontology_term_id",
+      "development_stage_ontology_term_id",
+      "sex_ontology_term_id",
+      "self_reported_ethnicity_ontology_term_id",
+      "tissue_type",
+      "tissue_ontology_term_id",
+      "assay_ontology_term_id",
+      "suspension_type",
+      "cell_type_ontology_term_id",
+      "material",
+      "author_cell_type",
+      "is_primary_data",
+      "cell_type",
+      "assay",
+      "disease",
+      "sex",
+      "tissue",
+      "self_reported_ethnicity",
+      "development_stage",
+      "observation_joinid"
+    ],
+    "layers": [],
+    "has_raw": true,
+    "raw_shape": {
+      "n_obs": 75104,
+      "n_vars": 30257
+    },
+    "low_cardinality_obs_columns": {
+      "donor_id": {
+        "n_unique": 6,
+        "top10": {
+          "P2": 23546,
+          "P1": 15189,
+          "P4": 13912,
+          "P5": 11126,
+          "P3": 5940,
+          "P6": 5391
+        }
+      },
+      "timepoint": {
+        "n_unique": 2,
+        "top10": {
+          "Before_NMP": 45047,
+          "After_NMP": 30057
+        }
+      },
+      "leiden": {
+        "n_unique": 20,
+        "top10": {
+          "0": 13858,
+          "1": 11035,
+          "2": 9679,
+          "3": 9146,
+          "4": 8121,
+          "6": 5147,
+          "5": 4051,
+          "7": 3987,
+          "9": 2572,
+          "8": 2567
+        }
+      },
+      "disease_ontology_term_id": {
+        "n_unique": 2,
+        "top10": {
+          "PATO:0000461": 43568,
+          "MONDO:0024331 || MONDO:0024880": 31536
+        }
+      },
+      "development_stage_ontology_term_id": {
+        "n_unique": 5,
+        "top10": {
+          "HsapDv:0000164": 23546,
+          "HsapDv:0000133": 21129,
+          "HsapDv:0000147": 13912,
+          "HsapDv:0000150": 11126,
+          "HsapDv:0000140": 5391
+        }
+      },
+      "sex_ontology_term_id": {
+        "n_unique": 2,
+        "top10": {
+          "PATO:0000383": 49861,
+          "PATO:0000384": 25243
+        }
+      },
+      "cell_type_ontology_term_id": {
+        "n_unique": 14,
+        "top10": {
+          "CL:0000084": 25328,
+          "CL:0000775": 16769,
+          "CL:0000623": 12371,
+          "CL:0000113": 11122,
+          "CL:0001064": 4051,
+          "CL:0000236": 1440,
+          "CL:0000990": 1249,
+          "CL:0000115": 1025,
+          "CL:1000488": 524,
+          "CL:0000786": 454
+        }
+      },
+      "material": {
+        "n_unique": 2,
+        "top10": {
+          "adj.liver": 43568,
+          "CRLM": 31536
+        }
+      },
+      "author_cell_type": {
+        "n_unique": 16,
+        "top10": {
+          "T cells CD8": 16489,
+          "Neutrophils": 16430,
+          "NK cells": 12371,
+          "Monocytes/Macrophages": 11122,
+          "T cells CD4": 8839,
+          "CRC cells": 4051,
+          "B cells": 1440,
+          "cDCs": 1249,
+          "Endothelial cells": 1025,
+          "Cholangiocytes": 524
+        }
+      },
+      "cell_type": {
+        "n_unique": 14,
+        "top10": {
+          "T cell": 25328,
+          "neutrophil": 16769,
+          "natural killer cell": 12371,
+          "mononuclear phagocyte": 11122,
+          "malignant cell": 4051,
+          "B cell": 1440,
+          "conventional dendritic cell": 1249,
+          "endothelial cell": 1025,
+          "cholangiocyte": 524,
+          "plasma cell": 454
+        }
+      },
+      "disease": {
+        "n_unique": 2,
+        "top10": {
+          "normal": 43568,
+          "colorectal carcinoma || metastatic malignant neoplasm": 31536
+        }
+      },
+      "sex": {
+        "n_unique": 2,
+        "top10": {
+          "female": 49861,
+          "male": 25243
+        }
+      },
+      "development_stage": {
+        "n_unique": 5,
+        "top10": {
+          "70-year-old stage": 23546,
+          "39-year-old stage": 21129,
+          "53-year-old stage": 13912,
+          "56-year-old stage": 11126,
+          "46-year-old stage": 5391
+        }
+      }
+    },
+    "X_integer_fraction": 0.0,
+    "raw_X_integer_fraction": 1.0,
+    "keyword_hits_in_obs": {
+      "observation_joinid": [
+        "eR?m11vw)G",
+        "8t26~FVM11",
+        "Hf^6LM11}W"
+      ]
+    }
+  },
+  "CRC_single_cell_atlas_2025": {
+    "label": "CRC_single_cell_atlas_2025",
+    "shape": {
+      "n_obs": 665473,
+      "n_vars": 28476
+    },
+    "var_names_sample": [
+      "ENSG00000186092",
+      "ENSG00000238009",
+      "ENSG00000284733",
+      "ENSG00000278791",
+      "ENSG00000284662",
+      "ENSG00000237491",
+      "ENSG00000177757",
+      "ENSG00000225880",
+      "ENSG00000230368",
+      "ENSG00000230699"
+    ],
+    "looks_like_ensembl": true,
+    "obs_columns": [
+      "dataset",
+      "medical_condition",
+      "cancer_type",
+      "sample_id",
+      "sample_type",
+      "tumor_source",
+      "replicate",
+      "sample_tissue",
+      "anatomic_region",
+      "anatomic_location",
+      "tumor_stage",
+      "tumor_stage_TNM",
+      "tumor_stage_TNM_T",
+      "tumor_stage_TNM_N",
+      "tumor_stage_TNM_M",
+      "tumor_size",
+      "tumor_dimensions",
+      "tumor_grade",
+      "histological_type",
+      "microsatellite_status",
+      "mismatch_repair_deficiency_status",
+      "MLH1_promoter_methylation_status",
+      "MLH1_status",
+      "KRAS_status",
+      "BRAF_status",
+      "APC_status",
+      "TP53_status",
+      "PIK3CA_status",
+      "SMAD4_status",
+      "NRAS_status",
+      "MSH6_status",
+      "FBXW7_status",
+      "NOTCH1_status",
+      "MSH2_status",
+      "PMS2_status",
+      "POLE_status",
+      "ERBB2_status",
+      "STK11_status",
+      "HER2_status",
+      "CTNNB1_status",
+      "BRAS_status",
+      "patient_id",
+      "sex",
+      "age",
+      "treatment_status_before_resection",
+      "treatment_drug",
+      "treatment_response",
+      "RECIST",
+      "platform",
+      "platform_fine",
+      "cellranger_version",
+      "reference_genome",
+      "matrix_type",
+      "enrichment_cell_types",
+      "tissue_cell_state",
+      "tissue_processing_lab",
+      "hospital_location",
+      "country",
+      "NCBI_BioProject_accession",
+      "SRA_sample_accession",
+      "GEO_sample_accession",
+      "ENA_sample_accession",
+      "synapse_sample_accession",
+      "study_id",
+      "study_doi",
+      "study_pmid",
+      "original_obs_names",
+      "cell_type_coarse_study",
+      "cell_type_middle_study",
+      "cell_type_study",
+      "n_counts",
+      "n_genes",
+      "n_genes_by_counts",
+      "total_counts",
+      "pct_counts_in_top_20_genes",
+      "pct_counts_mito",
+      "S_score",
+      "G2M_score",
+      "phase",
+      "SOLO_doublet_prob",
+      "SOLO_singlet_prob",
+      "SOLO_doublet_status",
+      "atlas_cell_type_predicted",
+      "atlas_cell_type_coarse",
+      "atlas_cell_type_middle",
+      "atlas_cell_type_fine",
+      "tumor_immune_type",
+      "CMS_type_Guinney_2015_Nat_Med",
+      "TME_subtype_Bagaev_Cancer_Cell_2021",
+      "is_primary_data",
+      "suspension_type",
+      "tissue_type",
+      "donor_id",
+      "disease",
+      "disease_ontology_term_id",
+      "assay",
+      "assay_ontology_term_id",
+      "tissue",
+      "tissue_ontology_term_id",
+      "sex_ontology_term_id",
+      "self_reported_ethnicity",
+      "self_reported_ethnicity_ontology_term_id",
+      "organism",
+      "organism_ontology_term_id",
+      "development_stage",
+      "development_stage_ontology_term_id",
+      "cell_type",
+      "cell_type_ontology_term_id"
+    ],
+    "layers": [
+      "counts"
+    ],
+    "has_raw": false,
+    "low_cardinality_obs_columns": {
+      "dataset": {
+        "n_unique": 54,
+        "top10": {
+          "Tian_2023": 80372,
+          "Qin_2023": 78466,
+          "Chen_2024": 58833,
+          "Pelka_2021_10Xv2": 49658,
+          "Liu_2024_mixCD45PosCD45Neg": 46501,
+          "Li_2023_10Xv3": 30928,
+          "Pelka_2021_10Xv3": 27611,
+          "Wang_2023_CD45Neg": 23206,
+          "HTAPP_HTAN": 19711,
+          "Pelka_2021_10Xv2_CD45Pos": 18746
+        }
+      },
+      "medical_condition": {
+        "n_unique": 2,
+        "top10": {
+          "colorectal cancer": 638892,
+          "colorectal polyp": 26581
+        }
+      },
+      "cancer_type": {
+        "n_unique": 4,
+        "top10": {
+          "COAD": 303925,
+          "READ": 145790,
+          "COAD polyp": 12906,
+          "READ polyp": 497
+        }
+      },
+      "sample_type": {
+        "n_unique": 4,
+        "top10": {
+          "primary tumor": 476624,
+          "metastasis": 156052,
+          "polyp": 30750,
+          "lymph node": 2047
+        }
+      },
+      "tumor_source": {
+        "n_unique": 2,
+        "top10": {
+          "core": 278822,
+          "border": 16444
+        }
+      },
+      "replicate": {
+        "n_unique": 4,
+        "top10": {
+          "no_rep": 110859,
+          "rep2": 32041,
+          "rep1": 30464,
+          "rep3": 20771
+        }
+      },
+      "sample_tissue": {
+        "n_unique": 3,
+        "top10": {
+          "colon": 507374,
+          "liver": 156052,
+          "mesenteric lymph nodes": 2047
+        }
+      },
+      "anatomic_region": {
+        "n_unique": 4,
+        "top10": {
+          "distal colon": 267213,
+          "proximal colon": 208823,
+          "liver": 156052,
+          "mesenteric lymph nodes": 2047
+        }
+      },
+      "anatomic_location": {
+        "n_unique": 9,
+        "top10": {
+          "rectum": 146287,
+          "ascending colon": 82119,
+          "sigmoid colon": 77125,
+          "transverse colon": 44381,
+          "cecum": 38268,
+          "descending colon": 18200,
+          "hepatic flexure": 16794,
+          "rectosigmoid junction": 11122,
+          "splenic flexure": 1561
+        }
+      },
+      "tumor_stage": {
+        "n_unique": 4,
+        "top10": {
+          "III": 231542,
+          "IV": 230732,
+          "II": 108412,
+          "I": 31363
+        }
+      },
+      "tumor_stage_TNM": {
+        "n_unique": 13,
+        "top10": {
+          "IVA": 210725,
+          "IIIB": 107427,
+          "IIIC": 88700,
+          "IIA": 76346,
+          "I": 31363,
+          "IIB": 23573,
+          "III": 23317,
+          "IIIA": 12098,
+          "IV": 9135,
+          "IVB": 6317
+        }
+      },
+      "tumor_stage_TNM_T": {
+        "n_unique": 9,
+        "top10": {
+          "T3": 213197,
+          "T4a": 141329,
+          "T4b": 57747,
+          "T1": 27784,
+          "T2": 20533,
+          "T3b": 9608,
+          "Tx": 3975,
+          "T4": 2075,
+          "T0": 446
+        }
+      },
+      "tumor_stage_TNM_N": {
+        "n_unique": 9,
+        "top10": {
+          "N0": 177789,
+          "N2b": 63446,
+          "N2": 59603,
+          "N1b": 55418,
+          "N1a": 38976,
+          "N1": 27297,
+          "N2a": 26154,
+          "Nx": 20795,
+          "N1c": 13152
+        }
+      },
+      "tumor_stage_TNM_M": {
+        "n_unique": 6,
+        "top10": {
+          "M0": 223570,
+          "M1": 158541,
+          "Mx": 145816,
+          "M1a": 61319,
+          "M1b": 6317,
+          "M1c": 4555
+        }
+      },
+      "tumor_size": {
+        "n_unique": 63,
+        "top10": {
+          "4.5cm": 11274,
+          "2.5cm": 9533,
+          "8.5cm": 7725,
+          "6.1cm": 7686,
+          "6.7cm": 5808,
+          "5.5cm": 5434,
+          "0.8cm": 5424,
+          "1.0cm": 4975,
+          "3.2cm": 4953,
+          "4.3cm": 4543
+        }
+      },
+      "tumor_dimensions": {
+        "n_unique": 26,
+        "top10": {
+          "5.5\u00d72.5\u00d71.3cm": 5434,
+          "6.1\u00d72.3\u00d70.4cm": 4714,
+          "3x3x1.5cm": 2910,
+          "4.3\u00d73.8\u00d71.7cm": 2032,
+          "5x4x1.5cm": 1534,
+          "4.5x3x1.5cm": 1045,
+          "10x5.5cm": 1031,
+          "3x1cm": 914,
+          "4.5\u00d73.5\u00d71.2cm": 839,
+          "3.5x3.5x1.5cm": 645
+        }
+      },
+      "tumor_grade": {
+        "n_unique": 6,
+        "top10": {
+          "G2": 264977,
+          "G3": 28405,
+          "G2-G3": 23144,
+          "G1": 16642,
+          "G1-G2": 15633,
+          "G3-G4": 772
+        }
+      },
+      "histological_type": {
+        "n_unique": 9,
+        "top10": {
+          "adenocarcinoma": 504632,
+          "mucinous adenocarcinoma": 18004,
+          "tubular adenoma": 11330,
+          "sessile serrated lesion": 8996,
+          "neuroendocrine carcinoma": 5333,
+          "tubulovillous conventional adenoma": 4169,
+          "medullary carcinoma": 4118,
+          "tubulovillous adenoma": 2903,
+          "hyperplastic polyp": 1618
+        }
+      },
+      "microsatellite_status": {
+        "n_unique": 4,
+        "top10": {
+          "MSS": 413594,
+          "nan": 128597,
+          "MSI-H": 82614,
+          "MSI": 40668
+        }
+      },
+      "mismatch_repair_deficiency_status": {
+        "n_unique": 2,
+        "top10": {
+          "pMMR": 181903,
+          "dMMR": 116967
+        }
+      },
+      "MLH1_promoter_methylation_status": {
+        "n_unique": 2,
+        "top10": {
+          "no_meth": 69533,
+          "meth": 31036
+        }
+      },
+      "MLH1_status": {
+        "n_unique": 2,
+        "top10": {
+          "wt": 29319,
+          "mut": 7049
+        }
+      },
+      "KRAS_status": {
+        "n_unique": 3,
+        "top10": {
+          "nan": 449702,
+          "wt": 155397,
+          "mut": 60374
+        }
+      },
+      "BRAF_status": {
+        "n_unique": 3,
+        "top10": {
+          "nan": 432388,
+          "wt": 128023,
+          "mut": 105062
+        }
+      },
+      "APC_status": {
+        "n_unique": 3,
+        "top10": {
+          "nan": 571115,
+          "mut": 63267,
+          "wt": 31091
+        }
+      },
+      "TP53_status": {
+        "n_unique": 3,
+        "top10": {
+          "nan": 569976,
+          "mut": 63649,
+          "wt": 31848
+        }
+      },
+      "PIK3CA_status": {
+        "n_unique": 2,
+        "top10": {
+          "wt": 40559,
+          "mut": 21987
+        }
+      },
+      "SMAD4_status": {
+        "n_unique": 2,
+        "top10": {
+          "wt": 30381,
+          "mut": 4387
+        }
+      },
+      "NRAS_status": {
+        "n_unique": 3,
+        "top10": {
+          "nan": 538665,
+          "wt": 125432,
+          "mut": 1376
+        }
+      },
+      "MSH6_status": {
+        "n_unique": 2,
+        "top10": {
+          "wt": 21846,
+          "mut": 14522
+        }
+      },
+      "FBXW7_status": {
+        "n_unique": 2,
+        "top10": {
+          "wt": 13118,
+          "mut": 9837
+        }
+      },
+      "NOTCH1_status": {
+        "n_unique": 2,
+        "top10": {
+          "wt": 12088,
+          "mut": 1114
+        }
+      },
+      "MSH2_status": {
+        "n_unique": 2,
+        "top10": {
+          "wt": 23172,
+          "mut": 13477
+        }
+      },
+      "PMS2_status": {
+        "n_unique": 2,
+        "top10": {
+          "wt": 19115,
+          "mut": 17245
+        }
+      },
+      "POLE_status": {
+        "n_unique": 2,
+        "top10": {
+          "wt": 59630,
+          "mut": 6573
+        }
+      },
+      "ERBB2_status": {
+        "n_unique": 2,
+        "top10": {
+          "wt": 6322,
+          "mut": 1048
+        }
+      },
+      "STK11_status": {
+        "n_unique": 2,
+        "top10": {
+          "wt": 8151,
+          "mut": 1610
+        }
+      },
+      "HER2_status": {
+        "n_unique": 2,
+        "top10": {
+          "nan": 648237,
+          "neg": 17236
+        }
+      },
+      "CTNNB1_status": {
+        "n_unique": 2,
+        "top10": {
+          "mut": 1887,
+          "wt": 295
+        }
+      },
+      "BRAS_status": {
+        "n_unique": 2,
+        "top10": {
+          "wt": 6001,
+          "mut": 1080
+        }
+      },
+      "sex": {
+        "n_unique": 2,
+        "top10": {
+          "male": 389445,
+          "female": 262894
+        }
+      },
+      "age": {
+        "n_unique": 67,
+        "top10": {
+          "median: 63 (35-87)": 80372,
+          "64": 36972,
+          "58": 31509,
+          "60": 22682,
+          "37": 21668,
+          "63": 21455,
+          "52": 18812,
+          "73": 18680,
+          "53": 18673,
+          "67": 14910
+        }
+      },
+      "treatment_status_before_resection": {
+        "n_unique": 3,
+        "top10": {
+          "naive": 408685,
+          "treated": 219942,
+          "nan": 36846
+        }
+      },
+      "treatment_drug": {
+        "n_unique": 36,
+        "top10": {
+          "spartalizumab|dabrafenib|trametinib": 80372,
+          "Pembrolizumab": 28412,
+          "6x FOLFOX": 27046,
+          "naive": 21035,
+          "4x FOLFOX": 19911,
+          "5x FOLFOX": 16548,
+          "FOLFOX + bevacizumab": 11865,
+          "Anti-PD-1": 11462,
+          "Sintilimab + CapeOx": 10713,
+          "Sintilimab": 8964
+        }
+      },
+      "treatment_response": {
+        "n_unique": 2,
+        "top10": {
+          "responder": 176563,
+          "non-responder": 77408
+        }
+      },
+      "RECIST": {
+        "n_unique": 5,
+        "top10": {
+          "PR: partial response": 107466,
+          "SD: stable disease": 42959,
+          "CR: complete response": 41859,
+          "PD: progressive disease": 14771,
+          "NE: inevaluable": 10479
+        }
+      },
+      "platform": {
+        "n_unique": 9,
+        "top10": {
+          "10x 3p": 292662,
+          "10x 5p": 210134,
+          "DNBelab C4": 78466,
+          "BD Rhapsody": 39088,
+          "TruDrop": 32811,
+          "GEXSCOPE Singleron": 10269,
+          "scTrio-seq2": 1103,
+          "Smart-seq2": 886,
+          "SMARTer (C1)": 54
+        }
+      },
+      "platform_fine": {
+        "n_unique": 14,
+        "top10": {
+          "10x 3' v2": 179975,
+          "10x 5' v2": 134014,
+          "10x 3' v3": 92976,
+          "DNBelab C4": 78466,
+          "10x 5' v1": 59000,
+          "BD Rhapsody": 39088,
+          "TruDrop": 32811,
+          "10x 3'": 19711,
+          "10x 5' v3": 17120,
+          "GEXSCOPE Singleron": 10269
+        }
+      },
+      "cellranger_version": {
+        "n_unique": 13,
+        "top10": {
+          "3.1.0": 143790,
+          "6.0.2": 102568,
+          "6.1.2": 58833,
+          "5.0.1": 46501,
+          "4.1.0": 36360,
+          "7.1.0": 25544,
+          "2.1.0": 20771,
+          "3.0.2": 13296,
+          "3.0.0": 13098,
+          "CeleScope v2.0.7": 10269
+        }
+      },
+      "reference_genome": {
+        "n_unique": 13,
+        "top10": {
+          "ensembl.v98": 183879,
+          "ensembl.v93": 114640,
+          "gencode.v28_lift37": 100569,
+          "gencode.v30": 80372,
+          "gencode.v44": 42810,
+          "gencode.v25": 32811,
+          "ensembl.v84": 30626,
+          "ensembl.v94": 23232,
+          "gencode.v32": 22196,
+          "ensembl.v111": 10269
+        }
+      },
+      "matrix_type": {
+        "n_unique": 2,
+        "top10": {
+          "raw counts": 565390,
+          "log norm": 80372
+        }
+      },
+      "enrichment_cell_types": {
+        "n_unique": 15,
+        "top10": {
+          "naive": 542605,
+          "mixCD45+CD45-": 46501,
+          "CD45+": 23407,
+          "CD45-": 23206,
+          "CD14+": 5793,
+          "EPCAM+": 3419,
+          "CD45+/CD45-": 571,
+          "CD66b+": 114,
+          "CD56+": 98,
+          "EPCAM-/CD45-/CD31-": 39
+        }
+      },
+      "tissue_cell_state": {
+        "n_unique": 3,
+        "top10": {
+          "fresh": 582985,
+          "frozen": 46128,
+          "fresh/frozen": 36360
+        }
+      },
+      "tissue_processing_lab": {
+        "n_unique": 34,
+        "top10": {
+          "Ryan Corcoran lab": 80372,
+          "Hongcheng Lin lab": 78466,
+          "Nir Hacohen lab": 76241,
+          "Zemin Zhang lab": 58841,
+          "Lixia Xu lab": 46501,
+          "Yanhong Deng lab": 36360,
+          "Ken S. Lau lab": 32811,
+          "Aviv Regev lab": 24328,
+          "Zhi-Bin Zhao lab": 23232,
+          "Iain Beehuat Tan lab": 22732
+        }
+      },
+      "hospital_location": {
+        "n_unique": 34,
+        "top10": {
+          "Massachusetts General Hospital | Dana-Farber Cancer Institute, Brigham and Women\u2019s Hospital": 80372,
+          "Sixth Affiliated Hospital of Sun Yat-sen University, Guangzhou": 78466,
+          "Massachusetts General Hospital": 70805,
+          "Beijing Cancer Hospital": 58833,
+          "The First Affiliated Hospital of Sun Yat-sen University, Guangzhou": 46501,
+          "Department of Medical Oncology, Department of General Surgery, The Sixth Affiliated Hospital, Sun Yat-sen University, Guangzhou": 36360,
+          "Vanderbilt University Medical Center, Nashville": 32811,
+          "Dana-Farber Cancer Institute, Brigham and Women\u2019s Hospital": 29764,
+          "Guang-zhou First People\u2019s Hospital | Sixth Affiliated Hospital of Sun Yat-sen University": 23232,
+          "Singapore General Hospital": 22732
+        }
+      },
+      "country": {
+        "n_unique": 10,
+        "top10": {
+          "China": 297897,
+          "US": 249805,
+          "Singapore": 22786,
+          "Belgium": 21844,
+          "South Korea": 20823,
+          "Austria": 15856,
+          "Germany": 13194,
+          "France": 3458,
+          "Ireland": 98,
+          "Netherlands": 1
+        }
+      },
+      "NCBI_BioProject_accession": {
+        "n_unique": 25,
+        "top10": {
+          "PRJNA738517": 100569,
+          "PRJNA923099": 80372,
+          "PRJNA991601": 58833,
+          "PRJNA1028966": 46501,
+          "PRJNA846169": 36360,
+          "PRJNA937723": 23232,
+          "PRJNA548146": 17404,
+          "PRJNA701264": 13194,
+          "PRJNA676119": 13019,
+          "PRJNA725335": 11520
+        }
+      },
+      "ENA_sample_accession": {
+        "n_unique": 31,
+        "top10": {
+          "ERS3566166": 1659,
+          "ERS3566158": 1581,
+          "ERS3566168": 1227,
+          "ERS3566165": 1167,
+          "ERS3566167": 1166,
+          "ERS15977686": 1077,
+          "ERS15977675": 1067,
+          "ERS3566160": 1028,
+          "ERS15977677": 937,
+          "ERS15977680": 885
+        }
+      },
+      "synapse_sample_accession": {
+        "n_unique": 200,
+        "top10": {
+          "syn52175833": 6521,
+          "syn52175839": 5344,
+          "syn52175838": 3632,
+          "syn53214678": 2468,
+          "syn24181511": 1897,
+          "syn24181501": 1610,
+          "syn24181515": 1549,
+          "syn53214618": 1507,
+          "syn26044148": 1468,
+          "syn24181490": 1455
+        }
+      },
+      "study_id": {
+        "n_unique": 36,
+        "top10": {
+          "Pelka_2021_Cell": 100569,
+          "Tian_2023_Nat_Med": 80372,
+          "Qin_2023_Cell_Rep_Med": 78466,
+          "Chen_2024_Cancer_Cell": 58833,
+          "Liu_2024_Cancer_Res": 46501,
+          "Li_2023_Cancer_Cell": 36360,
+          "Chen_2021_Cell": 32811,
+          "Lee_2020_Nat_Genet": 29741,
+          "Joanito_2022_Nat_Genet": 25851,
+          "Wang_2023_Sci_Adv": 23232
+        }
+      },
+      "study_doi": {
+        "n_unique": 35,
+        "top10": {
+          "10.1016/j.cell.2021.08.003": 100569,
+          "10.1038/s41591-022-02181-8": 80372,
+          "10.1016/j.xcrm.2023.101231": 78466,
+          "10.1016/j.ccell.2024.06.009": 58833,
+          "10.1158/0008-5472.CAN-23-2123": 46501,
+          "10.1016/j.ccell.2023.04.011": 36360,
+          "10.1016/j.cell.2021.11.031": 32811,
+          "10.1038/s41588-020-0636-z": 29741,
+          "10.1038/s41588-022-01100-4": 25851,
+          "10.1126/sciadv.adf5464": 23232
+        }
+      },
+      "study_pmid": {
+        "n_unique": 35,
+        "top10": {
+          "34450029": 120280,
+          "36702949": 80372,
+          "37852187": 78466,
+          "38981439": 58833,
+          "38335276": 46501,
+          "37172580": 36360,
+          "34910928": 32811,
+          "32451460": 29741,
+          "35773407": 25851,
+          "37327339": 23232
+        }
+      },
+      "cell_type_coarse_study": {
+        "n_unique": 20,
+        "top10": {
+          "Epi": 159219,
+          "Epithelial": 6454,
+          "Epithelial cell": 336,
+          "Malignant cell": 224,
+          "TNKILC": 74,
+          "T": 70,
+          "Myeloid": 68,
+          "NEU": 57,
+          "Plasma": 50,
+          "B": 26
+        }
+      },
+      "cell_type_middle_study": {
+        "n_unique": 15,
+        "top10": {
+          "EpiT": 97027,
+          "Epi": 3383,
+          "Plasma": 48,
+          "TCD4": 40,
+          "TCD8": 22,
+          "Macro": 11,
+          "Tgd": 8,
+          "Mono": 8,
+          "Granulo": 6,
+          "B": 5
+        }
+      },
+      "cell_type_study": {
+        "n_unique": 198,
+        "top10": {
+          "epithelial cell": 80372,
+          "Tumor cE01 (Stem/TA-like)": 44500,
+          "Tumor cE03 (Stem/TA-like prolif)": 35041,
+          "Epithelial": 26134,
+          "c84_Coloncyte_CA2": 18042,
+          "c91_Epi_Tumor": 15532,
+          "c90_Epi_MKI67": 11456,
+          "c87_Goblet_MUC2": 9398,
+          "Cancer": 9294,
+          "Tumor cE02 (Stem/TA-like/Immature Goblet)": 8356
+        }
+      },
+      "phase": {
+        "n_unique": 3,
+        "top10": {
+          "G1": 340706,
+          "S": 162691,
+          "G2M": 162076
+        }
+      },
+      "atlas_cell_type_predicted": {
+        "n_unique": 42,
+        "top10": {
+          "Tumor Colonocyte-like": 258969,
+          "Tumor TA-like": 142775,
+          "Tumor Goblet-like": 96111,
+          "Tumor Crypt-like": 87765,
+          "Colonocyte": 36127,
+          "Tuft": 9854,
+          "Goblet": 9724,
+          "Crypt cell": 8775,
+          "TA progenitor": 5879,
+          "Enteroendocrine": 3458
+        }
+      },
+      "atlas_cell_type_middle": {
+        "n_unique": 2,
+        "top10": {
+          "Cancer cell": 509421,
+          "CRLM": 156052
+        }
+      },
+      "atlas_cell_type_fine": {
+        "n_unique": 5,
+        "top10": {
+          "Cancer Crypt-like": 227578,
+          "Cancer TA-like": 205169,
+          "Cancer Colonocyte-like": 190405,
+          "Cancer Goblet-like": 40214,
+          "Cancer BEST4": 2107
+        }
+      },
+      "tumor_immune_type": {
+        "n_unique": 4,
+        "top10": {
+          "desert": 120768,
+          "T": 52584,
+          "B": 44968,
+          "M": 34085
+        }
+      },
+      "CMS_type_Guinney_2015_Nat_Med": {
+        "n_unique": 5,
+        "top10": {
+          "CMS3": 109137,
+          "CMS2": 102809,
+          "CMS4": 86551,
+          "CMS1": 60480,
+          "unknown": 43331
+        }
+      },
+      "TME_subtype_Bagaev_Cancer_Cell_2021": {
+        "n_unique": 4,
+        "top10": {
+          "D": 234567,
+          "IE": 108973,
+          "F": 102943,
+          "IE/F": 21430
+        }
+      },
+      "is_primary_data": {
+        "n_unique": 2,
+        "top10": {
+          "false": 649617,
+          "true": 15856
+        }
+      },
+      "disease": {
+        "n_unique": 3,
+        "top10": {
+          "colorectal cancer": 476624,
+          "metastasis from malignant tumor of colon": 158099,
+          "polyp of colon": 30750
+        }
+      },
+      "disease_ontology_term_id": {
+        "n_unique": 3,
+        "top10": {
+          "MONDO:0005575": 476624,
+          "MONDO:0041448": 158099,
+          "MONDO:0021400": 30750
+        }
+      },
+      "assay": {
+        "n_unique": 13,
+        "top10": {
+          "10x 3' v2": 179975,
+          "10x 5' v2": 134014,
+          "10x 3' v3": 92976,
+          "unknown": 78466,
+          "10x 5' v1": 59000,
+          "BD Rhapsody Whole Transcriptome Analysis": 39088,
+          "TruDrop": 32811,
+          "10x technology": 19711,
+          "10x 5' v3": 17120,
+          "GEXSCOPE technology": 10269
+        }
+      },
+      "assay_ontology_term_id": {
+        "n_unique": 13,
+        "top10": {
+          "EFO:0009899": 179975,
+          "EFO:0009900": 134014,
+          "EFO:0009922": 92976,
+          "unknown": 78466,
+          "EFO:0011025": 59000,
+          "EFO:0700003": 39088,
+          "EFO:0700010": 32811,
+          "EFO:0008995": 19711,
+          "EFO:0022605": 17120,
+          "EFO:0700011": 10269
+        }
+      },
+      "tissue": {
+        "n_unique": 3,
+        "top10": {
+          "colon": 507374,
+          "liver": 156052,
+          "mesenteric lymph node": 2047
+        }
+      },
+      "tissue_ontology_term_id": {
+        "n_unique": 3,
+        "top10": {
+          "UBERON:0001155": 507374,
+          "UBERON:0002107": 156052,
+          "UBERON:0002509": 2047
+        }
+      },
+      "sex_ontology_term_id": {
+        "n_unique": 3,
+        "top10": {
+          "PATO:0000384": 389445,
+          "PATO:0000383": 262894,
+          "unknown": 13134
+        }
+      },
+      "self_reported_ethnicity": {
+        "n_unique": 6,
+        "top10": {
+          "white": 145630,
+          "black or african american": 16834,
+          "asian": 9817,
+          "caucasian": 4340,
+          "other": 1964,
+          "hispanic": 73
+        }
+      },
+      "self_reported_ethnicity_ontology_term_id": {
+        "n_unique": 5,
+        "top10": {
+          "unknown": 488779,
+          "HANCESTRO:0005": 149970,
+          "HANCESTRO:0568": 16834,
+          "HANCESTRO:0008": 9817,
+          "HANCESTRO:0612": 73
+        }
+      },
+      "development_stage": {
+        "n_unique": 61,
+        "top10": {
+          "unknown": 117109,
+          "64-year-old human stage": 36972,
+          "58-year-old human stage": 31509,
+          "60-year-old human stage": 22682,
+          "37-year-old human stage": 21668,
+          "63-year-old human stage": 21455,
+          "52-year-old human stage": 21157,
+          "73-year-old human stage": 18680,
+          "53-year-old human stage": 18673,
+          "67-year-old human stage": 14910
+        }
+      },
+      "development_stage_ontology_term_id": {
+        "n_unique": 61,
+        "top10": {
+          "unknown": 117109,
+          "HsapDv:0000158": 36972,
+          "HsapDv:0000152": 31509,
+          "HsapDv:0000154": 22682,
+          "HsapDv:0000131": 21668,
+          "HsapDv:0000157": 21455,
+          "HsapDv:0000146": 21157,
+          "HsapDv:0000167": 18680,
+          "HsapDv:0000147": 18673,
+          "HsapDv:0000161": 14910
+        }
+      }
+    },
+    "X_integer_fraction": null,
+    "layer_counts_integer_fraction": 1.0,
+    "keyword_hits_in_obs": {
+      "sample_id": [
+        "Wang_2023_CD45Pos.LM112"
+      ]
+    },
+    "obsm_keys": [],
+    "uns_keys": []
+  }
+}
