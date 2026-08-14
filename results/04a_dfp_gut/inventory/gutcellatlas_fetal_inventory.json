@@ -1,0 +1,552 @@
+{
+  "fetal_RAWCOUNTS_cellxgene": {
+    "label": "fetal_RAWCOUNTS_cellxgene",
+    "path": "/home/zz950/DATA/scRNAseq/GutCellAtlas_Elmentaite2021/raw/fetal_RAWCOUNTS_cellxgene.h5ad",
+    "shape": {
+      "n_obs": 62849,
+      "n_vars": 33694
+    },
+    "var_names_sample": [
+      "RP11-34P13.3",
+      "FAM138A",
+      "OR4F5",
+      "RP11-34P13.7",
+      "RP11-34P13.8",
+      "RP11-34P13.14",
+      "RP11-34P13.9",
+      "FO538757.3",
+      "FO538757.2",
+      "AP006222.2"
+    ],
+    "looks_like_ensembl": false,
+    "var_columns": [
+      "gene_ids"
+    ],
+    "obs_columns": [
+      "CRL",
+      "Enrichment_fraction",
+      "PCW",
+      "Donor_nb",
+      "Donor_id",
+      "Purification",
+      "Organ",
+      "Sample",
+      "doublet_scores_observed_cells",
+      "n_genes",
+      "percent_mito",
+      "n_counts",
+      "cell_type_group",
+      "cell_name",
+      "cell_name_detailed"
+    ],
+    "layers": [],
+    "has_raw": false,
+    "obsm_keys": [],
+    "uns_keys": [],
+    "low_cardinality_obs_columns": {
+      "CRL": {
+        "n_unique": 9,
+        "top20": {
+          "47": 11104,
+          "46": 10746,
+          "32": 7717,
+          "41": 7682,
+          "17": 7548,
+          "22": 5461,
+          "49": 4356,
+          "31": 4318,
+          "23": 3917
+        }
+      },
+      "Enrichment_fraction": {
+        "n_unique": 2,
+        "top20": {
+          "pos": 44975,
+          "neg": 17874
+        }
+      },
+      "PCW": {
+        "n_unique": 9,
+        "top20": {
+          "F10": 11104,
+          "F9.9": 10746,
+          "F8.4": 7717,
+          "F9.2": 7682,
+          "F6.1": 7548,
+          "F6.7": 5461,
+          "F10.2": 4356,
+          "F7.9": 4318,
+          "F6.9": 3917
+        }
+      },
+      "Donor_nb": {
+        "n_unique": 9,
+        "top20": {
+          "9": 11104,
+          "8": 10746,
+          "2": 7717,
+          "6": 7682,
+          "1": 7548,
+          "4": 5461,
+          "3": 4356,
+          "7": 4318,
+          "5": 3917
+        }
+      },
+      "Donor_id": {
+        "n_unique": 9,
+        "top20": {
+          "2134": 11104,
+          "2133": 10746,
+          "2026": 7717,
+          "2121": 7682,
+          "2029": 7548,
+          "2046": 5461,
+          "2043": 4356,
+          "2119": 4318,
+          "2049": 3917
+        }
+      },
+      "Purification": {
+        "n_unique": 2,
+        "top20": {
+          "MACS": 47584,
+          "none": 15265
+        }
+      },
+      "Organ": {
+        "n_unique": 3,
+        "top20": {
+          "duojejunum": 21592,
+          "colon": 21147,
+          "ileum": 20110
+        }
+      },
+      "Sample": {
+        "n_unique": 34,
+        "top20": {
+          "4918STDY7718973": 3367,
+          "4918STDY7321515": 3218,
+          "4918STDY7693763": 3191,
+          "4918STDY7317585": 3093,
+          "4918STDY7317587": 2655,
+          "4918STDY7426906": 2649,
+          "4918STDY7718974": 2589,
+          "4918STDY7717789": 2303,
+          "4918STDY7321514": 2294,
+          "4918STDY7717788": 2252,
+          "4918STDY7718972": 2149,
+          "4918STDY7321513": 2036,
+          "4918STDY7717787": 2023,
+          "4918STDY7421298": 2006,
+          "4918STDY7317586": 1969,
+          "4918STDY7426905": 1889,
+          "4918STDY7693762": 1734,
+          "4918STDY7717785": 1696,
+          "4918STDY7426908": 1689,
+          "4918STDY7693759": 1688
+        }
+      },
+      "doublet_scores_observed_cells": {
+        "n_unique": 148,
+        "top20": {
+          "0.052556310332499113": 1018,
+          "0.05130007027406887": 1007,
+          "0.05660377358490566": 1001,
+          "0.046679815910585135": 992,
+          "0.039021549213744906": 983,
+          "0.05805459438677432": 968,
+          "0.04358733145186579": 962,
+          "0.05008635578583765": 948,
+          "0.05520563171545017": 934,
+          "0.0426189005558987": 933,
+          "0.038185472293999434": 926,
+          "0.06621392190152801": 925,
+          "0.059561128526645774": 923,
+          "0.04891304347826087": 922,
+          "0.03988183161004431": 921,
+          "0.06805374945817079": 918,
+          "0.04561630540278227": 917,
+          "0.05385735080058225": 912,
+          "0.044585987261146494": 908,
+          "0.06112664802237315": 905
+        }
+      },
+      "cell_type_group": {
+        "n_unique": 4,
+        "top20": {
+          "mesenchymal": 40671,
+          "epithelium": 16937,
+          "vasculature": 3274,
+          "immune": 1967
+        }
+      },
+      "cell_name": {
+        "n_unique": 21,
+        "top20": {
+          "mesoderm 1": 11546,
+          "Small intestinal Epi": 8906,
+          "mesoderm 2": 8207,
+          "SMC": 7154,
+          "Uniform progenitors": 4064,
+          "Neural crest cells": 3141,
+          "FOXL1 FLC": 2622,
+          "Colonic Epi": 2354,
+          "WNT4 FLC": 2220,
+          "myofibroblast": 1919,
+          "Enteric neurons": 1804,
+          "Venous EC": 1704,
+          "Secretory Epi": 1612,
+          "pericyte": 1222,
+          "immune cells": 1033,
+          "Erythroblasts": 933,
+          "UPK3B Serosa": 797,
+          "ICC": 752,
+          "FRZB FLC": 383,
+          "Arterial EC": 372
+        }
+      },
+      "cell_name_detailed": {
+        "n_unique": 28,
+        "top20": {
+          "Mesoderm 1": 11546,
+          "Mesoderm 2": 8207,
+          "Smooth muscle cells": 7154,
+          "Early enterocyte": 4157,
+          "G2M/S enterocytes": 3935,
+          "Neural crest cells": 3141,
+          "Uniform progenitors": 2659,
+          "FOXL1+ fibroblasts": 2622,
+          "Colonocytes": 2354,
+          "WNT4+ fibroblasts": 2220,
+          "Myofibroblast": 1919,
+          "Enteric neurons": 1804,
+          "Venous endothelial cell": 1704,
+          "Enterocyte": 1586,
+          "Pericyte": 1222,
+          "Immune cells": 1033,
+          "LGR5 stem": 1001,
+          "Erythroblasts": 933,
+          "Serosa/mesothelial cells": 797,
+          "Interstitial cells of Cajal": 752
+        }
+      }
+    },
+    "X_integer_fraction": 1.0,
+    "keyword_hits_in_obs": {
+      "region": {
+        "Organ": [
+          "duojejunum",
+          "ileum",
+          "colon"
+        ],
+        "cell_name": [
+          "Colonic Epi"
+        ],
+        "cell_name_detailed": [
+          "Colonocytes"
+        ]
+      },
+      "epithelial_lineage": {
+        "cell_type_group": [
+          "epithelium"
+        ],
+        "cell_name": [
+          "Uniform progenitors"
+        ],
+        "cell_name_detailed": [
+          "Uniform progenitors",
+          "Enterocytes",
+          "BEST4+ enterocyte",
+          "Enteroendocrine",
+          "Enterocyte",
+          "G2M/S enterocytes",
+          "Goblet",
+          "Early enterocyte",
+          "LGR5 stem",
+          "NTS+ epithelial cells"
+        ]
+      }
+    }
+  },
+  "final_fetal_object_cellxgene": {
+    "label": "final_fetal_object_cellxgene",
+    "path": "/home/zz950/DATA/scRNAseq/GutCellAtlas_Elmentaite2021/raw/final_fetal_object_cellxgene.h5ad",
+    "shape": {
+      "n_obs": 62849,
+      "n_vars": 26757
+    },
+    "var_names_sample": [
+      "RP11-34P13.7",
+      "RP11-34P13.8",
+      "FO538757.3",
+      "FO538757.2",
+      "AP006222.2",
+      "RP4-669L17.10",
+      "RP5-857K21.4",
+      "RP11-206L10.4",
+      "RP11-206L10.9",
+      "FAM87B"
+    ],
+    "looks_like_ensembl": false,
+    "var_columns": [
+      "gene_ids",
+      "n_cells",
+      "highly_variable",
+      "means",
+      "dispersions",
+      "dispersions_norm"
+    ],
+    "obs_columns": [
+      "CRL",
+      "Enrichment_fraction",
+      "PCW",
+      "Donor_nb",
+      "Donor_id",
+      "Purification",
+      "Organ",
+      "Sample",
+      "doublet_scores_observed_cells",
+      "n_genes",
+      "percent_mito",
+      "n_counts",
+      "cell_type_group",
+      "cell_name",
+      "cell_name_detailed"
+    ],
+    "layers": [],
+    "has_raw": false,
+    "obsm_keys": [
+      "X_pca",
+      "X_umap"
+    ],
+    "uns_keys": [
+      "cell_name_detailed_colors"
+    ],
+    "low_cardinality_obs_columns": {
+      "CRL": {
+        "n_unique": 9,
+        "top20": {
+          "47": 11104,
+          "46": 10746,
+          "32": 7717,
+          "41": 7682,
+          "17": 7548,
+          "22": 5461,
+          "49": 4356,
+          "31": 4318,
+          "23": 3917
+        }
+      },
+      "Enrichment_fraction": {
+        "n_unique": 2,
+        "top20": {
+          "pos": 44975,
+          "neg": 17874
+        }
+      },
+      "PCW": {
+        "n_unique": 9,
+        "top20": {
+          "F10": 11104,
+          "F9.9": 10746,
+          "F8.4": 7717,
+          "F9.2": 7682,
+          "F6.1": 7548,
+          "F6.7": 5461,
+          "F10.2": 4356,
+          "F7.9": 4318,
+          "F6.9": 3917
+        }
+      },
+      "Donor_nb": {
+        "n_unique": 9,
+        "top20": {
+          "9": 11104,
+          "8": 10746,
+          "2": 7717,
+          "6": 7682,
+          "1": 7548,
+          "4": 5461,
+          "3": 4356,
+          "7": 4318,
+          "5": 3917
+        }
+      },
+      "Donor_id": {
+        "n_unique": 9,
+        "top20": {
+          "2134": 11104,
+          "2133": 10746,
+          "2026": 7717,
+          "2121": 7682,
+          "2029": 7548,
+          "2046": 5461,
+          "2043": 4356,
+          "2119": 4318,
+          "2049": 3917
+        }
+      },
+      "Purification": {
+        "n_unique": 2,
+        "top20": {
+          "MACS": 47584,
+          "none": 15265
+        }
+      },
+      "Organ": {
+        "n_unique": 3,
+        "top20": {
+          "duojejunum": 21592,
+          "colon": 21147,
+          "ileum": 20110
+        }
+      },
+      "Sample": {
+        "n_unique": 34,
+        "top20": {
+          "4918STDY7718973": 3367,
+          "4918STDY7321515": 3218,
+          "4918STDY7693763": 3191,
+          "4918STDY7317585": 3093,
+          "4918STDY7317587": 2655,
+          "4918STDY7426906": 2649,
+          "4918STDY7718974": 2589,
+          "4918STDY7717789": 2303,
+          "4918STDY7321514": 2294,
+          "4918STDY7717788": 2252,
+          "4918STDY7718972": 2149,
+          "4918STDY7321513": 2036,
+          "4918STDY7717787": 2023,
+          "4918STDY7421298": 2006,
+          "4918STDY7317586": 1969,
+          "4918STDY7426905": 1889,
+          "4918STDY7693762": 1734,
+          "4918STDY7717785": 1696,
+          "4918STDY7426908": 1689,
+          "4918STDY7693759": 1688
+        }
+      },
+      "doublet_scores_observed_cells": {
+        "n_unique": 148,
+        "top20": {
+          "0.052556310332499113": 1018,
+          "0.05130007027406887": 1007,
+          "0.05660377358490566": 1001,
+          "0.046679815910585135": 992,
+          "0.039021549213744906": 983,
+          "0.05805459438677432": 968,
+          "0.04358733145186579": 962,
+          "0.05008635578583765": 948,
+          "0.05520563171545017": 934,
+          "0.0426189005558987": 933,
+          "0.038185472293999434": 926,
+          "0.06621392190152801": 925,
+          "0.059561128526645774": 923,
+          "0.04891304347826087": 922,
+          "0.03988183161004431": 921,
+          "0.06805374945817079": 918,
+          "0.04561630540278227": 917,
+          "0.05385735080058225": 912,
+          "0.044585987261146494": 908,
+          "0.06112664802237315": 905
+        }
+      },
+      "cell_type_group": {
+        "n_unique": 4,
+        "top20": {
+          "mesenchymal": 40671,
+          "epithelium": 16937,
+          "vasculature": 3274,
+          "immune": 1967
+        }
+      },
+      "cell_name": {
+        "n_unique": 21,
+        "top20": {
+          "mesoderm 1": 11546,
+          "Small intestinal Epi": 8906,
+          "mesoderm 2": 8207,
+          "SMC": 7154,
+          "Uniform progenitors": 4064,
+          "Neural crest cells": 3141,
+          "FOXL1 FLC": 2622,
+          "Colonic Epi": 2354,
+          "WNT4 FLC": 2220,
+          "myofibroblast": 1919,
+          "Enteric neurons": 1804,
+          "Venous EC": 1704,
+          "Secretory Epi": 1612,
+          "pericyte": 1222,
+          "immune cells": 1033,
+          "Erythroblasts": 933,
+          "UPK3B Serosa": 797,
+          "ICC": 752,
+          "FRZB FLC": 383,
+          "Arterial EC": 372
+        }
+      },
+      "cell_name_detailed": {
+        "n_unique": 28,
+        "top20": {
+          "Mesoderm 1": 11546,
+          "Mesoderm 2": 8207,
+          "Smooth muscle cells": 7154,
+          "Early enterocyte": 4157,
+          "G2M/S enterocytes": 3935,
+          "Neural crest cells": 3141,
+          "Uniform progenitors": 2659,
+          "FOXL1+ fibroblasts": 2622,
+          "Colonocytes": 2354,
+          "WNT4+ fibroblasts": 2220,
+          "Myofibroblast": 1919,
+          "Enteric neurons": 1804,
+          "Venous endothelial cell": 1704,
+          "Enterocyte": 1586,
+          "Pericyte": 1222,
+          "Immune cells": 1033,
+          "LGR5 stem": 1001,
+          "Erythroblasts": 933,
+          "Serosa/mesothelial cells": 797,
+          "Interstitial cells of Cajal": 752
+        }
+      }
+    },
+    "X_integer_fraction": 0.0,
+    "keyword_hits_in_obs": {
+      "region": {
+        "Organ": [
+          "duojejunum",
+          "ileum",
+          "colon"
+        ],
+        "cell_name": [
+          "Colonic Epi"
+        ],
+        "cell_name_detailed": [
+          "Colonocytes"
+        ]
+      },
+      "epithelial_lineage": {
+        "cell_type_group": [
+          "epithelium"
+        ],
+        "cell_name": [
+          "Uniform progenitors"
+        ],
+        "cell_name_detailed": [
+          "Uniform progenitors",
+          "Enterocytes",
+          "BEST4+ enterocyte",
+          "Enteroendocrine",
+          "Enterocyte",
+          "G2M/S enterocytes",
+          "Goblet",
+          "Early enterocyte",
+          "LGR5 stem",
+          "NTS+ epithelial cells"
+        ]
+      }
+    }
+  }
+}
