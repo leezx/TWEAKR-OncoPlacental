@@ -668,3 +668,13 @@ A distinct concern from definitional circularity, raised right as the reviewer w
 **Reviewer's explicit next-step guidance for the compute round** (do not re-open the design further): (1) gene-ID coverage audit (Ensembl→symbol map against the 4 candidate datasets' actual gene panels); (2) lock the M11 scoring version (top50 primary, top100/200 sensitivity) and implement the null calibration; (3) run the primary continuous M11-vs-D/F/P decomposition on the 297,307-cell M11 cohort; (4) the full-atlas landscape (tertiary analysis) comes after — "现在最重要的是让第一批真实结果出来，而不是继续优化框架" (the priority now is getting the first real results out, not continuing to refine the framework).
 
 Design phase for Step 6 is now closed after 4 substantive review rounds (raw-score comparability, definitional circularity, anchor-independence verification, gene-overlap audit) — a genuinely difficult design to get right, reflecting the project's core Q1 stakes. Merge pending user confirmation (same standing practice as every prior PR merge).
+
+### PR #16 merged — Step 6 (Phase I) design phase fully closed; real compute starts next
+
+Before requesting merge, re-verified job 3620558 (CRC dataset inventory) had not drifted: SGE logs on Argos show empty stderr and a clean `Wrote crc_dataset_inventory.json` stdout tail, and the Argos-side output file's md5 (`c79e7456babfc9fb7f0812b84a8a75c7`) matched the locally-committed copy exactly — byte-exact, no re-run needed. Posted this re-verification to the reviewer for the record; acknowledged.
+
+User confirmed merge ("审核过了就自己合并"). Merged PR #16 via `gh pr merge 16 --merge --delete-branch` — clean fast-forward (`3f83048..55dfc26`), no conflicts, feature branch deleted. Local `main` already at the merge commit.
+
+Step 6 (Phase I) design is now fully merged: `docs/STEP6_CRC_PROJECTION_DESIGN.md`, the CRC dataset inventory, and the M11×D/F/P gene-overlap audit are all on `main`. Next: real compute, in the reviewer's specified order — starting with the gene-ID coverage audit (Ensembl→symbol mapping check against the 4 candidate datasets' actual gene panels, same discipline as Step 2's original coverage audit).
+
+**Updated total: ~70%** (delta +1 from ~69%: PR #16 merged, Step 6 design phase fully closed on `main`. I now 50% of its 20% weight: design complete and merged, real compute not yet started — the 50% mark reflects that design (however rigorous) is still zero empirical answer to Q1.)
