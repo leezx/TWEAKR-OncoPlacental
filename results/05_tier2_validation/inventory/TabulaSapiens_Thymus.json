@@ -1,0 +1,112 @@
+{
+  "label": "TabulaSapiens_Thymus",
+  "path": "/home/zz950/DATA/1.Databases/TabulaSapiens/raw/TS_Thymus.h5ad.zip",
+  "zip_contents": [
+    "TS_Thymus.h5ad"
+  ],
+  "shape": {
+    "n_obs": 33664,
+    "n_vars": 58870
+  },
+  "var_names_sample": [
+    "DDX11L1",
+    "WASH7P",
+    "MIR6859-1",
+    "MIR1302-2HG",
+    "MIR1302-2",
+    "FAM138A",
+    "OR4G4P",
+    "OR4G11P",
+    "OR4F5",
+    "AL627309.1"
+  ],
+  "looks_like_ensembl": false,
+  "obs_columns": [
+    "organ_tissue",
+    "method",
+    "donor",
+    "anatomical_information",
+    "n_counts_UMIs",
+    "n_genes",
+    "cell_ontology_class",
+    "free_annotation",
+    "manually_annotated",
+    "compartment",
+    "gender"
+  ],
+  "layers": [
+    "decontXcounts",
+    "raw_counts"
+  ],
+  "has_raw": true,
+  "raw_shape": {
+    "n_obs": 33664,
+    "n_vars": 58870
+  },
+  "low_cardinality_obs_columns": {
+    "method": {
+      "n_unique": 2,
+      "top10": {
+        "10X": 33065,
+        "smartseq2": 599
+      }
+    },
+    "donor": {
+      "n_unique": 2,
+      "top10": {
+        "TSP14": 21578,
+        "TSP2": 12086
+      }
+    },
+    "cell_ontology_class": {
+      "n_unique": 32,
+      "top10": {
+        "cd4-positive helper t cell": 7611,
+        "fibroblast": 3924,
+        "innate lymphoid cell": 2594,
+        "vascular associated smooth muscle cell": 2130,
+        "vein endothelial cell": 2104,
+        "b cell": 1919,
+        "memory b cell": 1845,
+        "dn3 thymocyte": 1788,
+        "plasma cell": 1554,
+        "capillary endothelial cell": 1362
+      }
+    },
+    "free_annotation": {
+      "n_unique": 43,
+      "top10": {
+        "cd4-positive helper t cell": 4255,
+        "fibroblast": 3924,
+        "CD4 helper T cell-like": 3356,
+        "Innate lymphoid cells": 2594,
+        "B cells": 1919,
+        "memory b cell": 1845,
+        "double negative alpha beta T cell (DN1)": 1788,
+        "Plasma cells": 1465,
+        "vascular venous endothelial cell": 1442,
+        "Vascular smooth muscle": 1439
+      }
+    },
+    "compartment": {
+      "n_unique": 4,
+      "top10": {
+        "immune": 23073,
+        "stromal": 6140,
+        "endothelial": 4273,
+        "epithelial": 178
+      }
+    },
+    "gender": {
+      "n_unique": 2,
+      "top10": {
+        "male": 21578,
+        "female": 12086
+      }
+    }
+  },
+  "X_integer_fraction": 0.01489811783897084,
+  "raw_X_integer_fraction": 1.0,
+  "layer_decontXcounts_integer_fraction": 1.0,
+  "layer_raw_counts_integer_fraction": 1.0
+}

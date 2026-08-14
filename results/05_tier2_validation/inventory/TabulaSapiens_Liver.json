@@ -1,0 +1,105 @@
+{
+  "label": "TabulaSapiens_Liver",
+  "path": "/home/zz950/DATA/1.Databases/TabulaSapiens/raw/TS_Liver.h5ad.zip",
+  "zip_contents": [
+    "TS_Liver.h5ad"
+  ],
+  "shape": {
+    "n_obs": 5007,
+    "n_vars": 58870
+  },
+  "var_names_sample": [
+    "DDX11L1",
+    "WASH7P",
+    "MIR6859-1",
+    "MIR1302-2HG",
+    "MIR1302-2",
+    "FAM138A",
+    "OR4G4P",
+    "OR4G11P",
+    "OR4F5",
+    "AL627309.1"
+  ],
+  "looks_like_ensembl": false,
+  "obs_columns": [
+    "organ_tissue",
+    "method",
+    "donor",
+    "anatomical_information",
+    "n_counts_UMIs",
+    "n_genes",
+    "cell_ontology_class",
+    "free_annotation",
+    "manually_annotated",
+    "compartment",
+    "gender"
+  ],
+  "layers": [
+    "decontXcounts",
+    "raw_counts"
+  ],
+  "has_raw": true,
+  "raw_shape": {
+    "n_obs": 5007,
+    "n_vars": 58870
+  },
+  "low_cardinality_obs_columns": {
+    "method": {
+      "n_unique": 2,
+      "top10": {
+        "10X": 4794,
+        "smartseq2": 213
+      }
+    },
+    "donor": {
+      "n_unique": 2,
+      "top10": {
+        "TSP6": 2860,
+        "TSP14": 2147
+      }
+    },
+    "cell_ontology_class": {
+      "n_unique": 13,
+      "top10": {
+        "hepatocyte": 1558,
+        "macrophage": 1381,
+        "monocyte": 612,
+        "endothelial cell of hepatic sinusoid": 421,
+        "endothelial cell": 267,
+        "nk cell": 245,
+        "t cell": 146,
+        "erythrocyte": 108,
+        "neutrophil": 83,
+        "fibroblast": 76
+      }
+    },
+    "free_annotation": {
+      "n_unique": 16,
+      "top10": {
+        "Hepatocyte": 1558,
+        "Monocyte/Macrophage": 1246,
+        "Monocyte": 612,
+        "Endothelial": 421,
+        "Endothelial/Kuppfer": 267,
+        "T cell": 146,
+        "NK cell": 143,
+        "Erythrocyte": 108,
+        "Proliferating NK cell": 102,
+        "Neutrophil": 83
+      }
+    },
+    "compartment": {
+      "n_unique": 4,
+      "top10": {
+        "immune": 2643,
+        "epithelial": 1600,
+        "endothelial": 688,
+        "stromal": 76
+      }
+    }
+  },
+  "X_integer_fraction": 0.014261485781960017,
+  "raw_X_integer_fraction": 1.0,
+  "layer_decontXcounts_integer_fraction": 1.0,
+  "layer_raw_counts_integer_fraction": 1.0
+}
