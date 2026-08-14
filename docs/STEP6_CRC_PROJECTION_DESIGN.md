@@ -72,8 +72,17 @@ included via symbol match alone) and 1 outright wrong Ensembl ID (`Ccn1`
 was pointed at `CCNA2`, an unrelated gene). Also corrected a source-paper
 mischaracterization (revCSC is from *An oncogenic phenoscape of colonic
 stem cell polarization*, not Ayyaz et al. 2019). See "revCSC
-mouse→human ortholog provenance audit" below. Frozen scoring set: 28
-genes (27 confirmed `one2one` + 1 flagged `one2many`).
+mouse→human ortholog provenance audit" below.
+
+**PR #17 review round 2 (REQUEST_CHANGES)** caught a subtler issue in
+round 1's fix: the 28-gene set (27 `one2one` + `Ly6a`) had been labeled
+"primary" partly because `Ly6a`'s specific ambiguous human target had
+already tested out as reasonable against real CRC/NMF/Jaccard data —
+outcome-dependent evidence leaking into the primary anchor's definition.
+Fixed by flipping the labels: **primary revCSC signature is now the
+27-gene Compara-confirmed `one2one` set only**, with the 28-gene set
+(adding `Ly6a`) demoted to an **extended/sensitivity** variant reported
+alongside every primary result.
 
 This is the step that finally answers the project's original Q1 (`docs/PROJECT_SUMMARY.md:9-13`):
 
@@ -118,7 +127,8 @@ name (`...LM112`) — not a real annotation.
 archaeology below (M11's discovery, its independence from D/F/P, and its
 Jaccard match to `revCSC`) is kept because it is still true and still useful
 context — but the primary Oncofetal score used in compute is **revCSC's own
-31-gene mapped signature**, scored directly with the same
+ortholog-verified 27-gene signature** (see "revCSC mouse→human ortholog
+provenance audit" below), scored directly with the same
 `scanpy.tl.score_genes` + null-calibration mechanics as D/F/P, not M11's
 NMF top-loading gene list. M11 is retained only as a **secondary concordance
 check** within the `CRC_single_cell_atlas_2025` 297,307-cell subset (does
@@ -292,9 +302,10 @@ Argos (job 3620636), output pulled back and verified byte-exact
 **Superseded by the ortholog provenance audit below**: this 31-gene set
 only proved symbol-matching success, not verified orthology — see
 "revCSC mouse→human ortholog provenance audit" immediately after this
-section. The frozen scoring set is 28 genes; the overlap numbers in the
-table below are unaffected (all corrected/excluded genes are absent from
-every D/F/P set) and did not need to be re-run.
+section. The frozen **primary** scoring set is 27 genes (28 including the
+extended/sensitivity `Ly6a` addition); the overlap numbers in the table
+below are unaffected (all corrected/excluded genes are absent from every
+D/F/P set) and did not need to be re-run.
 
 | Target signature (n genes) | revCSC overlap (n) | Overlapping genes |
 |---|---|---|
@@ -313,17 +324,17 @@ every D/F/P set) and did not need to be re-run.
 response genes — `ACTA1` skeletal-muscle actin, `ANKRD1` a mechanosensitive
 cardiac/muscle stress-response gene — plausible generic "activated/
 mesenchymal-like" markers, not developmentally specific to any one organ;
-both remain in the corrected 28-gene primary set below). **Same
+both remain in the corrected 27-gene primary set below). **Same
 overlap-exclusion contract as M11**: the primary revCSC↔F-specific
 (global and Thymus/Spleen/Thyroid lineage) correlations use an
-overlap-excluded revCSC score (26 genes, dropping `ACTA1`/`ANKRD1` only for
+overlap-excluded revCSC score (25 genes, dropping `ACTA1`/`ANKRD1` only for
 the specific F-comparisons where they're shared); the full primary revCSC
 score is retained as a sensitivity check; revCSC↔D-shared and
 revCSC↔P-specific need no exclusion (zero overlap). Only associations
 surviving overlap exclusion are interpreted as genuine developmental
 relationships, not shared-gene artifacts.
 
-## revCSC mouse→human ortholog provenance audit (PR #17 review round 1 requirement)
+## revCSC mouse→human ortholog provenance audit (PR #17 review rounds 1-2 requirement)
 
 **A distinct, more fundamental concern than gene-overlap coupling**: the
 31-gene set above only proves that a naive uppercased mouse symbol
@@ -350,7 +361,7 @@ trusting the naive symbol match**:
 | Outcome | n | Genes |
 |---|---|---|
 | `ortholog_one2one`, confirmed | 27 | see `revCSC_human_FINAL.tsv` |
-| `ortholog_one2many`, ambiguous, resolvable to the pre-validated target | 1 | `Ly6a`→`LY6A` |
+| `ortholog_one2many`, ambiguous | 1 | `Ly6a`→`LY6A` |
 | No Compara-confirmed ortholog — **excluded**, despite a valid-looking symbol match | 3 | `Cldn4`, `Ctsl`, `Sprr1a` |
 | No ortholog at all (already known) | 1 | `Ctla2a` |
 
@@ -359,15 +370,22 @@ trusting the naive symbol match**:
 gene, confirmed by direct lookup) and is corrected to Compara's own
 `ortholog_one2one` call (`ENSG00000142871`, confirmed `display_name: CCN1`).
 
-**Frozen scoring set (pre-registered inclusion rule, decided here, not
-post-hoc)**: **28-gene primary set** (27 confirmed `one2one` + `Ly6a`
-flagged `one2many`), with a **27-gene strict `one2one`-only sensitivity
-set** (`Ly6a` dropped) reported alongside every primary result, not
-optionally. Genes with no Compara-confirmed ortholog are excluded from
-both. **All future scoring/overlap-audit steps reference
-`revCSC_human_FINAL.tsv` / `revCSC_symbols.primary28.txt` as the single
-frozen artifact** — not the historical
-`CSC_subtype_signatures.ensembl_mapping.tsv` directly.
+**Frozen scoring set (pre-registered inclusion rule, revised per review
+round 2 — `Ly6a`'s ambiguous target had partly been justified by already
+testing out well against real CRC/NMF/Jaccard data, which is exactly the
+outcome-dependent evidence a primary anchor's construction must stay blind
+to)**:
+
+- **PRIMARY revCSC signature: 27 genes**, the Compara-confirmed `one2one`
+  set only — selection driven purely by orthology provenance, zero input
+  from any downstream CRC/NMF result.
+- **EXTENDED/sensitivity variant: 28 genes** (adding `Ly6a`), reported
+  alongside every primary result, not optionally.
+- Genes with no Compara-confirmed ortholog are excluded from both.
+- **All future scoring/overlap-audit steps reference
+  `revCSC_human_FINAL.tsv` / `revCSC_symbols.primary27.txt` as the single
+  frozen artifact** — not the historical
+  `CSC_subtype_signatures.ensembl_mapping.tsv` directly.
 
 **No re-run needed for the D/F/P overlap audit above**: checked directly —
 none of the 4 excluded/corrected genes (`Cldn4`, `Ctsl`, `Sprr1a`,

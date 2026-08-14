@@ -8,15 +8,29 @@ Ensembl ID in the pre-existing table). Per PR #17 review round 1
 overlap-audit steps reference -- not the historical
 CSC_subtype_signatures.ensembl_mapping.tsv directly.
 
-Pre-registered inclusion rule (per reviewer requirement -- not decided
-post-hoc): unambiguous ortholog_one2one calls go in the primary scoring
-set. ortholog_one2many calls are flagged and included in the primary set
-ONLY because a single specific human target could be identified as the one
-already validated against real CRC/NMF data (Jaccard overlap with M11) in
-the pre-existing table -- but a one2one-only sensitivity variant (dropping
-Ly6a) must also be reported alongside every primary result. Genes with no
-Compara-confirmed ortholog are excluded from the primary set entirely, not
-silently kept via the old naive-symbol mapping.
+Pre-registered inclusion rule (revised per PR #17 review round 2 --
+REQUEST_CHANGES): the round-1 version of this script put the 28-gene set
+(27 one2one + Ly6a) in "primary" because Ly6a's specific human target
+(ENSG00000291309) had already tested out as reasonable against real
+CRC/NMF/Jaccard data -- reviewer correctly flagged this as
+outcome-dependent evidence leaking into the definition of what is supposed
+to be an orthology-only-driven primary anchor. Fixed:
+
+  - PRIMARY revCSC human signature = the 27 Compara-confirmed
+    ortholog_one2one genes only. Selection is driven purely by orthology
+    provenance, with zero input from any downstream CRC/NMF result.
+  - EXTENDED/sensitivity variant = the 28-gene set adding Ly6a
+    (ortholog_one2many, ambiguous target choice). Reported alongside every
+    primary result, not the other way around -- the ambiguous, CRC-data-
+    informed gene is the one that needs the sensitivity label, not the
+    unambiguous 27.
+  - Genes with no Compara-confirmed ortholog are excluded from both.
+
+Documented limitation, unchanged from round 1: the 32 mouse gene symbols
+audited here are what was already extracted into the pre-existing
+CSC_subtype_signatures.ensembl_mapping.tsv on Argos -- this project has
+not independently re-derived the revCSC mouse gene list from the original
+paper's own supplementary material gene-by-gene.
 """
 import csv
 
@@ -56,14 +70,17 @@ rows = [
      "Ensembl Compara's own one2one call (ENSG00000142871) is used instead, "
      "confirmed by direct lookup: display_name=CCN1, "
      "description='cellular communication network factor 1'."),
-    ("Ly6a", "LY6A", "ENSG00000291309", "ortholog_one2many", "include_primary_flagged_ambiguous",
+    ("Ly6a", "LY6A", "ENSG00000291309", "ortholog_one2many", "include_extended_sensitivity_only",
      "Compara reports ortholog_one2many for mouse Ly6a (part of the "
      "species-specific-expanded Ly6 family); ENSG00000291309 is the specific "
      "human target that also matches the pre-existing table's naive-symbol "
-     "mapping. Included in the primary revCSC score per the pre-registered "
-     "rule below, but every primary revCSC result must also be reported "
-     "with a one2one-only sensitivity variant (Ly6a dropped, 26 genes) "
-     "to confirm the finding does not depend on this ambiguous call."),
+     "mapping AND already tested out as reasonable against real CRC/NMF/"
+     "Jaccard data -- per PR #17 review round 2, that downstream-data "
+     "agreement is exactly why this gene must NOT be in the primary set: "
+     "letting outcome-dependent evidence pick among ambiguous ortholog "
+     "targets would compromise the primary anchor's independence. Kept "
+     "only in the 28-gene EXTENDED/sensitivity variant, reported alongside "
+     "every primary (27-gene) result, not the reverse."),
     ("Ctla2a", "", "", "no_ortholog_found", "exclude",
      "No human Ensembl ID resolves via HGNC-based symbol mapping (the "
      "pre-existing table's own failure) and Ensembl Compara returns no "
@@ -100,13 +117,13 @@ with open(out_path, "w", newline="") as f:
                                "2026-08-14; cross-checked against the pre-existing "
                                "CSC_subtype_signatures.ensembl_mapping.tsv"])
 
-primary = [r for r in rows if r[4].startswith("include_primary")]
-primary_strict = [r for r in rows if r[4] == "include_primary"]
+primary = [r for r in rows if r[4] == "include_primary"]
+extended = [r for r in rows if r[4] in ("include_primary", "include_extended_sensitivity_only")]
 excluded = [r for r in rows if r[4] == "exclude"]
 
 print(f"Total mouse genes audited: {len(rows)}")
-print(f"Primary scoring set (one2one + flagged one2many): {len(primary)} genes")
+print(f"PRIMARY scoring set (Compara-confirmed one2one only): {len(primary)} genes")
 print(f"  -> {sorted(r[1] for r in primary)}")
-print(f"Strict one2one-only sensitivity set: {len(primary_strict)} genes")
+print(f"EXTENDED/sensitivity set (primary + ambiguous one2many Ly6a): {len(extended)} genes")
 print(f"Excluded (no Compara-confirmed ortholog): {len(excluded)} genes -> {[r[0] for r in excluded]}")
 print(f"\nWrote {out_path}")

@@ -68,18 +68,32 @@ signature meant to stand as a rigorous Oncofetal anchor.
 
 **Net effect on the frozen scoring set**: revCSC shrinks from the
 previously-reported "31 mapped genes" to a corrected, ortholog-verified
-**28-gene primary set** (27 confirmed `one2one` + `Ly6a` flagged
-`one2many`), with a **27-gene strict `one2one`-only sensitivity set**
-(dropping `Ly6a`) reported alongside every primary result per the
-pre-registered inclusion rule below.
+**27-gene primary set** (Compara-confirmed `one2one` only), with a
+**28-gene extended/sensitivity set** (adding `Ly6a`) reported alongside
+every primary result per the pre-registered inclusion rule below.
 
 ## Pre-registered inclusion rule (decided here, before any scoring compute — not post-hoc)
 
-- **Primary revCSC score**: the 28-gene set (27 `one2one` + `Ly6a`).
-- **Sensitivity variant, reported alongside every primary result, not
-  optionally**: the 27-gene strict `one2one`-only set (`Ly6a` dropped).
-  Any material difference between the two is itself worth reporting, not
-  discarded.
+**Revised per PR #17 review round 2 (`REQUEST_CHANGES`)**: an earlier
+version of this rule put the 28-gene set (27 `one2one` + `Ly6a`) in
+"primary" because `Ly6a`'s specific human target (`ENSG00000291309`) had
+already tested out as reasonable against real CRC/NMF/Jaccard data.
+Reviewer correctly flagged this as **outcome-dependent evidence leaking
+into the definition of what is supposed to be an orthology-only-driven
+primary anchor** — the fact that a downstream analysis already "liked"
+that particular ambiguous target is exactly the kind of postdiction a
+primary anchor's construction must stay blind to. Fixed:
+
+- **PRIMARY revCSC score**: the **27-gene** Compara-confirmed `one2one`
+  set only. Selection driven purely by orthology provenance, zero input
+  from any downstream CRC/NMF result.
+- **EXTENDED/sensitivity variant, reported alongside every primary result,
+  not optionally**: the **28-gene** set adding `Ly6a` (`one2many`,
+  ambiguous target choice). Any material difference between the two is
+  itself worth reporting, not discarded. This does not mean `Ly6a` is
+  wrong — only that its inclusion confidence differs from the other 27,
+  so it does not belong in the anchor's most conservative, most
+  unambiguous version.
 - Genes with no Compara-confirmed ortholog (`Ctla2a`, `Cldn4`, `Ctsl`,
   `Sprr1a`) are excluded from both variants.
 - All future scoring, overlap-audit, or write-up steps reference
@@ -101,5 +115,5 @@ P=0) is unaffected by this correction and does not need to be re-run.
   decision, and an explicit note for every corrected/excluded gene.
 - `revcsc_mouse_human_ortholog_audit.tsv` — raw Ensembl Compara query
   results (pre-consolidation), kept for traceability.
-- `revCSC_symbols.primary28.txt` / `revCSC_symbols.strict_one2one27.txt` —
+- `revCSC_symbols.primary27.txt` / `revCSC_symbols.extended28.txt` —
   the two scoring-set gene lists per the inclusion rule above.
