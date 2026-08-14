@@ -40,10 +40,18 @@ below) — it is not itself an independently-published Oncofetal(-like)
 definition. Treating M11's own top-loading gene list as "the Oncofetal
 score" conflates "the module that happens to look most like revCSC in this
 one atlas" with "the accepted definition of Oncofetal/revival-CSC identity."
-**The actual independently-published, accepted Oncofetal-like signature is
-`revCSC` itself** (mouse-intestinal-regeneration-derived revival
-cancer-stem-cell signature, human-ortholog-mapped). Fixed by **promoting
-revCSC's own gene list to the primary Oncofetal anchor**, demoting M11 to a
+**The actual independently-published, oncofetal-like reference signature is
+`revCSC` itself** (mouse revival-cancer-stem-cell signature from *An
+oncogenic phenoscape of colonic stem cell polarization* — a CRC/colonic
+stem-cell-polarization study, **not** a normal-tissue regeneration paper;
+an earlier draft of this doc mischaracterized the source as
+"mouse-intestinal-regeneration-derived" / Ayyaz et al. 2019 Nature, which is
+a different paper about normal intestinal repair — corrected here per
+direct user correction, source citation not independently re-verified
+beyond the corrected title). Fixed by **promoting revCSC's own gene list to
+the primary Oncofetal anchor** — described as a published, independently
+defined revCSC regenerative/oncofetal-like reference signature, not
+asserted as a field-consensus "the" Oncofetal definition — demoting M11 to a
 secondary concordance check (does the atlas's own independent NMF module
 line up with revCSC-high cells?), and dropping the primary cohort's
 dependence on the 297,307-cell M11-subset restriction (revCSC can be scored
@@ -53,6 +61,19 @@ subset that happens to carry a precomputed M11 score) — see the revised
 sections below. This removes two of the shakier open items (M11≠Oncofetal
 ambiguity, 297K-subset provenance uncertainty) from the critical path
 entirely, rather than resolving them.
+
+**PR #17 review round 1 (REQUEST_CHANGES)** agreed with the M11→revCSC
+pivot but caught a real gap in how it was implemented: the "31 mapped
+revCSC genes" only proved naive symbol-matching success, not verified
+mouse→human orthology. Fixed by querying Ensembl Compara's own orthology
+calls directly for all 32 candidate genes — found and corrected 3 genes
+with no Compara-confirmed ortholog (`Cldn4`, `Ctsl`, `Sprr1a`, previously
+included via symbol match alone) and 1 outright wrong Ensembl ID (`Ccn1`
+was pointed at `CCNA2`, an unrelated gene). Also corrected a source-paper
+mischaracterization (revCSC is from *An oncogenic phenoscape of colonic
+stem cell polarization*, not Ayyaz et al. 2019). See "revCSC
+mouse→human ortholog provenance audit" below. Frozen scoring set: 28
+genes (27 confirmed `one2one` + 1 flagged `one2many`).
 
 This is the step that finally answers the project's original Q1 (`docs/PROJECT_SUMMARY.md:9-13`):
 
@@ -128,9 +149,12 @@ same discipline as reusing published cell-type calls:
   mesenchymal-like."
 - `NMF/csc_signature_jaccard/` + `NMF/revCSC_overlap_tables/` — a **prior,
   independent Jaccard-overlap validation** of all 21 MPs against a published
-  mouse-intestinal-regeneration-derived CRC cancer-stem-cell subtype signature
-  set (`Lgr5CSC`/`proCSC`/`revCSC`, human-ortholog-mapped, 31/42 revCSC genes
-  successfully mapped). **M11 is the best- or near-best-matching MP to `revCSC`
+  CRC/colonic-stem-cell-polarization-derived cancer-stem-cell subtype
+  signature set (*An oncogenic phenoscape of colonic stem cell
+  polarization*; `Lgr5CSC`/`proCSC`/`revCSC`, human-ortholog-mapped, 31/42
+  revCSC genes successfully mapped — see "revCSC mouse→human ortholog
+  provenance audit" below for the orthology-verification step). **M11 is
+  the best- or near-best-matching MP to `revCSC`
   across every robustness check run** (unique-gene and repeated-gene top-gene
   list versions, at cutoffs 50/100/200 — `revCSC_overlap_summary.md`): e.g. at
   top50 (unique-gene version), M11 has the highest Jaccard (0.085,
@@ -258,12 +282,19 @@ the primary-anchor overlap audit.
 Same discipline as the M11 audit above, applied to the actual primary
 anchor. **revCSC's mapped human gene set** (`CSC_subtype_signatures.
 ensembl_mapping.tsv`, cluster=revCSC: 42 raw rows → 32 distinct symbols →
-**31 successfully mapped to a human Ensembl ID**, 1 dropped — `CTLA2A`,
-failed mouse→human mapping) was intersected against D-shared (6),
-F-specific global (2,504), each of the 7 F-lineage modules (each ∩
-`F_specific_FINAL.txt`), and P-specific (78). Computed directly on Argos
-(job 3620636), output pulled back and verified byte-exact
+31 symbol-matched to a human Ensembl ID via naive uppercasing, 1 dropped —
+`CTLA2A`, failed even symbol-level matching) was intersected against
+D-shared (6), F-specific global (2,504), each of the 7 F-lineage modules
+(each ∩ `F_specific_FINAL.txt`), and P-specific (78). Computed directly on
+Argos (job 3620636), output pulled back and verified byte-exact
 (`results/06_crc_projection/revcsc_overlap_audit/`).
+
+**Superseded by the ortholog provenance audit below**: this 31-gene set
+only proved symbol-matching success, not verified orthology — see
+"revCSC mouse→human ortholog provenance audit" immediately after this
+section. The frozen scoring set is 28 genes; the overlap numbers in the
+table below are unaffected (all corrected/excluded genes are absent from
+every D/F/P set) and did not need to be re-run.
 
 | Target signature (n genes) | revCSC overlap (n) | Overlapping genes |
 |---|---|---|
@@ -278,18 +309,70 @@ F-specific global (2,504), each of the 7 F-lineage modules (each ∩
 | F-lineage Thymus (1,189) | 2 | `ACTA1`, `ANKRD1` |
 | F-lineage Thyroid (682) | 1 | `ACTA1` |
 
-**Overlap is small but real** (2 of revCSC's 31 genes, both muscle/stress-
+**Overlap is small but real** (`ACTA1` and `ANKRD1`, both muscle/stress-
 response genes — `ACTA1` skeletal-muscle actin, `ANKRD1` a mechanosensitive
 cardiac/muscle stress-response gene — plausible generic "activated/
-mesenchymal-like" markers, not developmentally specific to any one organ).
-**Same overlap-exclusion contract as M11**: the primary revCSC↔F-specific
+mesenchymal-like" markers, not developmentally specific to any one organ;
+both remain in the corrected 28-gene primary set below). **Same
+overlap-exclusion contract as M11**: the primary revCSC↔F-specific
 (global and Thymus/Spleen/Thyroid lineage) correlations use an
-overlap-excluded revCSC score (29 genes, dropping `ACTA1`/`ANKRD1` only for
-the specific F-comparisons where they're shared); the full 31-gene revCSC
+overlap-excluded revCSC score (26 genes, dropping `ACTA1`/`ANKRD1` only for
+the specific F-comparisons where they're shared); the full primary revCSC
 score is retained as a sensitivity check; revCSC↔D-shared and
 revCSC↔P-specific need no exclusion (zero overlap). Only associations
 surviving overlap exclusion are interpreted as genuine developmental
 relationships, not shared-gene artifacts.
+
+## revCSC mouse→human ortholog provenance audit (PR #17 review round 1 requirement)
+
+**A distinct, more fundamental concern than gene-overlap coupling**: the
+31-gene set above only proves that a naive uppercased mouse symbol
+*matches* an HGNC-approved human symbol — that is symbol-mapping success,
+not verified mouse→human **orthology**. Reviewer required this be turned
+into a frozen, auditable artifact before revCSC could stand as the primary
+Oncofetal anchor, not asserted from symbol capitalization alone. Checked
+directly: queried Ensembl Compara's own computed orthology calls
+(`homology/symbol` REST API) for each of the 32 distinct mouse gene
+symbols. Full detail, method, and per-gene notes:
+`results/06_crc_projection/revcsc_overlap_audit/revcsc_ortholog_provenance_audit.md`.
+
+**Also corrected in this round**: an earlier version of this document
+mischaracterized revCSC's source paper as mouse-intestinal-regeneration-
+derived (Ayyaz et al. 2019 Nature) — per direct user correction, the actual
+source is *An oncogenic phenoscape of colonic stem cell polarization*, a
+CRC/colonic-stem-cell-polarization study (a cancer-context signature, not a
+normal-tissue one — see "Independent Oncofetal anchor" above for the
+corrected description).
+
+**Result: 3 genes dropped, 1 wrong Ensembl ID corrected, all found by not
+trusting the naive symbol match**:
+
+| Outcome | n | Genes |
+|---|---|---|
+| `ortholog_one2one`, confirmed | 27 | see `revCSC_human_FINAL.tsv` |
+| `ortholog_one2many`, ambiguous, resolvable to the pre-validated target | 1 | `Ly6a`→`LY6A` |
+| No Compara-confirmed ortholog — **excluded**, despite a valid-looking symbol match | 3 | `Cldn4`, `Ctsl`, `Sprr1a` |
+| No ortholog at all (already known) | 1 | `Ctla2a` |
+
+`Ccn1`'s Ensembl ID was **wrong** in the pre-existing table
+(`ENSG00000145386`, which is actually `CCNA2`/Cyclin A2 — an unrelated
+gene, confirmed by direct lookup) and is corrected to Compara's own
+`ortholog_one2one` call (`ENSG00000142871`, confirmed `display_name: CCN1`).
+
+**Frozen scoring set (pre-registered inclusion rule, decided here, not
+post-hoc)**: **28-gene primary set** (27 confirmed `one2one` + `Ly6a`
+flagged `one2many`), with a **27-gene strict `one2one`-only sensitivity
+set** (`Ly6a` dropped) reported alongside every primary result, not
+optionally. Genes with no Compara-confirmed ortholog are excluded from
+both. **All future scoring/overlap-audit steps reference
+`revCSC_human_FINAL.tsv` / `revCSC_symbols.primary28.txt` as the single
+frozen artifact** — not the historical
+`CSC_subtype_signatures.ensembl_mapping.tsv` directly.
+
+**No re-run needed for the D/F/P overlap audit above**: checked directly —
+none of the 4 excluded/corrected genes (`Cldn4`, `Ctsl`, `Sprr1a`,
+`Ctla2a`) appear in any D/F/P gene set, so the reported overlap (D=0,
+F-specific=2 [`ACTA1`,`ANKRD1`], P=0) is unchanged by this correction.
 
 ## Revised analysis structure: two distinct cell populations, three analyses
 
@@ -480,6 +563,19 @@ one could resolve.
    "technical/external validation" (already the working label pending this
    audit, per the dataset-plan section above) and the meta-atlas's 54-study
    count should be reported net of any HTAN overlap where relevant.
+6. **Normal-tissue fetal/revival/regeneration reference for later rounds
+   (flagged, not in scope for this compute round)**: `mike_verzi_fetal_
+   signature.gmt` (`/home/zz950/projects/ApcKO_multiomics/RA_output/`) is a
+   collection of fetal/revival/YAP/regeneration gene sets identified in
+   *normal* tissue — distinct from revCSC, which is a cancer-context
+   Oncofetal-like signature (per user clarification: normal-tissue
+   "fetal-like" and cancer/regeneration-model "oncofetal" are related but
+   not interchangeable concepts). A candidate future cross-check: does the
+   frozen D/F/P developmental reference (also normal-tissue-derived) agree
+   with this independent normal-tissue fetal/revival gene collection?
+   Not pulled into the current primary/secondary/tertiary analysis
+   structure — flagged for a later round to avoid scope creep on top of
+   the revCSC-anchor pivot already in this PR.
 
 ## What this step is not
 
