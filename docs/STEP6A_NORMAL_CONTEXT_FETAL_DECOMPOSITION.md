@@ -157,12 +157,25 @@ either language, so there is no RNG-parity problem to solve:
    gene-ID lists (`control_genes_<dataset>_<target_gene>.txt`-equivalent
    TSV, `null_panel_<dataset>_permXXX.txt`) — no randomness left for
    either language to redo.
-2. **Observed/null module score, identically defined in both languages**:
-   `score = mean(log1p-normalized expression, target genes) -
-   mean(log1p-normalized expression, that gene's precomputed control set)`
-   per cell — the R script and the Python script each just read the
-   frozen gene-list files and compute this mean-difference; there is no
-   remaining implementation choice for either side to diverge on.
+2. **Observed/null module score, precisely and unambiguously defined
+   (PR #18 review round 2 — the round-1 wording, "mean of that gene's
+   control set," was underspecified: for a multi-gene signature it left
+   open how each target gene's individually-sampled control set combines
+   into one signature-level control mean)**: for a signature of target
+   genes `{g1, g2, ..., gn}`, each `gi` has its own frozen control-gene
+   set (sampled from `gi`'s detectability decile, per the frozen
+   assignment file). The signature's **pooled control set** is the
+   **deduplicated union** of all `n` per-gene control sets (if a gene is
+   independently drawn as a control for two different target genes, it
+   counts once, not twice — the same convention `scanpy.tl.score_genes`
+   uses internally, chosen here for consistency with prior project
+   practice, not inherited from either library's code). Per cell:
+   `score = mean(log1p-normalized expression, {g1...gn}) -
+   mean(log1p-normalized expression, pooled deduplicated control set)`.
+   This exact rule — dedup, pooled, not per-gene-averaged-then-averaged —
+   is what both the R and Python scripts implement; the frozen assignment
+   files already encode the sampled sets, so "dedup the union" is the only
+   remaining computational step either script performs before the mean.
 3. **Empirical percentile**: each cell's observed score ranked against
    its own signature's 500 frozen null-panel scores (same `(n_ge+1)/
    (n_perm+1)` convention as Step 5) — computed identically in both
