@@ -2,6 +2,20 @@
 
 ## Purpose
 
+**PR #18 review round 1 (REQUEST_CHANGES)** caught a real structural
+confound in the original scoring plan: scoring HDMA in R
+(`Seurat::AddModuleScore`) and Arutyunyan in Python
+(`scanpy.tl.score_genes`) makes scoring-engine perfectly collinear with
+dataset, which is perfectly collinear with the F-vs-P question being
+tested — an apparent F/P difference could be a scoring-implementation
+artifact, not biology. Fixed by eliminating cross-language randomness
+structurally (freeze all stochastic gene-selection decisions once in
+Python, both languages become pure deterministic arithmetic on the same
+frozen assignments) plus an implementation-parity test — see "Scoring
+implementation" below. Also adopted the reviewer's non-blocking wording
+fix: the primary question no longer presupposes F-aligns/P-stays-distinct,
+reworded to a genuinely open pre-registered question.
+
 User redirected Step 6's execution order: before running the cancer-context
 revCSC × CRC decomposition (Step 6b, `docs/STEP6_CRC_PROJECTION_DESIGN.md`,
 design approved in PR #17), first check whether the frozen D/F/P signature
@@ -111,20 +125,59 @@ alone is 1,258 genes, expect non-trivial overlap with F-specific
 contract (drop shared genes from the mike_verzi score per pairwise
 comparison) rather than assuming it will be small like revCSC's was.
 
-### 3. Scoring implementation (two tracks — data formats differ)
+### 3. Scoring implementation — one unified, language-independent contract (revised, PR #18 review round 1)
 
-- **HDMA (7 organs, `.rds`/Seurat)**: score in R via
-  `Seurat::AddModuleScore` (the RDS objects are pre-clustered Seurat
-  objects; converting to h5ad first is an unnecessary detour). Build the
-  same expression-matched-null-calibration wrapper in R that Step 5/6b use
-  in Python (detectability-decile-matched random gene panels, N=500
-  permutations, empirical percentile as primary common scale).
-- **Arutyunyan placenta (`.h5ad`)**: score in Python via
-  `scanpy.tl.score_genes`, same null-calibration code already built for
-  Step 6b, reused as-is.
-- Both tracks score: the 5 mike_verzi signatures (overlap-excluded per
-  comparison), D-shared, F-specific (global + 7 lineage modules where
-  applicable), P-specific — same signatures, same method, two datasets.
+**Original plan (flawed, caught by review)**: score HDMA in R via
+`Seurat::AddModuleScore` and Arutyunyan in Python via
+`scanpy.tl.score_genes`, both funneled into "the same" null-calibrated
+percentile. **Reviewer correctly identified a structural confound**: the
+two functions' control-gene sampling, expression binning, and default
+parameters are not guaranteed equivalent — and because HDMA is scored in
+R and Arutyunyan in Python, *scoring engine is perfectly collinear with
+dataset*, which is perfectly collinear with the F-vs-P biological
+question. Any apparent F-vs-P difference could be a scoring-implementation
+artifact, not biology. "Same signatures, same method, two datasets" was
+not actually true — same *signatures*, different *methods*.
+
+**Fix: eliminate cross-language randomness structurally, not by trying to
+replicate one ecosystem's RNG bit-for-bit in the other.** All stochastic
+decisions (detectability binning, control-gene sampling, the 500 null
+gene panels) are computed **once, in Python**, per dataset, and frozen to
+plain gene-list files — reusing the exact detectability-decile-matched
+permutation-null code already built and reviewer-approved in Step 5. R and
+Python then both become pure, deterministic arithmetic engines that
+consume the *same precomputed assignments* — no independent sampling in
+either language, so there is no RNG-parity problem to solve:
+
+1. **Python (once per dataset — HDMA org-by-org, and Arutyunyan)**:
+   compute each gene's detectability decile from that dataset's own
+   expression distribution; for every scored gene (all mike_verzi/D/F/P
+   genes), sample its control-gene set from the matching detectability
+   decile; draw the 500 null gene panels. Freeze all of this as explicit
+   gene-ID lists (`control_genes_<dataset>_<target_gene>.txt`-equivalent
+   TSV, `null_panel_<dataset>_permXXX.txt`) — no randomness left for
+   either language to redo.
+2. **Observed/null module score, identically defined in both languages**:
+   `score = mean(log1p-normalized expression, target genes) -
+   mean(log1p-normalized expression, that gene's precomputed control set)`
+   per cell — the R script and the Python script each just read the
+   frozen gene-list files and compute this mean-difference; there is no
+   remaining implementation choice for either side to diverge on.
+3. **Empirical percentile**: each cell's observed score ranked against
+   its own signature's 500 frozen null-panel scores (same `(n_ge+1)/
+   (n_perm+1)` convention as Step 5) — computed identically in both
+   languages from the same frozen null-panel gene lists.
+4. **Implementation-parity test, run once before trusting any real
+   result**: push one small shared toy expression matrix (same values,
+   same gene IDs) through both the R and the Python arithmetic with the
+   same frozen control/null gene-list assignment; confirm outputs match
+   within a pre-stated numerical tolerance (`1e-9`, floating-point-only
+   slack). This is the concrete, checkable artifact the reviewer asked
+   for, not just an assertion of equivalence.
+5. Both tracks score: the 5 mike_verzi signatures (overlap-excluded per
+   comparison), D-shared, F-specific (global + 7 lineage modules where
+   applicable), P-specific — genuinely the *same* method now, not just
+   the same signatures.
 
 ### 4. Continuous decomposition + patient/sample validation
 
@@ -132,14 +185,19 @@ Per-cell null-calibrated percentile scores correlated (mike_verzi
 signature × D/F/P signature), continuously, within each dataset (HDMA
 per-organ, Arutyunyan placenta) — not binarized up front. Aggregated to
 per-sample/per-donor summaries to confirm no single sample drives the
-correlation (same discipline as Steps 4/5/6b). Primary question: **does
-D/F/P's own fetal-somatic (F) signal align with the independent
-normal-tissue regenerative/fetal-like reference within HDMA, while
-P-specific (placental) stays comparatively distinct within Arutyunyan** —
-consistent with D/F/P's own internal F vs. P separation — **or does the
-mike_verzi reference blur that separation**, which would itself be an
-important finding about how "generically fetal-like" vs.
-"developmentally-specific" these signatures really are.
+correlation (same discipline as Steps 4/5/6b).
+
+**Primary question, reframed per review (non-blocking suggestion, adopted
+to avoid confirmation framing)**: the original framing ("does F align in
+HDMA while P stays distinct in placenta") presupposes the answer these
+construction datasets would be primed to give. Reworded to a genuinely
+open, pre-registered question: ***do independently-defined
+fetal/revival/regenerative programs (the 5 mike_verzi signatures)
+preferentially associate with F-developmental, P-developmental,
+shared-D, or multiple developmental axes at once?*** If, say,
+`REVIVAL_STEM_CELL_GENES` turns out to strongly associate with *both* F
+and P, that is a real, reportable finding (a genuinely shared
+regenerative axis) — not a "failure" of the expected F/P separation.
 
 ## Open items before compute
 
@@ -147,10 +205,16 @@ important finding about how "generically fetal-like" vs.
    gene IDs in one or a few batched calls (test before committing to it as
    the primary method; fall back to a smaller batched REST-based approach
    only if BioMart bulk export proves unworkable).
-2. R `Seurat::AddModuleScore` null-calibration wrapper does not exist yet
-   in this project (Python version does, from Step 5/6b) — needs to be
-   written and validated to give comparable percentile semantics to the
-   Python version before cross-dataset comparison is trusted.
+2. **Superseded by the unified-contract fix above (PR #18 round 1)**:
+   no longer building separate `Seurat::AddModuleScore`/`scanpy.tl.score_genes`
+   wrappers. Instead: (a) write the Python detectability-binning +
+   control-gene-sampling + null-panel-freezing code (extends Step 5's
+   existing permutation-null code to emit explicit gene-list files rather
+   than only summary statistics), (b) write a minimal R script that only
+   reads those frozen files and computes the mean-difference arithmetic —
+   deliberately not using `AddModuleScore`'s own internal sampling at all,
+   (c) run the implementation-parity test on a shared toy matrix before
+   trusting any real HDMA/Arutyunyan result.
 3. Per-organ HDMA cell-count/QC check (how many cells per organ actually
    pass whatever QC the pre-clustered RDS objects already encode) before
    assuming every organ supports a stable score.
