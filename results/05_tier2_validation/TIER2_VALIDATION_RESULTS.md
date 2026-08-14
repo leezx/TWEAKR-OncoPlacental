@@ -4,6 +4,16 @@ Design approved in PR #14 (`docs/STEP5_TIER2_VALIDATION.md`). This document
 reports the compute results and the interpretation reached before submitting
 for review.
 
+**PR #15 review round 1 (REQUEST_CHANGES) fixed two things, both folded
+into this version**: (1) the organ-matched background comparison originally
+used a single unmatched random draw with no null distribution — replaced
+with a 500-permutation, expression-detectability-matched null (see "Result
+2" below); (2) a factual wording error ("81/84 genes show no adult
+single-cell signal" — the correct split is 69/84 zero-hit, 15/84 with at
+least one hit) — corrected in "Result 1" below. The whole-body D/P
+pseudobulk methodology itself was confirmed consistent with PR #14's
+approved contract and did not need to be rerun.
+
 ## What was run
 
 - `scripts/05_tier2_validation/tier2_validation.py` (qsub job 3620542, Argos)
@@ -52,11 +62,22 @@ statistical design from PR #14.
 8,568 (organ, cell_type, gene) triples tested across 84 genes; **54 flagged
 as cross-donor-consistent (0.63%)**.
 
-- **D-shared (6 genes): only 1 flagged** — `PCDH11X` in Thymus endothelial
-  cell of artery (2/2 donors, CPM 3.55/4.97 — low).
-- **P-specific (78 genes): 53 flagged instances, but only 13 distinct genes**
-  ever appear: `RPA4`, `ZNF257`, `ZNF850`, `ZNF695`, `GJB7`, `ERVFRD-1`,
-  `TMEM191C`, `GCM1`, `HTRA4`, `LAIR2`, `KISS1`, `TSKS`, `ZBTB8B`.
+Of the 84 genes tested, **69/84 show zero cross-donor-consistent hits
+anywhere** across all 5 organs' cell types; **15/84 have at least one hit**
+(counted directly from the 84-gene-by-gene breakdown, not estimated):
+
+- **D-shared (6 genes): only 1 of 6 flagged** — `PCDH11X` in Thymus
+  endothelial cell of artery (2/2 donors, CPM 3.55/4.97 — low).
+- **P-specific (78 genes): 14 of 78 flagged** (53 flagged instances total,
+  concentrated in these 14 genes): `RPA4`, `ZNF257`, `ZNF850`, `ZNF695`,
+  `ZNF114`, `GJB7`, `ERVFRD-1`, `TMEM191C`, `GCM1`, `HTRA4`, `LAIR2`,
+  `KISS1`, `TSKS`, `ZBTB8B`.
+
+(An earlier draft of this document said "81/84 genes show no adult
+single-cell signal" — that was a factual error caught in PR #15 review
+round 1: the correct split is 69/84 zero-hit, 15/84 with at least one hit.
+Corrected here; no change to the underlying compute or the flagged-gene
+list itself.)
 
 Two patterns worth flagging for manual review:
 
@@ -83,11 +104,15 @@ Two patterns worth flagging for manual review:
   projection step, since NK cells are relevant to a tumor microenvironment.
 
 **Bottom line for the part of the signature that actually gets used
-downstream: 81 of 84 genes (all of D-shared except a low-CPM PCDH11X hit,
-65 of 78 P-specific) show no cross-donor-consistent adult single-cell
-signal in this Tier-2 check.** This is a clean result and does not motivate
-re-opening the frozen Step 4 signature, beyond flagging 3 genes
-(`ZNF257`, `ZNF850`, `RPA4`) as recurring low-confidence and 2 genes
+downstream: 69 of 84 genes (5 of 6 D-shared, 64 of 78 P-specific) show
+zero cross-donor-consistent adult single-cell hits anywhere in this
+Tier-2 check; 15 of 84 (1 D-shared, 14 P-specific) have at least one
+hit**, and of those 15, most are low-CPM/single-cell-type occurrences —
+this is still a clean result relative to the whole signature and does not
+motivate re-opening the frozen Step 4 cutoffs, beyond flagging 4 genes
+(`ZNF257`, `ZNF850`, `RPA4`, `ZNF695`, each appearing at low CPM in
+multiple organs/cell types) as recurring low-confidence, `ZNF114` as a
+single low-CPM (3.3-4.7) one-off occurrence, and 2 genes
 (`GCM1`, `LAIR2`) as high-value manual-review items.
 
 ## Result 2: organ-matched F-specific check (the larger candidate lists)
@@ -101,58 +126,63 @@ flags (55%), despite being only 1 of 4 organs and having the smallest
 organ-specific F-list at 1,191 genes. Liver, by contrast, contributes only
 296 flags despite 800 candidate genes.
 
-**(b) Background-rate comparison (job 3620544) shows this is not uniform
-gene-driven signal — it's organ-specific:**
+**(b) Background comparison — corrected in PR #15 review round 1.** The
+first version of this check (`background_detection_rate_comparison.tsv`,
+job 3620544) drew a single random gene panel per organ (fixed seed, sampled
+uniformly from the full transcriptome) and reported one fold-enrichment
+number per cell type. Reviewer flagged two real problems: no null
+distribution/uncertainty from a single random draw, and no
+expression/detectability matching — F-specific genes already passed Step
+4's fetal-expression selection, so an unmatched background pulls in large
+numbers of low/never-expressed genes, mechanically deflating the
+"background" rate and inflating the apparent enrichment.
 
-| Organ | F-specific flag rate range | Random-panel flag rate range | Enrichment |
+**Fixed**: rewrote `background_detection_rate.py` to run a real
+matched-permutation null (`background_permutation_null.tsv`, job 3620548):
+genes are binned into detectability deciles by their own overall adult
+detection frequency in that organ's Tabula Sapiens data (fraction of
+eligible donor-celltype samples with CPM≥1, computed from the same data
+being tested), and each of 500 permutations draws one random gene per
+F-specific gene from its matching decile — giving a background panel
+matched in size AND expression-level composition. Reports null median, 95%
+interval, and an empirical one-sided p-value (fraction of the 500
+permutation flag rates ≥ the observed rate) per (organ, cell_type).
+
+**Result: the earlier ~2.2–3.2× Thymus enrichment was substantially an
+artifact of the unmatched background.** Under the expression-matched null:
+
+| Organ | Cell types tested | Significant at p<0.05 | Enrichment among significant hits |
 |---|---|---|---|
-| Liver | 0–8% | 0–11% | ~0.6–1.7× (essentially no enrichment; F-specific ≈ background) |
-| Skin | 0–31% | 0–19% | ~0.7–1.7× (essentially no enrichment) |
-| Spleen | 0–29% | 0–21% | ~0.5–1.4× (essentially no enrichment) |
-| Thymus | 0–65% | 0–21% | **~2.2–3.2× across nearly every cell type** |
+| Liver | 12 | **0** | — (no organ-matched signal at all) |
+| Skin | 18 | 4 (stromal cell, muscle cell, endothelial cell, T cell) | 1.11–1.27× |
+| Spleen | 23 | 2 (endothelial cell, innate lymphoid cell) | 1.20–1.34× |
+| Thymus | 29 | 7 (capillary/arterial/venous endothelium, fibroblast, macrophage, medullary thymic epithelial cell, vascular smooth muscle) | 1.06–1.29× |
 
-Liver/Skin/Spleen: F-specific genes are detected at essentially the same
-rate as a random gene panel of the same size in the same cell types — the
-~15% raw flagging rate in those 3 organs is explained by generic single-cell
-detection breadth of certain cell types (mirrored in both the real and
-random panels), not by anything specific to the curated F-developmental gene
-content.
+Thymus still has the most cell types clearing significance (7/29, vs. 0/12
+in Liver), and medullary thymic epithelial cell remains among the
+significant hits (1.29×) — consistent with, though far more modest than
+originally reported, the AIRE/FEZF2 "promiscuous gene expression"
+candidate explanation. But **22 of Thymus's 29 cell types, and every one of
+Liver's 12, show no significant difference from an expression-matched
+random panel** — the naive uniform-background comparison had overstated
+both the breadth (nearly every Thymus cell type) and the magnitude (2.2–3.2×
+vs. the corrected 1.06–1.29×) of the effect. The real, corrected finding is
+a narrower and much smaller signal in Thymus stromal/endothelial/mTEC
+populations specifically, not an organ-wide 2–3× elevation.
 
-**Thymus is a real, organ-specific exception** — every major cell type
-(fibroblast 3.2×, medullary thymic epithelial cell 3.18×, vascular smooth
-muscle 3.06×, arterial/venous/capillary endothelium 2.85–2.97×, macrophage
-2.43×, monocyte 2.4×, NK cell 2.23×, CD4 T cell 2.2×, plasma cell 1.77×)
-shows F-specific genes detected ~2–3× more often than random genes of the
-same panel size.
-
-A partial, plausible biological explanation: medullary thymic epithelial
-cells (mTECs) are documented in the immunology literature to exhibit
-**AIRE/FEZF2-driven "promiscuous gene expression"** — deliberate broad
-transcription of thousands of tissue-restricted self-antigens, including
-developmentally-restricted genes, for central T-cell tolerance induction.
-This is consistent with mTEC showing the largest single enrichment (3.18×)
-in the table. It does **not**, however, explain why the same organ's
-endothelial, fibroblast, and myeloid/lymphoid cell types are similarly
-elevated — those cell types don't have a documented promiscuous-expression
-mechanism, so either (a) there is a Thymus-wide technical or compositional
-factor not yet identified (candidates checked and ruled out so far: trivial
-small-library artifact, and dominant assay-method mixing — see prior
-session's per-donor library-size and 10X/smartseq2 checks for "vein
-endothelial cell"), or (b) the F-developmental candidate gene panel itself
-happens to be enriched for genes with real broader adult expression breadth
-in Thymus tissue specifically, independent of placental/fetal specificity.
-
-**This does not currently motivate re-opening the frozen F-specific
-signature**, because (i) the actual frozen `F_specific_FINAL.txt` (2,504
-genes) already excludes anything overlapping `P_developmental_primary84`,
-and separately underwent its own adult-exclusion calibration in Step 4 —
-this Tier-2 check is testing the pre-final per-organ *candidate* lists,
-which are a superset; (ii) 3 of 4 organs show no meaningful enrichment at
-all. The organ-matched flagged list (`organ_matched_F_specific_FLAGGED.tsv`)
-is retained as an audit trail, and Thymus-flagged F-specific genes should be
-weighted with extra caution if/when the frozen signature is later projected
-onto thymus-adjacent contexts, but CRC is not thymus tissue, so this is a
-lower-priority finding for the immediate next step (CRC Oncofetal
+**This does not motivate re-opening the frozen F-specific signature**,
+for the same structural reasons as before (the frozen `F_specific_FINAL.txt`
+already excludes anything overlapping `P_developmental_primary84` and
+underwent its own adult-exclusion calibration in Step 4; this Tier-2 check
+tests the pre-final per-organ *candidate* lists, a superset) — reinforced
+now by the corrected effect sizes being modest (≤1.34×) rather than the
+originally reported 2–3×. The organ-matched flagged list
+(`organ_matched_F_specific_FLAGGED.tsv`) and the permutation-null table
+(`background_permutation_null.tsv`) are retained as the audit trail;
+Thymus's 7 significant cell types (and Spleen's/Skin's smaller sets) should
+still get extra caution if the frozen signature is later projected onto
+thymus- or spleen-adjacent contexts, but CRC is not thymus tissue, so this
+remains a lower-priority finding for the immediate next step (CRC Oncofetal
 projection).
 
 ## Files
@@ -161,15 +191,18 @@ projection).
 - `results/05_tier2_validation/organ_matched_F_specific_FLAGGED.tsv` — cross-donor-consistent hits only, 12,187 rows.
 - `results/05_tier2_validation/whole_body_DP_validation.tsv` — full (organ,cell_type,gene) report for D-shared+P-specific, 8,568 rows.
 - `results/05_tier2_validation/whole_body_DP_FLAGGED.tsv` — cross-donor-consistent hits only, 54 rows.
-- `results/05_tier2_validation/background_detection_rate_comparison.tsv` — per-(organ,cell_type) F-specific vs. random-panel flag rate and enrichment ratio.
+- `results/05_tier2_validation/background_detection_rate_comparison.tsv` — **superseded**, single-draw unmatched-background comparison from before PR #15 review round 1; kept only as a record of what was corrected, not to be cited as a result.
+- `results/05_tier2_validation/background_permutation_null.tsv` — the corrected 500-permutation, expression-matched null per (organ, cell_type): observed rate, null median/95% interval, empirical p-value, enrichment vs. null median.
 
 ## Recommendation for next step
 
 1. Treat the whole-body D-shared/P-specific result as validation-passed,
-   with `ZNF257`/`ZNF850`/`RPA4` downgraded to lower-confidence and
+   with `ZNF257`/`ZNF850`/`RPA4`/`ZNF695`/`ZNF114` downgraded to lower-confidence and
    `GCM1`/`LAIR2` flagged for a quick literature sanity check before the CRC
    projection (not a re-calibration of Step 4's frozen cutoffs).
 2. Proceed to the next step in the reviewer's PR #13 guidance: project the
    frozen D/F/P signature onto real CRC Oncofetal single-cell/spatial data.
-   The Thymus-specific F-developmental enrichment is noted as an audit
-   finding but does not block this, since CRC is not thymus tissue.
+   Thymus's 7 significant cell types (mTEC, fibroblast, vascular smooth
+   muscle, 3 endothelial subtypes) are noted as a modest (1.06-1.29x),
+   expression-matched-null-confirmed audit finding but do not block this,
+   since CRC is not thymus tissue.
