@@ -1,0 +1,7 @@
+pct_cut	quorum	n_pass_gtex_wholebody	n_P_dev_via_GTEx	n_pass_hpa_wholebody	n_P_dev_via_HPA	n_P_dev_GTEx_AND_HPA_agree
+10	all	39104	57	1972	50	25
+10	all_but_1	47668	116	3452	91	55
+10	all_but_2	49706	139	4242	123	73
+25	all	44705	89	2829	84	37
+25	all_but_1	51834	158	4744	160	84
+25	all_but_2	53456	180	5738	207	105
