@@ -1,0 +1,326 @@
+{
+  "LargeInt": {
+    "donor_level_table": [
+      {
+        "Sample name": "A26 (386C)",
+        "Age_group": "Adult",
+        "tenX": "5'",
+        "source_family": "Human_colon_16S",
+        "n_source_family_within_donor": 1,
+        "n_cells": 4397
+      },
+      {
+        "Sample name": "A30 (398B)",
+        "Age_group": "Adult",
+        "tenX": "3'",
+        "source_family": "WTDAtest",
+        "n_source_family_within_donor": 1,
+        "n_cells": 2276
+      },
+      {
+        "Sample name": "A32 (411C)",
+        "Age_group": "Adult",
+        "tenX": "5'",
+        "source_family": "Human_colon_16S",
+        "n_source_family_within_donor": 1,
+        "n_cells": 1410
+      },
+      {
+        "Sample name": "A33 (414C)",
+        "Age_group": "Adult",
+        "tenX": "3'",
+        "source_family": "WTDAtest",
+        "n_source_family_within_donor": 1,
+        "n_cells": 16828
+      },
+      {
+        "Sample name": "A34 (417C)",
+        "Age_group": "Adult",
+        "tenX": "5'",
+        "source_family": "Human_colon_16S",
+        "n_source_family_within_donor": 1,
+        "n_cells": 7097
+      },
+      {
+        "Sample name": "A38 (432C)",
+        "Age_group": "Adult",
+        "tenX": "5'",
+        "source_family": "Human_colon_16S",
+        "n_source_family_within_donor": 1,
+        "n_cells": 3883
+      },
+      {
+        "Sample name": "A39 (440C)",
+        "Age_group": "Adult",
+        "tenX": "5'",
+        "source_family": "Human_colon_16S",
+        "n_source_family_within_donor": 1,
+        "n_cells": 2721
+      },
+      {
+        "Sample name": "F66",
+        "Age_group": "Second trim",
+        "tenX": "3'",
+        "source_family": "Human_colon_16S",
+        "n_source_family_within_donor": 1,
+        "n_cells": 582
+      },
+      {
+        "Sample name": "F67",
+        "Age_group": "Second trim",
+        "tenX": "3'",
+        "source_family": "Human_colon_16S",
+        "n_source_family_within_donor": 1,
+        "n_cells": 192
+      },
+      {
+        "Sample name": "F72",
+        "Age_group": "Second trim",
+        "tenX": "5'",
+        "source_family": "Human_colon_16S",
+        "n_source_family_within_donor": 1,
+        "n_cells": 181
+      },
+      {
+        "Sample name": "F73",
+        "Age_group": "Second trim",
+        "tenX": "5'",
+        "source_family": "Human_colon_16S",
+        "n_source_family_within_donor": 1,
+        "n_cells": 1930
+      },
+      {
+        "Sample name": "F78",
+        "Age_group": "Second trim",
+        "tenX": "5'",
+        "source_family": "FCA_gut",
+        "n_source_family_within_donor": 1,
+        "n_cells": 596
+      }
+    ],
+    "age_x_10X_x_source_family_donor_counts": {
+      "('Adult', \"3'\", 'WTDAtest')": 2,
+      "('Adult', \"5'\", 'Human_colon_16S')": 5,
+      "('Second trim', \"3'\", 'Human_colon_16S')": 2,
+      "('Second trim', \"5'\", 'FCA_gut')": 1,
+      "('Second trim', \"5'\", 'Human_colon_16S')": 2
+    },
+    "rank_10X_Age_group": {
+      "formula": "tenX + Age_group",
+      "n_rows": 12,
+      "n_params": 3,
+      "rank": 3,
+      "full_rank": true
+    },
+    "rank_10X_source_family_Age_group": {
+      "formula": "tenX + source_family + Age_group",
+      "n_rows": 12,
+      "n_params": 5,
+      "rank": 5,
+      "full_rank": true
+    },
+    "five_prime_only_subset": [
+      {
+        "Sample name": "A26 (386C)",
+        "Age_group": "Adult",
+        "source_family": "Human_colon_16S",
+        "n_cells": 4397
+      },
+      {
+        "Sample name": "A32 (411C)",
+        "Age_group": "Adult",
+        "source_family": "Human_colon_16S",
+        "n_cells": 1410
+      },
+      {
+        "Sample name": "A34 (417C)",
+        "Age_group": "Adult",
+        "source_family": "Human_colon_16S",
+        "n_cells": 7097
+      },
+      {
+        "Sample name": "A38 (432C)",
+        "Age_group": "Adult",
+        "source_family": "Human_colon_16S",
+        "n_cells": 3883
+      },
+      {
+        "Sample name": "A39 (440C)",
+        "Age_group": "Adult",
+        "source_family": "Human_colon_16S",
+        "n_cells": 2721
+      },
+      {
+        "Sample name": "F72",
+        "Age_group": "Second trim",
+        "source_family": "Human_colon_16S",
+        "n_cells": 181
+      },
+      {
+        "Sample name": "F73",
+        "Age_group": "Second trim",
+        "source_family": "Human_colon_16S",
+        "n_cells": 1930
+      },
+      {
+        "Sample name": "F78",
+        "Age_group": "Second trim",
+        "source_family": "FCA_gut",
+        "n_cells": 596
+      }
+    ],
+    "threeprime_source_family_overlap_between_age_groups": [],
+    "threeprime_age_source_family_collinear": true
+  },
+  "SmallInt": {
+    "donor_level_table": [
+      {
+        "Sample name": "A32 (411C)",
+        "Age_group": "Adult",
+        "tenX": "5'",
+        "source_family": "Human_colon_16S",
+        "n_source_family_within_donor": 1,
+        "n_cells": 4722
+      },
+      {
+        "Sample name": "A33 (414C)",
+        "Age_group": "Adult",
+        "tenX": "3'",
+        "source_family": "WTDAtest",
+        "n_source_family_within_donor": 1,
+        "n_cells": 119
+      },
+      {
+        "Sample name": "A34 (417C)",
+        "Age_group": "Adult",
+        "tenX": "5'",
+        "source_family": "Human_colon_16S",
+        "n_source_family_within_donor": 1,
+        "n_cells": 8424
+      },
+      {
+        "Sample name": "A38 (432C)",
+        "Age_group": "Adult",
+        "tenX": "5'",
+        "source_family": "Human_colon_16S",
+        "n_source_family_within_donor": 1,
+        "n_cells": 1272
+      },
+      {
+        "Sample name": "A39 (440C)",
+        "Age_group": "Adult",
+        "tenX": "5'",
+        "source_family": "Human_colon_16S",
+        "n_source_family_within_donor": 1,
+        "n_cells": 2155
+      },
+      {
+        "Sample name": "F66",
+        "Age_group": "Second trim",
+        "tenX": "3'",
+        "source_family": "Human_colon_16S",
+        "n_source_family_within_donor": 1,
+        "n_cells": 2263
+      },
+      {
+        "Sample name": "F67",
+        "Age_group": "Second trim",
+        "tenX": "3'",
+        "source_family": "Human_colon_16S",
+        "n_source_family_within_donor": 1,
+        "n_cells": 403
+      },
+      {
+        "Sample name": "F72",
+        "Age_group": "Second trim",
+        "tenX": "5'",
+        "source_family": "Human_colon_16S",
+        "n_source_family_within_donor": 1,
+        "n_cells": 8907
+      },
+      {
+        "Sample name": "F73",
+        "Age_group": "Second trim",
+        "tenX": "5'",
+        "source_family": "Human_colon_16S",
+        "n_source_family_within_donor": 1,
+        "n_cells": 3916
+      },
+      {
+        "Sample name": "F78",
+        "Age_group": "Second trim",
+        "tenX": "5'",
+        "source_family": "FCA_gut",
+        "n_source_family_within_donor": 1,
+        "n_cells": 1525
+      }
+    ],
+    "age_x_10X_x_source_family_donor_counts": {
+      "('Adult', \"3'\", 'WTDAtest')": 1,
+      "('Adult', \"5'\", 'Human_colon_16S')": 4,
+      "('Second trim', \"3'\", 'Human_colon_16S')": 2,
+      "('Second trim', \"5'\", 'FCA_gut')": 1,
+      "('Second trim', \"5'\", 'Human_colon_16S')": 2
+    },
+    "rank_10X_Age_group": {
+      "formula": "tenX + Age_group",
+      "n_rows": 10,
+      "n_params": 3,
+      "rank": 3,
+      "full_rank": true
+    },
+    "rank_10X_source_family_Age_group": {
+      "formula": "tenX + source_family + Age_group",
+      "n_rows": 10,
+      "n_params": 5,
+      "rank": 5,
+      "full_rank": true
+    },
+    "five_prime_only_subset": [
+      {
+        "Sample name": "A32 (411C)",
+        "Age_group": "Adult",
+        "source_family": "Human_colon_16S",
+        "n_cells": 4722
+      },
+      {
+        "Sample name": "A34 (417C)",
+        "Age_group": "Adult",
+        "source_family": "Human_colon_16S",
+        "n_cells": 8424
+      },
+      {
+        "Sample name": "A38 (432C)",
+        "Age_group": "Adult",
+        "source_family": "Human_colon_16S",
+        "n_cells": 1272
+      },
+      {
+        "Sample name": "A39 (440C)",
+        "Age_group": "Adult",
+        "source_family": "Human_colon_16S",
+        "n_cells": 2155
+      },
+      {
+        "Sample name": "F72",
+        "Age_group": "Second trim",
+        "source_family": "Human_colon_16S",
+        "n_cells": 8907
+      },
+      {
+        "Sample name": "F73",
+        "Age_group": "Second trim",
+        "source_family": "Human_colon_16S",
+        "n_cells": 3916
+      },
+      {
+        "Sample name": "F78",
+        "Age_group": "Second trim",
+        "source_family": "FCA_gut",
+        "n_cells": 1525
+      }
+    ],
+    "threeprime_source_family_overlap_between_age_groups": [],
+    "threeprime_age_source_family_collinear": true
+  }
+}
