@@ -1,33 +1,42 @@
 #!/usr/bin/env python3
 """
-HPA trophoblast/placenta known-gene enrichment calibration for the
-P-developmental effect-size cutoff, per the PR #9 reviewer's explicit next
-step: "先把 0.75 作为 leading candidate、再用独立的 HPA trophoblast/placenta
-enrichment 决定是否冻结".
+HPA placenta tissue-level enrichment calibration for the P-developmental
+effect-size cutoff, per the PR #9 reviewer's explicit next step: "先把 0.75
+作为 leading candidate、再用独立的 HPA trophoblast/placenta enrichment 决定
+是否冻结".
 
 Independent of the edgeR pseudobulk DE itself: uses HPA's own bulk RNA
 consensus data (rna_tissue_hpa.tsv, per STEP3_METHOD_CONTRACT.md's Tier-1
 adult reference; placenta row used here only as a POSITIVE cross-check,
 never as adult-negative reference, per the role-column fix in PR #5).
 
-Defines "HPA placenta-enriched" using an HPA-derived criterion: HPA's own
-fourfold tissue-enrichment rule (>=4x higher nTPM in placenta than every
-other of HPA's 39 tissues) *plus* a project-defined nTPM>=1 noise floor to
-exclude near-zero-everywhere genes. The floor is NOT part of HPA's own
-published definition -- caught in PR #10 round 1 review, where the first
-draft of this script/doc mislabeled the floored set as "HPA's own/official
-definition." Fixed: code, audit doc, and design doc now name the floor as
-project-defined, and this script also reports the un-floored fourfold set
-(HPA's rule with no addition) as a sensitivity check, confirming the floor
-doesn't change which cutoff the calibration favors.
+Three placenta reference sets, checked against three cutoff candidates:
+
+1. `official_65`: HPA's own published "Tissue enriched (placenta)"
+   classification, fetched directly from proteinatlas.org's search API
+   (query `tissue_category_rna:placenta;Tissue enriched`) -- exactly 65
+   genes, matching HPA's own reported count. This is the real HPA
+   classification, not a project recomputation. Saved locally as
+   `results/04_dfp_signature/hpa_placenta_official_tissue_enriched_65genes.tsv`.
+2. `no_floor`: a **project-recomputed** fourfold-ratio set from the raw HPA
+   nTPM matrix (placenta >= 4x every other tissue's max), WITHOUT an
+   expression floor. PR #10 round 2 review caught a real bug in this
+   recomputation: when placenta and every other tissue are both exactly 0,
+   `0 >= 4*0` is trivially true, so near-zero/zero-everywhere genes flood
+   into this set on a division-by-zero-shaped artifact -- this is why it
+   doesn't reproduce HPA's actual 65-gene classification (604 vs 65). It is
+   NOT "HPA's rule exactly as published" and must never be called that --
+   it's the project's own recomputation attempt from the matrix, kept only
+   as a robustness/sensitivity check alongside the real official set.
+3. `floored`: the same project recomputation, but with an explicit
+   project-defined nTPM>=1 floor to exclude the zero/zero artifact above.
+   Still a project recomputation, not HPA's official classification.
 
 For each dataset and each candidate effect-size cutoff (0.5/0.75/1.0),
 computes: universe = filterByExpr-tested genes; pass_set = logFC>=cutoff &
-FDR<0.05 (directional, per the round-1 fix); background/pass-set HPA-
-placenta-enriched rates; fold enrichment; hypergeometric p-value. Also
-reports the 2-of-2 overlap set at each cutoff. Run twice -- once against
-the floored reference set, once against the un-floored one -- to confirm
-the floor is not doing the work of picking the cutoff.
+FDR<0.05 (directional, per the PR #9 round-1 fix); background/pass-set
+enriched-gene rates against each of the 3 reference sets; fold enrichment;
+hypergeometric p-value. Also reports the 2-of-2 overlap set at each cutoff.
 
 This is an HPA **placenta tissue-level** external calibration (bulk RNA
 consensus data), not an HPA single-cell trophoblast cell-type calibration
@@ -44,6 +53,7 @@ from scipy.stats import hypergeom
 
 ROOT = "/home/zz950/TWEAKR-OncoPlacental"
 HPA_ZIP = "/home/zz950/DATA/1.Databases/HPA_RNA_tissue_consensus/raw/rna_tissue_hpa.tsv.zip"
+OFFICIAL_65 = f"{ROOT}/results/04_dfp_signature/hpa_placenta_official_tissue_enriched_65genes.tsv"
 EDGE_DIR = f"{ROOT}/results/04_dfp_signature/edgeR"
 OUT = f"{ROOT}/results/04_dfp_signature/hpa_placenta_enrichment.tsv"
 
@@ -61,19 +71,26 @@ placenta = wide["placenta"]
 other = wide.drop(columns=["placenta"])
 other_max = other.max(axis=1)
 
-# HPA's own fourfold "Tissue enriched" rule, unmodified: >=4x every other
-# tissue. No floor -- this is HPA's rule exactly as published.
+# Project recomputation of a fourfold ratio from the matrix, unmodified:
+# placenta >= 4x every other tissue. NOT HPA's official classification --
+# when placenta and all other tissues are 0, 0>=4*0 is trivially true, so
+# zero-everywhere genes leak in (this is why it doesn't match the real
+# 65-gene official set -- see module docstring, PR #10 round 2 review).
 fourfold_only = placenta >= 4 * other_max
 hpa_set_no_floor = set(placenta.index[fourfold_only])
-print(f"HPA fourfold-only set (HPA's rule, no floor): {len(hpa_set_no_floor)} genes")
+print(f"Project-recomputed fourfold-ratio set, no floor (NOT HPA official): {len(hpa_set_no_floor)} genes")
 
-# Project-defined addition: also require nTPM>=1, to exclude near-zero-
-# everywhere genes that can trivially satisfy a 4x ratio on noise. This
-# floor is NOT part of HPA's own definition -- reported separately so the
-# two are never conflated (PR #10 round 1 review).
+# Project-defined addition: also require nTPM>=1, to exclude the zero/zero
+# artifact above. Still a project recomputation, not HPA's own definition.
 placenta_enriched_floored = fourfold_only & (placenta >= 1.0)
 hpa_set_floored = set(placenta.index[placenta_enriched_floored])
-print(f"HPA-derived set (fourfold rule + project nTPM>=1 floor): {len(hpa_set_floored)} genes")
+print(f"Project-recomputed fourfold-ratio set, with nTPM>=1 floor (NOT HPA official): {len(hpa_set_floored)} genes")
+
+# The real HPA official classification -- fetched from proteinatlas.org's
+# search API, not recomputed. Ground truth for this calibration.
+official_genes = pd.read_csv(OFFICIAL_65, sep="\t")["Gene"]
+hpa_set_official = set(official_genes)
+print(f"HPA official 'Tissue enriched (placenta)' set (proteinatlas.org, ground truth): {len(hpa_set_official)} genes")
 
 # ---- Load edgeR results ----
 datasets = {}
@@ -107,7 +124,11 @@ def enrichment_row(name, universe_genes, pass_genes, ref_set, ref_label):
     })
 
 
-references = [("floored", hpa_set_floored), ("no_floor", hpa_set_no_floor)]
+references = [
+    ("official_65", hpa_set_official),
+    ("floored", hpa_set_floored),
+    ("no_floor", hpa_set_no_floor),
+]
 
 for label, df in datasets.items():
     universe = df["gene"].values
