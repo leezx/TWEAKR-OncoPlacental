@@ -88,14 +88,62 @@ caveat above) rather than a defect in the cutoff — but flagged honestly,
 not glossed over, since it could also mean `adult_excl_pct=25` is still
 too strict for some organs.
 
+## Round 2 fix: coverage-aware adult-exclusion evidence (real bug, not just an open question)
+
+The reviewer correctly identified the H19 finding above as a real bug, not
+a minor caveat: the original `adult_excluded_mask()` intersected GTEx's
+and HPA's gene panels *before* evaluating, so a gene present in GTEx but
+simply outside HPA's gene panel (H19: in GTEx's 73,321 genes, absent from
+HPA's 20,151) was silently dropped from the evaluable set entirely —
+conflating "platform doesn't measure this gene" with "gene failed the
+test." Two different failure modes, same (wrong) result.
+
+**Fixed**: `adult_excluded_mask()` now decides each gene's evidence
+provenance individually — `GTEx+HPA` (both platforms measure it, both
+must pass), `GTEx-only` or `HPA-only` (only one platform measures it,
+evaluated on that platform's evidence alone), or absent from the
+evaluable index entirely if neither platform measures it (honestly
+unresolved, never silently marked pass or fail). Re-ran both the full
+calibration and the marker panel with the fix.
+
+**Verified**: H19 in Thymus now correctly shows
+`UNCOVERED_BY_EITHER_PLATFORM` (Thymus has no GTEx column and H19 isn't
+in HPA either — genuine absence of evidence) instead of being silently
+dropped. H19 everywhere else now shows `GTEx-only` provenance and still
+fails `adult_excluded` — but now for a real, attributable reason (real
+GTEx evidence says H19 isn't sufficiently excluded in that tissue), not a
+coverage artifact. **The 4 passing marker×organ pairs at elev75/adult25
+are unchanged** (Thyroid-DLK1, Skin-PEG10, Thymus-IGF2, Liver-AFP) —
+confirms the fix only grew the previously-undercounted candidate pools
+(e.g. Adrenal 466→681, Thyroid 461→684 at elev75/adult25, from genes
+correctly restored via single-platform evidence) without changing any
+marker's individual verdict. Retention rate unchanged (4/37 = 10.8% at
+elev75/adult25).
+
 ## Revised proposal (for reviewer sign-off)
 
 **`elevated_pct=75`, `adult_excl_pct=25`** (quorum still not
 discriminating, defaults to 1.0) — revised down from the original
 `elevated_pct=90` proposal based on this panel's direct evidence that 90
 loses real marker hits without a compensating gain shown by any positive
-evidence. Candidate counts under this combo (from
-`f_developmental_calibration.tsv`): Adrenal 466, Thyroid 461, Spleen 754,
-Thymus 1,191 (HPA-only), Liver 516, Skin 786, Stomach 545 — larger
-candidate pools than the original 90/25 proposal, consistent with the
-looser elevated bar.
+evidence. Candidate counts under this combo, after the coverage-aware fix
+(from `f_developmental_calibration.tsv`), with provenance breakdown:
+
+| Organ | Candidates | Provenance breakdown |
+|---|---|---|
+| Adrenal | 681 | GTEx+HPA=466; GTEx-only=210; HPA-only=5 |
+| Thyroid | 684 | GTEx+HPA=461; GTEx-only=219; HPA-only=4 |
+| Spleen | 1,090 | GTEx+HPA=754; GTEx-only=323; HPA-only=13 |
+| Thymus | 1,191 | HPA-only=1,191 (no GTEx column; unaffected by this fix) |
+| Liver | 800 | GTEx+HPA=516; GTEx-only=270; HPA-only=14 |
+| Skin | 1,128 | GTEx+HPA=786; GTEx-only=331; HPA-only=11 |
+| Stomach | 750 | GTEx+HPA=545; GTEx-only=200; HPA-only=5 |
+
+Larger than both the original 90/25 proposal and the pre-fix 75/25
+numbers, reflecting genes now correctly restored via single-platform
+(GTEx-only/HPA-only) evidence that the intersection bug had silently
+excluded. Thymus is unchanged (it never had a GTEx column to intersect
+against, so the bug never affected it).
+
+**Pending final reviewer sign-off** on both `elevated_pct=75,
+adult_excl_pct=25` and the coverage-aware provenance model.

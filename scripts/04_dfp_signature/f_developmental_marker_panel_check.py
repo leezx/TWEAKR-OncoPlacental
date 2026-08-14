@@ -57,17 +57,19 @@ for organ in ORGANS:
 
     for elev_pct, adult_pct in COMBOS:
         elevated = (median_pct >= elev_pct) & (detected_frac >= 1.0)
-        mask, provenance = adult_excluded_mask(organ, adult_pct)
+        mask, provenance = adult_excluded_mask(organ, adult_pct)  # coverage-aware, per-gene provenance (PR #12 round 2 fix)
         n_candidates = int((elevated & mask.reindex(elevated.index).fillna(False)).sum()) if mask is not None else None
 
         for gene in panel:
             in_hdma = gene in cpm.index
             gene_elevated = bool(elevated.get(gene, False)) if in_hdma else None
             gene_median_pct = float(median_pct.get(gene)) if in_hdma and gene in median_pct.index and pd.notna(median_pct.get(gene)) else None
-            gene_excluded = bool(mask.get(gene, False)) if (mask is not None and gene in mask.index) else None
+            gene_covered = mask is not None and gene in mask.index
+            gene_excluded = bool(mask.get(gene, False)) if gene_covered else None
+            gene_provenance = provenance.get(gene) if gene_covered else "UNCOVERED_BY_EITHER_PLATFORM"
             passes = bool(gene_elevated and gene_excluded) if (gene_elevated is not None and gene_excluded is not None) else False
             rows.append({
-                "organ": organ, "provenance": provenance, "elev_pct": elev_pct, "adult_pct": adult_pct,
+                "organ": organ, "gene_adult_evidence_provenance": gene_provenance, "elev_pct": elev_pct, "adult_pct": adult_pct,
                 "gene": gene, "in_hdma_universe": in_hdma, "hdma_median_pct": gene_median_pct,
                 "elevated": gene_elevated, "adult_excluded": gene_excluded, "passes_F_developmental": passes,
                 "n_candidates_this_combo": n_candidates,
@@ -91,6 +93,6 @@ print("=== Retention summary per combo ===")
 print(summary.to_string(index=False))
 
 print("\n=== Full per-gene-per-organ results ===")
-print(result[["organ", "provenance", "elev_pct", "adult_pct", "gene", "hdma_median_pct", "elevated", "adult_excluded", "passes_F_developmental"]].to_string(index=False))
+print(result[["organ", "gene_adult_evidence_provenance", "elev_pct", "adult_pct", "gene", "hdma_median_pct", "elevated", "adult_excluded", "passes_F_developmental"]].to_string(index=False))
 
 print(f"\nWrote {out_path}")

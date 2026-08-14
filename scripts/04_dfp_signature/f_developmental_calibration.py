@@ -98,8 +98,20 @@ def hpa_tissues_for(organ):
 
 
 def adult_excluded_mask(organ, pct_cut):
-    """Returns (mask, provenance_label). Provenance: GTEx+HPA (AND of
-    both), GTEx-only, or HPA-only -- never silently disguised."""
+    """Coverage-aware (fixed per PR #12 round 2 review): the original
+    version intersected GTEx's and HPA's gene panels first, so a gene
+    present in GTEx but simply absent from HPA's gene panel entirely
+    (e.g. H19 -- not a detection failure, HPA just doesn't measure it)
+    was silently dropped and could never pass -- conflating "platform
+    didn't measure this gene" with "gene failed the test". Fixed: each
+    gene's provenance is now decided by which platform(s) actually
+    include it in their gene panel (gtex_pct.index / hpa_pct.index),
+    not by a blanket per-organ label.
+
+    Returns (mask, provenance) -- both pandas Series indexed by gene.
+    provenance in {"GTEx+HPA","GTEx-only","HPA-only"}; genes covered by
+    neither platform are absent from the index entirely (unresolved,
+    can never pass -- not silently marked either True or False)."""
     gcols = gtex_cols_for(organ)
     htissues = hpa_tissues_for(organ)
 
@@ -110,18 +122,31 @@ def adult_excluded_mask(organ, pct_cut):
             ok[c] = ~fails
         return ok.all(axis=1)
 
-    if gcols and htissues:
-        m_gtex = excl(gtex_not_detected, gtex_pct, gcols)
-        m_hpa = excl(hpa_not_detected, hpa_pct, htissues)
-        shared = m_gtex.index.intersection(m_hpa.index)
-        combined = m_gtex.reindex(shared).fillna(False) & m_hpa.reindex(shared).fillna(False)
-        return combined, "GTEx+HPA"
-    elif gcols:
-        return excl(gtex_not_detected, gtex_pct, gcols), "GTEx-only"
-    elif htissues:
-        return excl(hpa_not_detected, hpa_pct, htissues), "HPA-only"
+    m_gtex = excl(gtex_not_detected, gtex_pct, gcols) if gcols else None
+    m_hpa = excl(hpa_not_detected, hpa_pct, htissues) if htissues else None
+
+    if m_gtex is not None and m_hpa is not None:
+        gtex_genes = set(m_gtex.index)
+        hpa_genes = set(m_hpa.index)
+        both = gtex_genes & hpa_genes
+        gtex_only = gtex_genes - hpa_genes
+        hpa_only = hpa_genes - gtex_genes
+        mask = pd.concat([
+            m_gtex.loc[list(both)] & m_hpa.loc[list(both)],
+            m_gtex.loc[list(gtex_only)],
+            m_hpa.loc[list(hpa_only)],
+        ])
+        prov = pd.Series(
+            ["GTEx+HPA"] * len(both) + ["GTEx-only"] * len(gtex_only) + ["HPA-only"] * len(hpa_only),
+            index=list(both) + list(gtex_only) + list(hpa_only),
+        )
+        return mask, prov
+    elif m_gtex is not None:
+        return m_gtex, pd.Series("GTEx-only", index=m_gtex.index)
+    elif m_hpa is not None:
+        return m_hpa, pd.Series("HPA-only", index=m_hpa.index)
     else:
-        return None, "NONE"
+        return None, None
 
 
 # ---- HDMA per-organ elevated calibration ----
@@ -154,10 +179,13 @@ for organ in ORGANS:
                 shared = set(mask.index) & elevated_genes
                 excluded_genes = set(mask.index[mask])
                 f_dev = shared & excluded_genes
+                # provenance breakdown among the actual candidate genes (coverage-aware fix)
+                prov_counts = provenance.loc[list(f_dev)].value_counts().to_dict() if f_dev else {}
+                prov_summary = ";".join(f"{k}={v}" for k, v in sorted(prov_counts.items())) or "NONE"
                 rows.append({
                     "organ": organ, "n_samples": n_samples, "elevated_pct": elev_pct,
                     "quorum": quorum, "n_elevated_hdma_only": n_elevated,
-                    "adult_excl_pct": adult_pct, "adult_ref_provenance": provenance,
+                    "adult_excl_pct": adult_pct, "adult_ref_provenance": prov_summary,
                     "n_F_developmental_candidates": len(f_dev),
                 })
 
