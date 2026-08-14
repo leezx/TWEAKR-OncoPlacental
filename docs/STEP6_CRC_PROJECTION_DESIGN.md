@@ -31,6 +31,29 @@ could produce a mechanical correlation, independent of any real biology.
 Checked directly — see "M11 × D/F/P gene-overlap audit" below — and folded
 an overlap-exclusion contract into the scoring design.
 
+**PR #16 was APPROVED and merged (this design fully closed on `main`) — then
+amended after merge, before any compute ran.** After merge, a design flaw
+was raised that no review round had caught: **M11 is a proxy, not a
+definition.** M11 is an NMF meta-program that is merely *annotated* as
+resembling the published `revCSC` signature (via a Jaccard best-match, see
+below) — it is not itself an independently-published Oncofetal(-like)
+definition. Treating M11's own top-loading gene list as "the Oncofetal
+score" conflates "the module that happens to look most like revCSC in this
+one atlas" with "the accepted definition of Oncofetal/revival-CSC identity."
+**The actual independently-published, accepted Oncofetal-like signature is
+`revCSC` itself** (mouse-intestinal-regeneration-derived revival
+cancer-stem-cell signature, human-ortholog-mapped). Fixed by **promoting
+revCSC's own gene list to the primary Oncofetal anchor**, demoting M11 to a
+secondary concordance check (does the atlas's own independent NMF module
+line up with revCSC-high cells?), and dropping the primary cohort's
+dependence on the 297,307-cell M11-subset restriction (revCSC can be scored
+directly on any malignant cell with adequate gene coverage, not just the
+subset that happens to carry a precomputed M11 score) — see the revised
+"Independent Oncofetal anchor" and "revCSC × D/F/P gene-overlap audit"
+sections below. This removes two of the shakier open items (M11≠Oncofetal
+ambiguity, 297K-subset provenance uncertainty) from the critical path
+entirely, rather than resolving them.
+
 This is the step that finally answers the project's original Q1 (`docs/PROJECT_SUMMARY.md:9-13`):
 
 > Is CRC's "Oncofetal" malignant epithelial cell state actually one program, or a
@@ -69,6 +92,18 @@ substring matches inside random-looking auto-generated join IDs and one dataset
 name (`...LM112`) — not a real annotation.
 
 ## Independent Oncofetal anchor (Layer 1) — fixes the circularity blocker
+
+**Post-merge revision: revCSC (not M11) is the primary Layer 1 anchor.** The
+archaeology below (M11's discovery, its independence from D/F/P, and its
+Jaccard match to `revCSC`) is kept because it is still true and still useful
+context — but the primary Oncofetal score used in compute is **revCSC's own
+31-gene mapped signature**, scored directly with the same
+`scanpy.tl.score_genes` + null-calibration mechanics as D/F/P, not M11's
+NMF top-loading gene list. M11 is retained only as a **secondary concordance
+check** within the `CRC_single_cell_atlas_2025` 297,307-cell subset (does
+the atlas's own independently-discovered NMF module actually land on
+revCSC-high cells, as its Jaccard-best-match annotation implies?) — useful
+supporting evidence, not the primary hypothesis-testing anchor.
 
 **Round 1 of this design proposed defining "Oncofetal" via the D/F/P projection
 itself, then asking whether D/F/P-selected cells are F/P/D-dominant — reviewer
@@ -174,8 +209,12 @@ narrower-than-full-atlas coverage is stated honestly as unresolved, not
 guessed**: *the pre-existing NMF analysis was available for 297,307 malignant
 cells from 14 constituent studies and three platforms; the reason for the
 restriction relative to the full atlas remains to be established.* This does
-not block using M11 as an anchor — it does mean M11 status is only defined
-for this 297,307-cell subset, not claimed for the full 665,473-cell atlas.
+not block using M11 as a secondary concordance check — it does mean M11
+status is only defined for this 297,307-cell subset, not claimed for the
+full 665,473-cell atlas. **Because revCSC is now the primary anchor and is
+scored directly (not read off this precomputed subset), this provenance
+gap no longer sits on the critical path** — it only bounds the scope of the
+secondary M11-concordance check, not the primary analysis.
 
 ## M11 × D/F/P gene-overlap audit (PR #16 review round 4 requirement)
 
@@ -210,55 +249,111 @@ rather than forcing the smaller one — not expected to trigger here given the
 maximum overlap found is 1 of 200 genes. Only associations surviving overlap
 exclusion are interpreted as genuine program-level developmental relationships.
 
+**Kept as the secondary M11-concordance check's overlap contract only** —
+since revCSC (not M11) is now the primary anchor, see the next section for
+the primary-anchor overlap audit.
+
+## revCSC × D/F/P gene-overlap audit (primary anchor, post-merge revision)
+
+Same discipline as the M11 audit above, applied to the actual primary
+anchor. **revCSC's mapped human gene set** (`CSC_subtype_signatures.
+ensembl_mapping.tsv`, cluster=revCSC: 42 raw rows → 32 distinct symbols →
+**31 successfully mapped to a human Ensembl ID**, 1 dropped — `CTLA2A`,
+failed mouse→human mapping) was intersected against D-shared (6),
+F-specific global (2,504), each of the 7 F-lineage modules (each ∩
+`F_specific_FINAL.txt`), and P-specific (78). Computed directly on Argos
+(job 3620636), output pulled back and verified byte-exact
+(`results/06_crc_projection/revcsc_overlap_audit/`).
+
+| Target signature (n genes) | revCSC overlap (n) | Overlapping genes |
+|---|---|---|
+| D-shared (6) | 0 | – |
+| F-specific global (2,504) | 2 | `ACTA1`, `ANKRD1` |
+| P-specific (78) | 0 | – |
+| F-lineage Adrenal (680) | 0 | – |
+| F-lineage Liver (797) | 0 | – |
+| F-lineage Skin (1,123) | 0 | – |
+| F-lineage Spleen (1,087) | 1 | `ANKRD1` |
+| F-lineage Stomach (749) | 0 | – |
+| F-lineage Thymus (1,189) | 2 | `ACTA1`, `ANKRD1` |
+| F-lineage Thyroid (682) | 1 | `ACTA1` |
+
+**Overlap is small but real** (2 of revCSC's 31 genes, both muscle/stress-
+response genes — `ACTA1` skeletal-muscle actin, `ANKRD1` a mechanosensitive
+cardiac/muscle stress-response gene — plausible generic "activated/
+mesenchymal-like" markers, not developmentally specific to any one organ).
+**Same overlap-exclusion contract as M11**: the primary revCSC↔F-specific
+(global and Thymus/Spleen/Thyroid lineage) correlations use an
+overlap-excluded revCSC score (29 genes, dropping `ACTA1`/`ANKRD1` only for
+the specific F-comparisons where they're shared); the full 31-gene revCSC
+score is retained as a sensitivity check; revCSC↔D-shared and
+revCSC↔P-specific need no exclusion (zero overlap). Only associations
+surviving overlap exclusion are interpreted as genuine developmental
+relationships, not shared-gene artifacts.
+
 ## Revised analysis structure: two distinct cell populations, three analyses
 
-Per reviewer guidance, **two populations must be kept explicit and not
-conflated**, though they validate each other:
+**Post-merge revision**: with revCSC promoted to the primary anchor, the
+primary cohort is no longer bottlenecked on the 297,307-cell M11 subset — it
+extends to any malignant cell with adequate gene coverage for revCSC scoring.
+M11 remains available as a secondary concordance check where it exists.
 
-- **M11 analysis cohort** = the 297,307-cell malignant-only NMF discovery
-  subset. Answers: what is the developmental identity of the independently
-  discovered M11/revCSC meta-program?
-- **Full-atlas D/F/P cohort** = all malignant cells passing gene/scoring QC
-  across the full 665,473-cell atlas (not restricted to the NMF subset).
-  Answers: what F/P/D developmental landscape exists across the CRC malignant
-  compartment overall — independent of whether a cell has an M11 score?
+- **revCSC analysis cohort (primary)** = all malignant cells passing
+  gene/scoring QC, across all inventoried datasets (primary:
+  `CRC_single_cell_atlas_2025` full 665,473-cell atlas; secondary/tertiary:
+  `HTAN_CRC_progressive_plasticity`, `CRLM_NMP_ATLAS`). Answers: what is the
+  developmental identity of the published revCSC Oncofetal(-like) signature
+  when projected onto real CRC malignant cells?
+- **M11 concordance subset (secondary, supporting only)** = the 297,307-cell
+  malignant-only NMF discovery subset within `CRC_single_cell_atlas_2025`.
+  Answers a narrower, supporting question: does the atlas's own
+  independently-discovered NMF module (M11) actually land on revCSC-high
+  cells, as its Jaccard-best-match annotation implies?
 
-**Primary question, reframed** (per review — stronger and less presuppositional
-than the original "are CRC malignant cells F-dominant or P-dominant"): *What is
-the developmental identity of the independently discovered CRC M11/revCSC
-meta-program?* This does not presuppose the answer is P-high (placental) —
-if M11 turns out to be strongly F-specific with P-specific defining a separate,
-orthogonal malignant state, that is an equally (or more) valuable result: it
-would mean "OncoFetal" and "OncoPlacental" are not the same thing renamed, but
-two genuinely separable axes of developmental reactivation, plus whatever
-D-shared core they hold in common.
+**Primary question, reframed again** (revCSC replaces M11 as the subject,
+same non-presuppositional framing as the prior round): *What is the
+developmental identity of the published revCSC Oncofetal(-like) signature
+when scored on real CRC malignant cells?* This does not presuppose the
+answer is P-high (placental) — if revCSC turns out to be strongly F-specific
+with P-specific defining a separate, orthogonal malignant state, that is an
+equally (or more) valuable result: it would mean "OncoFetal" and
+"OncoPlacental" are not the same thing renamed, but two genuinely separable
+axes of developmental reactivation, plus whatever D-shared core they hold in
+common.
 
-1. **Primary analysis: M11/revCSC ↔ D/F/P continuous decomposition**, on the
-   297,307-cell M11 analysis cohort. Correlate the (null-calibrated) M11 score
-   against the (null-calibrated) D-shared / F-specific (global + per-organ) /
-   P-specific scores **continuously — not binarized into M11-high/M11-low up
-   front** — with patient- and study-level validation (no single
-   patient/study driving the correlation). This is the direct, least-assumption
-   answer to "what developmental ancestry explains M11."
-2. **Secondary analysis: M11-high cells' developmental composition.** Using a
-   calibrated M11-high threshold (not picked post-hoc to flatter a result),
-   check whether M11-high malignant cells are preferentially P-specific, a
-   particular F-lineage (especially GI/intestinal, given CRC's tissue of
-   origin), D-shared, or in fact split into multiple separable developmental
-   substates rather than one program.
-3. **Tertiary analysis: full-atlas, M11-independent D/F/P landscape.** Score
-   D/F/P across the full-atlas D/F/P cohort without reference to M11 at all.
-   This can surface a state the "Oncofetal" framework itself might miss — e.g.
-   a P-high/M11-low malignant population that exists outside what M11 captures,
-   which would itself be a genuinely new finding, not just "M11 has placental
-   genes in it."
+1. **Primary analysis: revCSC ↔ D/F/P continuous decomposition**, on the
+   revCSC analysis cohort (all QC-passing malignant cells, not restricted to
+   the M11 subset). Correlate the (null-calibrated, overlap-excluded) revCSC
+   score against the (null-calibrated) D-shared / F-specific (global +
+   per-organ) / P-specific scores **continuously — not binarized into
+   revCSC-high/revCSC-low up front** — with patient- and study-level
+   validation (no single patient/study driving the correlation). This is the
+   direct, least-assumption answer to "what developmental ancestry explains
+   revCSC-defined Oncofetal identity."
+2. **Secondary analysis: revCSC-high cells' developmental composition.**
+   Using a calibrated revCSC-high threshold (not picked post-hoc to flatter a
+   result), check whether revCSC-high malignant cells are preferentially
+   P-specific, a particular F-lineage (especially GI/intestinal, given CRC's
+   tissue of origin), D-shared, or in fact split into multiple separable
+   developmental substates rather than one program. **Also run the M11
+   concordance check here**, within the 297,307-cell subset only: do
+   revCSC-high cells enrich for high M11 scores, confirming the atlas's own
+   independent NMF finding rather than contradicting it?
+3. **Tertiary analysis: full-atlas, revCSC-independent D/F/P landscape.**
+   Score D/F/P across the full-atlas cohort without reference to revCSC at
+   all. This can surface a state the "Oncofetal" framework itself might
+   miss — e.g. a P-high/revCSC-low malignant population that exists outside
+   what revCSC captures, which would itself be a genuinely new finding, not
+   just "revCSC has placental genes in it."
 
 Only after these three analyses run can the project's original Q1 be answered
-with a non-circular measurement. If Layer 1's M11 anchor turns out to have some
-unresolvable problem once compute starts (e.g., too few cells clear a sensible
-Oncofetal-high threshold), the fallback is to rename the deliverable "CRC
-developmental-program projection" rather than claim to have resolved Oncofetal
-composition — per the reviewer's explicit fallback instruction.
+with a non-circular measurement. If revCSC turns out to have some
+unresolvable problem once compute starts (e.g., too few cells clear a
+sensible Oncofetal-high threshold, or gene-ID coverage for its 31/29-gene
+scoring set is too poor in a given dataset), the fallback is to rename the
+deliverable "CRC developmental-program projection" rather than claim to have
+resolved Oncofetal composition — per the reviewer's explicit fallback
+instruction (carried over unchanged from the M11-anchor round).
 
 ## Proposed dataset plan
 
@@ -325,7 +420,8 @@ one could resolve.
 
    **Revised scoring contract**: for each dataset, independently build an
    expression-matched null distribution *per signature* (D-shared, F-specific,
-   P-specific, each per-organ F module below, and Layer 1's M11 signature) —
+   P-specific, each per-organ F module below, and Layer 1's primary anchor,
+   revCSC — plus M11 where available, for the secondary concordance check) —
    directly analogous to the matched-permutation-null design just approved in
    Step 5: sample many random gene panels of the same size from the same
    expression-detectability strata as the real signature, compute the same
@@ -388,11 +484,12 @@ one could resolve.
 ## What this step is not
 
 Not a re-derivation of "Oncofetal" via new clustering/NMF on this project's own
-compute — both the malignant-cell-type calls *and* the M11 Oncofetal anchor
-(Layer 1) are existing, independently-computed, published/prior work, used
-as-is, not re-derived. Not a re-calibration of Step 4's frozen D/F/P cutoffs.
-Not yet a spatial-transcriptomics analysis (no spatial CRC dataset has been
-inventoried in this round — single-cell only for this first pass).
+compute — both the malignant-cell-type calls *and* the Layer 1 anchors
+(revCSC's published gene list, M11's NMF module) are existing,
+independently-computed, published/prior work, used as-is, not re-derived.
+Not a re-calibration of Step 4's frozen D/F/P cutoffs. Not yet a
+spatial-transcriptomics analysis (no spatial CRC dataset has been inventoried
+in this round — single-cell only for this first pass).
 
 Submitting this design for review before running any real gene-ID mapping or
 scoring compute.
