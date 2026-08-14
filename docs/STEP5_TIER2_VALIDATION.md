@@ -47,32 +47,58 @@ Confirmed via direct inventory (not assumed):
   explicitly, not glossed over. GTEx/HPA bulk remains the only adult
   reference for those 3 organs.
 
-## Method
+## Method (revised per round-1 review: donor-aware, not organ-pooled)
 
-- **Pseudobulk per (organ, cell_ontology_class)**: sum raw counts
-  (`layers['raw_counts']`) across all cells sharing a `cell_ontology_class`
-  label within each organ, CPM-normalize within organ (same
-  never-cross-platform-raw-magnitude discipline as every prior step —
-  comparing within Tabula Sapiens' own cell-type distribution, not against
-  HDMA/GTEx/HPA magnitudes). Cell-type groups below a minimum cell-count
-  floor (proposed: ≥20 cells, to avoid noisy pseudobulk from a handful of
-  cells) excluded, reported not silently dropped.
+The first draft pooled raw counts directly by `(organ, cell_ontology_class)`,
+discarding the donor dimension entirely. Caught by review as a real
+inconsistency with the donor/sample-aware discipline used throughout
+Step 4 (HDMA per-sample pseudobulk, P-developmental's per-donor pairing):
+donor counts per organ are real but small (checked directly, not
+assumed: Liver 2, Skin 2, Spleen 3, Thymus 2, Large_Intestine 2), so
+pooling across donors lets a single donor drive an apparent "detected"
+hit with no way to tell whether it's real replicated biology or one
+donor's idiosyncrasy — cell count alone (e.g. 20+ cells) doesn't
+guarantee independent replication if all 20 cells come from one donor.
+
+- **Primary unit: `(organ, donor, cell_ontology_class)` pseudobulk.** Sum
+  raw counts (`layers['raw_counts']`) within each donor×cell-type group.
+  CPM computed **per donor-celltype pseudobulk's own library size**
+  independently (not "normalized within organ" — organ is the comparison
+  *scope*, each donor-celltype library is its own normalization
+  denominator; this doc's first draft conflated the two).
+- **Minimum cell-count floor applied at the donor×cell-type level**
+  (proposed: ≥20 cells), not after organ-level pooling — a cell type with
+  20+ cells that all come from a single donor must not look the same as
+  20+ cells genuinely split across 2 donors.
+- **Aggregate to cell-type level for reporting**, keeping donor structure
+  visible rather than collapsing it into one pooled number:
+  - how many eligible donors contribute this cell type;
+  - in how many of those donors the gene clears CPM≥1 (donor-level
+    detection fraction);
+  - median/range CPM across contributing donors.
+  - **Cell types backed by only 1 donor are explicitly labeled
+    `single-donor evidence`** and never presented as equal-confidence to
+    multi-donor evidence (most Tabula Sapiens organs here have only 2
+    donors total, so many cell types will land in this category — stated
+    honestly, not hidden in a summary average).
 - **Detection criterion**: same not-detected-floor (CPM<1) design used
   throughout Step 4, for consistency.
 - **Organ-matched check (F-specific genes)**: for each of the 4
   HDMA-organ-matching Tabula Sapiens files (Liver, Skin, Spleen, Thymus),
   check each organ's own frozen `F_developmental_<Organ>.txt` gene list
-  against that organ's real per-cell-type detection — report what
-  fraction of (gene, cell type) pairs show unexpected detection, and flag
-  any specific gene/cell-type combination that looks surprisingly high
+  against that organ's real per-donor-celltype detection — report what
+  fraction of (gene, cell type) pairs show unexpected detection (with
+  donor-level detection fraction, not a flattened count), and flag any
+  specific gene/cell-type combination that looks surprisingly high
   (candidate false positive worth re-examining, not silently averaged
   away in a summary statistic).
 - **Whole-body-style check (D-shared and P-specific genes, both organ-
-  agnostic by construction)**: check across **all 5 organs' cell types
-  combined** (not just organ-matched) — since P-developmental's own
-  `adult_excluded` was whole-body, not organ-restricted, its Tier-2 check
-  should be too. Large_Intestine included here specifically as the
-  CRC-adjacent adult reference.
+  agnostic by construction)**: evidence unit is **gene × cell type ×
+  donor** across all 5 organs — not 5 organs' cell types treated as one
+  flat pile of equal-weighted pseudobulks. Large_Intestine included as
+  the CRC-adjacent adult reference but must not get disproportionate
+  statistical weight relative to the other 4 organs just because it's
+  more relevant to the eventual application.
 - **Reporting, not pre-committing to a pass/fail threshold**: this is a
   validation pass, not a re-calibration of Step 4's already-frozen
   cutoffs. Report real detection rates per gene set, flag individual
