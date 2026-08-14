@@ -1,0 +1,122 @@
+{
+  "label": "TabulaSapiens_Large_Intestine",
+  "path": "/home/zz950/DATA/1.Databases/TabulaSapiens/raw/TS_Large_Intestine.h5ad.zip",
+  "zip_contents": [
+    "TS_Large_Intestine.h5ad"
+  ],
+  "shape": {
+    "n_obs": 13680,
+    "n_vars": 58870
+  },
+  "var_names_sample": [
+    "DDX11L1",
+    "WASH7P",
+    "MIR6859-1",
+    "MIR1302-2HG",
+    "MIR1302-2",
+    "FAM138A",
+    "OR4G4P",
+    "OR4G11P",
+    "OR4F5",
+    "AL627309.1"
+  ],
+  "looks_like_ensembl": false,
+  "obs_columns": [
+    "organ_tissue",
+    "method",
+    "donor",
+    "anatomical_information",
+    "n_counts_UMIs",
+    "n_genes",
+    "cell_ontology_class",
+    "free_annotation",
+    "manually_annotated",
+    "compartment",
+    "gender"
+  ],
+  "layers": [
+    "decontXcounts",
+    "raw_counts"
+  ],
+  "has_raw": true,
+  "raw_shape": {
+    "n_obs": 13680,
+    "n_vars": 58870
+  },
+  "low_cardinality_obs_columns": {
+    "method": {
+      "n_unique": 2,
+      "top10": {
+        "10X": 13238,
+        "smartseq2": 442
+      }
+    },
+    "donor": {
+      "n_unique": 2,
+      "top10": {
+        "TSP14": 11439,
+        "TSP2": 2241
+      }
+    },
+    "anatomical_information": {
+      "n_unique": 5,
+      "top10": {
+        "Distal": 7614,
+        "Proximal": 3825,
+        "distal": 1031,
+        "proximal": 875,
+        "nan": 335
+      }
+    },
+    "cell_ontology_class": {
+      "n_unique": 20,
+      "top10": {
+        "cd4-positive, alpha-beta t cell": 2872,
+        "enterocyte of epithelium of large intestine": 2764,
+        "cd8-positive, alpha-beta t cell": 2147,
+        "fibroblast": 953,
+        "immature enterocyte": 919,
+        "paneth cell of epithelium of large intestine": 888,
+        "mature enterocyte": 545,
+        "monocyte": 543,
+        "b cell": 497,
+        "large intestine goblet cell": 385
+      }
+    },
+    "free_annotation": {
+      "n_unique": 20,
+      "top10": {
+        "immature enterocyte": 3097,
+        "cd4-positive alpha-beta T cell": 2872,
+        "cd8-positive alpha-beta T cell": 2105,
+        "mature enterocyte": 1131,
+        "fibroblast": 953,
+        "paneth-like cell": 831,
+        "goblet cell": 551,
+        "monocyte": 543,
+        "b cell": 497,
+        "plasma cell": 330
+      }
+    },
+    "compartment": {
+      "n_unique": 4,
+      "top10": {
+        "immune": 6454,
+        "epithelial": 6220,
+        "stromal": 953,
+        "endothelial": 53
+      }
+    },
+    "gender": {
+      "n_unique": 2,
+      "top10": {
+        "male": 11439,
+        "female": 2241
+      }
+    }
+  },
+  "X_integer_fraction": 0.022924485912142516,
+  "raw_X_integer_fraction": 1.0,
+  "layer_decontXcounts_integer_fraction": 1.0,
+  "layer_raw_counts_integer_fraction": 1.0
+}

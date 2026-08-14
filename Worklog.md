@@ -15,7 +15,7 @@ User-requested (2026-08-13): report a global % after every completed task, using
 | E. Step 2 gene-ID mapping | 6% | done | 100% |
 | F. Step 3 prep (collision rule + adult reference) | 7% | done — PR #5 merged | 100% |
 | G. Step 4 core: D/F/P pseudobulk signature construction | 20% | **CLOSED** — frozen, reviewer-approved D-shared(6)/F-specific(2,504)/P-specific(78) gene sets, single reproducible pipeline with cardinality assertions | 100% |
-| H. Tier-2 validation (Tabula Sapiens, post-freeze) | 10% | not started | 0% |
+| H. Tier-2 validation (Tabula Sapiens, post-freeze) | 10% | real inventory done (raw counts confirmed, gene-ID convention matches HDMA directly, cell-type annotation identified), design doc written, submitted for review before compute | ~15% |
 | I. Apply D/F/P to CRC Oncofetal cells, answer Q1 | 20% | not started | 0% |
 | J. Q2–Q6 (remaining 6-question framework, unscoped) | 20% | not started | 0% |
 
@@ -39,6 +39,8 @@ Neither F-developmental's exact "elevated" cutoff nor `adult_excluded`'s exact p
 **Updated total: ~52%** (delta +3 from ~49%: assembled the actual final D-shared/F-specific/P-specific gene sets. First resolved the 2 items `STEP4_DFP_DESIGN.md` had explicitly deferred to "once real data exists": (1) P-developmental's compound definition needs `adult_excluded(whole_body)`, never frozen — computed real whole-body distributions (GTEx 68 tissues + HPA 39 non-placenta, same not-detected-floor design as organ-matched) and validated with the same 9-marker panel (ERVFRD-1/CSH1/CSH2/PSG1/PSG3 fail whole-body exclusion in 0/68 GTEx tissues; GATA3/KRT7/HLA-G fail more broadly, matching known biology) — proposing `pct_cut=25, quorum=all_but_1` → 158-gene P-developmental set; (2) F-developmental's organ-specific vs. P-developmental's global scope — computed real per-organ sets (681-1,191 genes/organ) and their overlap structure (1,171 genes organ-specific, 104 genes shared across all 7 organs — real structure), used the union (2,510 genes) as primary with consensus (≥2 organs, 1,339 genes) as a stricter alternative. **Final assembly**: D-shared 14 (union) / 8 (consensus), F-specific 2,496 / 1,331, P-specific 144 / 150. **Strong validation**: all 6 core placental markers (ERVFRD-1, CGA, CSH1, CSH2, PSG1, PSG3) land exactly as P-developmental=True & F-developmental=False — never leaking into D-shared or F-specific; D-shared spot-check finds `TRIM71` (stemness/developmental gene) and `PLAC4`; P-specific spot-check finds `CGA`/`CGB3`/`CGB5` (hCG subunits), `CSH1`/`CSH2`/`CSHL1` (placental lactogens), `DLX4` — all biologically sensible, not junk. Written up in `dfp_final_assembly.md`, submitting for review. G now ~98% of its 20% weight: real gene lists exist and validate; only final review sign-off on the two proposed-but-not-independently-frozen choices (whole-body cutoff, union-vs-consensus) remains before Step 4's core deliverable is fully closed.)
 
 **Updated total: ~50%** (delta +2 from ~49% — note: this corrects a small compounding rounding drift in the last two intermediate updates, recomputed cleanly now that G closes at an exact 100%, rather than carrying forward the ~52% estimate. PR #13 went through 2 more real review rounds after the initial submission: round 1 caught that GTEx had been picked as an unjustified "primary" whole-body reference with no combination rule — the resulting disagreement audit (see above) revised P-developmental to the 84-gene both-platforms-agree primary tier; round 2 caught a real reproducibility gap (the fix lived only in a standalone diagnostic script, while the main `build_dfp_gene_sets.py` still hardcoded the superseded 158-gene logic) — fixed by consolidating everything into one script with hard cardinality assertions on every output. **PR #13 APPROVED and merged (`7e947aa`)** — reviewer confirmed no remaining blocker and stated explicitly: "PR #13 可以合并，Step 4 core 可以正式关闭。" **Phase G (Step 4's entire core deliverable) is now CLOSED at 100%**: frozen D-shared (6 genes: IL1RAPL2, KCNH5, PCDH11X, TMC1, TRIM71, ZNF730), F-specific (2,504 genes), P-specific (78 genes), built by one reproducible, assertion-guarded pipeline. **Reviewer's explicit next step** (not to keep optimizing D/F/P architecture further): Tier-2 validation (Tabula Sapiens, post-freeze, per the original two-tier adult-reference design from PR #5) and then projecting the frozen D/F/P signatures onto real CRC Oncofetal single-cell/spatial data — this is what finally answers the project's original Q1 (is the Oncofetal state closer to F-specific, P-specific, or D-shared developmental biology). Total is now A-G = 30% + 20% = 50% exactly; H/I/J (Tier-2 validation, CRC application, Q2-Q6) remain entirely unstarted.)
+
+**Updated total: ~52%** (delta +2 from ~50%: started phase H per the reviewer's explicit next-step guidance. Ran a real inventory pass on all 5 downloaded Tabula Sapiens organs (Liver, Skin, Spleen, Thymus, Large_Intestine) — confirmed directly, not assumed: gene IDs are native symbols matching HDMA's convention exactly (no remapping needed); raw counts genuinely available (`.raw.X`/`layers['raw_counts']` both 100% integer-valued per organ, `X` itself is normalized); `cell_ontology_class` is the standardized per-cell-type annotation column to use. Confirmed the known gap (no Adrenal/Thyroid/Stomach organ file) is real and permanent for this data source — F-specific genes from those 3 HDMA organs can't get Tier-2 single-cell validation. Wrote `docs/STEP5_TIER2_VALIDATION.md`: pseudobulk per (organ, cell type), organ-matched check for F-specific genes (4 of 7 organs), whole-body-style check across all 5 organs' cell types for D-shared/P-specific genes (organ-agnostic by construction, same as their Step 4 definitions) — submitting for review before running the real validation compute. H now ~15% of its 10% weight.)
 
 ### PR #13 review round 1 (REQUEST_CHANGES) — corrected: GTEx picked as "primary" without justification; real disagreement smaller than it looked
 
@@ -545,18 +547,16 @@ Reviewer endorsed the round-1 correction (75 over 90) but escalated the H19 find
 
 **Both P-developmental (PR #10) and F-developmental (this PR) are now fully frozen with real, marker-validated cutoffs.** Explicit next step: **final D-shared/F-specific/P-specific set assembly**, combining the two frozen evidence axes via `STEP4_DFP_DESIGN.md`'s set logic — D-shared = F-developmental AND P-developmental; F-specific = F-developmental AND NOT P-developmental; P-specific = P-developmental AND NOT F-developmental.
 
-### Repo layout (as of this session)
+### Repo layout note
 
-```text
-TWEAKR-OncoPlacental/
-├── Worklog.md              # this file — read first when resuming
-├── README.md
-├── datasets/
-│   ├── Arutyunyan2023_MFI/dataset.md              # E-MTAB-12421/12595/12650/12698
-│   ├── Greenbaum_NatMed_2024/dataset.md            # Broad SCP2601
-│   ├── VentoTormo_Nature_2018/dataset.md           # E-MTAB-6701/6678/7304
-│   └── HumanDevelopmentMultiomicAtlas/dataset.md   # placeholder only, not downloaded
-├── scripts/                 # empty so far
-├── notebooks/                # empty so far
-└── docs/                     # empty so far
-```
+The repo layout snapshot that used to live here (from session 1, when
+`scripts/`/`docs/` were still empty) is now badly stale — see
+`docs/PROJECT_SUMMARY.md` for the current, accurate structure
+(`scripts/<step>/` mirrored by `results/<step>/`, one subdirectory per
+pipeline step) instead of maintaining a duplicate tree snapshot here.
+
+### Step 5: Tier-2 validation design + Tabula Sapiens real inventory
+
+Picked up the PR #13 reviewer's explicit next-step guidance. Ran a real inventory pass (`scripts/05_tier2_validation/inventory_tabula_sapiens.py`, same discipline as Step 1) on all 5 downloaded Tabula Sapiens organs before designing anything — confirmed directly: gene IDs are native symbols matching HDMA's `canonical_symbol` convention exactly (no remapping needed, unlike HDMA's original Step 2 gap); raw counts genuinely available (`.raw.X` and `layers['raw_counts']` both 100% integer-valued per organ, independently checked per organ not assumed from one); `cell_ontology_class` is the standardized per-cell-type annotation column. Reconfirmed the known gap from `datasets/TabulaSapiens/dataset.md` is real: no Adrenal/Thyroid/Stomach organ file exists, so F-specific genes from those 3 HDMA organs simply cannot get Tier-2 single-cell validation from this source — a permanent scope limitation, stated explicitly rather than glossed over.
+
+Wrote `docs/STEP5_TIER2_VALIDATION.md`: pseudobulk per (organ, cell_ontology_class), CPM-normalized within organ, same not-detected-floor discipline as Step 4. Organ-matched check for F-specific genes (the 4 of 7 HDMA organs Tabula Sapiens actually covers: Liver/Skin/Spleen/Thymus). Whole-body-style check across all 5 organs' cell types combined for D-shared/P-specific genes (organ-agnostic by construction, matching how they were defined in Step 4) — Large_Intestine included specifically as the CRC-adjacent adult reference. Explicitly a validation pass, not a re-calibration: reports real detection rates and flags concerning individual gene/cell-type hits for manual review, but doesn't silently drop genes from the already-frozen Step 4 signature. Submitting for review before running the real per-cell-type pseudobulk compute.
