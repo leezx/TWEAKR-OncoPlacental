@@ -23,6 +23,14 @@ are folded into the "Independent Oncofetal anchor" section below; reviewer
 confirmed this closes the circularity concern and also refined the primary
 question and analysis hierarchy (see "Revised analysis structure" below).
 
+**PR #16 review round 4 (REQUEST_CHANGES)** raised a distinct, equally real
+concern: even with construction/annotation/chronological independence
+established, if M11's own scoring gene list happens to share genes with the
+D/F/P signatures it will be correlated against, that shared content alone
+could produce a mechanical correlation, independent of any real biology.
+Checked directly — see "M11 × D/F/P gene-overlap audit" below — and folded
+an overlap-exclusion contract into the scoring design.
+
 This is the step that finally answers the project's original Q1 (`docs/PROJECT_SUMMARY.md:9-13`):
 
 > Is CRC's "Oncofetal" malignant epithelial cell state actually one program, or a
@@ -153,17 +161,54 @@ on D/F/P.**
 **not** a random slice of the 665,473-cell atlas. Every one of the 297,307
 cells maps to the h5ad's `obs_names` by exact barcode string (100% overlap,
 verified directly: `n_ids in modulescore file = 297307`, `overlap = 297307`).
-It is a **malignant-only NMF discovery subset**: 198,126 `Cancer cell` +
-99,181 `CRLM` (no normal/immune/polyp cells), COAD (152,712) + READ (30,300)
-only, drawn from 14 of the meta-atlas's 54 constituent studies and 3 of 9
-platforms (10x 5p, 10x 3p, BD Rhapsody). **Per reviewer instruction, the reason
-for this narrower-than-full-atlas coverage is stated honestly as unresolved,
-not guessed**: *the pre-existing NMF analysis was available for 297,307
-malignant cells from 14 constituent studies and three platforms; the reason
-for the restriction relative to the full atlas remains to be established.*
-This does not block using M11 as an anchor — it does mean M11 status is only
-defined for this 297,307-cell subset, not claimed for the full 665,473-cell
-atlas.
+It is **the 297,307 malignant-cell subset covered by the pre-existing
+NMF/module-score workflow** (worded conservatively per review — only the
+*module-score* file's cell composition was directly checked; the NMF
+pipeline's own upstream input cell list was not independently re-verified
+this round, so it is not asserted to be identical to "the NMF discovery
+subset" without that additional check): 198,126 `Cancer cell` + 99,181 `CRLM`
+(no normal/immune/polyp cells), COAD (152,712) + READ (30,300) only, drawn
+from 14 of the meta-atlas's 54 constituent studies and 3 of 9 platforms (10x
+5p, 10x 3p, BD Rhapsody). **Per reviewer instruction, the reason for this
+narrower-than-full-atlas coverage is stated honestly as unresolved, not
+guessed**: *the pre-existing NMF analysis was available for 297,307 malignant
+cells from 14 constituent studies and three platforms; the reason for the
+restriction relative to the full atlas remains to be established.* This does
+not block using M11 as an anchor — it does mean M11 status is only defined
+for this 297,307-cell subset, not claimed for the full 665,473-cell atlas.
+
+## M11 × D/F/P gene-overlap audit (PR #16 review round 4 requirement)
+
+**A distinct concern from definitional circularity, equally important for the
+primary decomposition claim**: even though M11's *construction* used no D/F/P
+information (verified above), if M11's own scoring gene list happens to share
+genes with the D/F/P signatures it will be correlated against, the same gene
+would contribute to both scores — producing a mechanical, not biological,
+correlation. Checked directly (`results/06_crc_projection/m11_overlap_audit/`):
+M11's top50/top100/top200 gene lists (Ensembl IDs, mapped to symbols via the
+source atlas's own `var['GeneSymbol']` column, all 50/100/200 genes mapped
+cleanly) were intersected against D-shared (6), F-specific global (2,504),
+each of the 7 F-lineage modules, and P-specific (78).
+
+**Result: overlap is essentially negligible.** top50 and top100: zero overlap
+with anything. top200: exactly one shared gene, `MALAT1`, with the F-specific
+global set and 6 of 7 F-lineage modules (not P-specific, not D-shared).
+`MALAT1` is a near-ubiquitously highly-expressed nuclear lncRNA well known in
+the single-cell literature to surface in the top-loading list of almost any
+NMF/PCA factor regardless of biological specificity — its appearance here is
+consistent with that generic technical pattern, not a coordinated
+developmental signal.
+
+**Contract adopted for compute**: primary M11↔D/F/P correlations use an
+overlap-excluded M11 score (drop any gene shared with the specific target
+signature before scoring, per comparison) — given the overlap found, this in
+practice only removes `MALAT1` from the M11-top200-vs-F-specific(-lineage)
+comparisons. The full (non-excluded) M11 score is retained as a sensitivity
+analysis alongside it. If overlap-exclusion at a given cutoff ever left too
+few genes for a stable score, the design falls back to a larger top-N version
+rather than forcing the smaller one — not expected to trigger here given the
+maximum overlap found is 1 of 200 genes. Only associations surviving overlap
+exclusion are interpreted as genuine program-level developmental relationships.
 
 ## Revised analysis structure: two distinct cell populations, three analyses
 
