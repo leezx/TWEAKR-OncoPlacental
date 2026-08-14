@@ -1,32 +1,49 @@
 #!/usr/bin/env python3
 """
 Freeze mike_verzi_fetal_signature.gmt's 5 mouse gene sets to human-mapped,
-orthology-verified signatures, per the Step 6a design
-(docs/STEP6A_NORMAL_CONTEXT_FETAL_DECOMPOSITION.md) and the same discipline
-established for revCSC in PR #17: primary = Compara-confirmed one-to-one
-orthologs only; ambiguous (one-to-many) calls reported separately, never
-silently used to pick a primary human target. Unlike revCSC's 32 genes
-(one-by-one Ensembl REST queries), this covers 1,923 unique mouse gene
-symbols across 5 signatures -- queried via a single bulk Ensembl BioMart
-call (jun2026.archive.ensembl.org/biomart/martservice), not one-by-one.
+orthology-verified signatures. v2 -- fixes PR #19 round-1 REQUEST_CHANGES:
+
+Blocker 1 (this file): the v1 join matched the GMT's raw mouse symbol
+against BioMart's canonical `Gene name` via exact string equality. BioMart's
+bulk pull in v1 was itself filtered by that same raw symbol list, so any
+case mismatch (GMT's "Col1A1" vs canonical "Col1a1"; "Tnfrsf12A" vs
+"Tnfrsf12a"; "Tmsb4X" vs "Tmsb4x"; "Ly6A" vs "Ly6a"; bulk S100A*/Slc*
+families) caused the row to be silently dropped before any join happened --
+these were misclassified NOT_FOUND_IN_BIOMART when they're really just
+capitalization-normalization failures, not missing orthologs. Fixed by
+querying the FULL unfiltered mouse gene table (query_mouse_biomart_full.py,
+83,845 rows, no symbol-list filter possible) and joining locally with an
+explicit two-stage exact-then-case-insensitive lookup, per the reviewer's
+prescribed mapping:
+
+    GMT raw symbol -> canonical mouse symbol -> Ensembl Compara human ortholog
+
+  1. exact match against canonical `Gene name` (preferred)
+  2. exact match fails -> case-insensitive unique match against canonical
+     `Gene name` (recovers Col1A1 -> Col1a1 style GMT-formatting drift)
+  3. case-insensitive match hits >1 distinct canonical symbol -> AMBIGUOUS_SYMBOL,
+     excluded from primary (matches Ly6a-style outcome-independence discipline
+     from PR #17 round 3 -- ambiguity is resolved by data provenance, never by
+     which candidate "looks more correct" downstream)
+  4. no match at all (exact or case-insensitive) -> NOT_FOUND_IN_BIOMART (now a
+     real absence, not a formatting artifact)
+
+Every gene's raw_mouse_symbol -> canonical_mouse_symbol -> mouse_ensembl_id
+provenance is preserved in the output (mike_verzi_symbol_resolution.tsv), so
+the recovery step is auditable, not a silent rewrite.
 
 Inputs:
   results/06a_normal_context/mike_verzi_sets_raw.json
-    -- per-signature mouse gene membership (5 sets, from the .gmt file)
-  results/06a_normal_context/mike_verzi_biomart_raw.tsv
-    -- raw BioMart bulk-query output (mouse gene, human ortholog, type, confidence)
+  results/06a_normal_context/mouse_biomart_full.tsv (v2, full unfiltered pull)
   results/04_dfp_signature/dfp_gene_sets/{D_shared,F_specific,P_specific}_FINAL.txt
   results/04_dfp_signature/dfp_gene_sets/F_developmental_<Organ>.txt (7 organs)
 
 Outputs:
+  results/06a_normal_context/mike_verzi_symbol_resolution.tsv -- new: raw->canonical->ensembl provenance
   results/06a_normal_context/mike_verzi_human_FINAL.tsv
-    -- one row per queried mouse gene: class, human target(s), inclusion decision
   results/06a_normal_context/mike_verzi_signature_gene_counts.tsv
-    -- per signature: n mouse genes, n resolved to primary human symbol
   results/06a_normal_context/mike_verzi_dfp_overlap.tsv
-    -- per signature x per D/F/P target: overlap gene count and gene list
   results/06a_normal_context/mike_verzi_dfp_overlap_summary.md
-    -- human-readable summary table
 """
 import csv
 import json
@@ -46,31 +63,80 @@ def load_gene_set(path):
 
 def main():
     sets = json.load(open(f"{OUT_DIR}/mike_verzi_sets_raw.json"))
-    biomart_rows = list(csv.DictReader(open(f"{OUT_DIR}/mike_verzi_biomart_raw.tsv"), delimiter="\t"))
-
-    by_mouse_gene = defaultdict(list)
-    for r in biomart_rows:
-        by_mouse_gene[r["Gene name"]].append(r)
-
     all_mouse_genes = sorted({g for genes in sets.values() for g in genes})
 
-    # classify each mouse gene
-    classification = {}  # mouse_symbol -> (class, [ (human_symbol, human_ensembl) ])
-    for g in all_mouse_genes:
-        entries = by_mouse_gene.get(g, [])
+    # full, unfiltered mouse gene table -- rows keyed by canonical Gene name
+    rows = list(csv.DictReader(open(f"{OUT_DIR}/mouse_biomart_full.tsv"), delimiter="\t"))
+    by_canonical_name = defaultdict(list)   # exact canonical symbol -> rows (one gene can have multiple ortholog rows)
+    by_upper_name = defaultdict(set)        # uppercased symbol -> set of distinct canonical symbols sharing that uppercase form
+    for r in rows:
+        name = r["Gene name"]
+        if not name:
+            continue
+        by_canonical_name[name].append(r)
+        by_upper_name[name.upper()].add(name)
+
+    # --- Stage 1: resolve each raw GMT symbol to a canonical mouse symbol ---
+    resolution = {}  # raw_symbol -> (canonical_symbol or None, method, mouse_ensembl_ids)
+    for raw in all_mouse_genes:
+        if raw in by_canonical_name:
+            canonical_candidates = {raw}
+            method = "exact"
+        else:
+            canonical_candidates = by_upper_name.get(raw.upper(), set())
+            method = "case_insensitive" if len(canonical_candidates) == 1 else (
+                "ambiguous_case_insensitive" if len(canonical_candidates) > 1 else "not_found")
+
+        if method in ("exact", "case_insensitive"):
+            canonical = next(iter(canonical_candidates))
+            ensembl_ids = sorted({r["Gene stable ID"] for r in by_canonical_name[canonical]})
+            resolution[raw] = (canonical, method, ensembl_ids)
+        elif method == "ambiguous_case_insensitive":
+            resolution[raw] = (None, method, sorted(canonical_candidates))
+        else:
+            resolution[raw] = (None, "not_found", [])
+
+    # --- Stage 2: classify orthology using the resolved canonical symbol's rows ---
+    classification = {}  # raw_symbol -> (class, [(human_symbol, human_ensembl)])
+    for raw in all_mouse_genes:
+        canonical, method, extra = resolution[raw]
+        if method == "ambiguous_case_insensitive":
+            classification[raw] = ("AMBIGUOUS_SYMBOL", [])
+            continue
+        if method == "not_found":
+            classification[raw] = ("NOT_FOUND_IN_BIOMART", [])
+            continue
+        entries = by_canonical_name[canonical]
         with_ortholog = [e for e in entries if e["Human gene name"]]
-        if not entries:
-            classification[g] = ("NOT_FOUND_IN_BIOMART", [])
-        elif not with_ortholog:
-            classification[g] = ("NO_ORTHOLOG", [])
+        if not with_ortholog:
+            classification[raw] = ("NO_ORTHOLOG", [])
         else:
             types = {e["Human homology type"] for e in with_ortholog}
             if len(with_ortholog) == 1 and types == {"ortholog_one2one"}:
-                classification[g] = ("ortholog_one2one",
-                                      [(with_ortholog[0]["Human gene name"], with_ortholog[0]["Human gene stable ID"])])
+                classification[raw] = ("ortholog_one2one",
+                                        [(with_ortholog[0]["Human gene name"], with_ortholog[0]["Human gene stable ID"])])
             else:
-                classification[g] = ("ambiguous",
-                                      [(e["Human gene name"], e["Human gene stable ID"]) for e in with_ortholog])
+                classification[raw] = ("ambiguous",
+                                        [(e["Human gene name"], e["Human gene stable ID"]) for e in with_ortholog])
+
+    # symbol-resolution provenance artifact (new -- makes the case-recovery step auditable)
+    with open(f"{OUT_DIR}/mike_verzi_symbol_resolution.tsv", "w", newline="") as f:
+        w = csv.writer(f, delimiter="\t")
+        w.writerow(["raw_mouse_symbol", "canonical_mouse_symbol", "resolution_method", "mouse_ensembl_ids"])
+        for raw in all_mouse_genes:
+            canonical, method, extra = resolution[raw]
+            ensembl_str = ";".join(extra) if method in ("exact", "case_insensitive") else (
+                "AMBIGUOUS:" + ";".join(extra) if method == "ambiguous_case_insensitive" else "")
+            w.writerow([raw, canonical or "", method, ensembl_str])
+
+    n_recovered = sum(1 for raw in all_mouse_genes if resolution[raw][1] == "case_insensitive")
+    n_ambiguous_symbol = sum(1 for raw in all_mouse_genes if resolution[raw][1] == "ambiguous_case_insensitive")
+    n_not_found = sum(1 for raw in all_mouse_genes if resolution[raw][1] == "not_found")
+    print(f"Symbol resolution: {len(all_mouse_genes)} raw GMT symbols -> "
+          f"{len(all_mouse_genes) - n_recovered - n_ambiguous_symbol - n_not_found} exact, "
+          f"{n_recovered} case-insensitive-recovered, "
+          f"{n_ambiguous_symbol} ambiguous_case_insensitive (excluded), "
+          f"{n_not_found} genuinely not_found", flush=True)
 
     # frozen artifact: one row per mouse gene, with which signature(s) it's in
     gene_to_signatures = defaultdict(list)
@@ -80,15 +146,16 @@ def main():
 
     with open(f"{OUT_DIR}/mike_verzi_human_FINAL.tsv", "w", newline="") as f:
         w = csv.writer(f, delimiter="\t")
-        w.writerow(["mouse_symbol", "signatures", "class", "n_human_targets",
-                     "human_targets", "inclusion_decision"])
+        w.writerow(["mouse_symbol", "canonical_mouse_symbol", "resolution_method", "signatures", "class",
+                     "n_human_targets", "human_targets", "inclusion_decision"])
         for g in all_mouse_genes:
             cls, targets = classification[g]
+            canonical, method, extra = resolution[g]
             sigs = ";".join(sorted(set(gene_to_signatures[g])))
             target_str = ";".join(f"{s}:{e}" for s, e in targets)
             decision = "include_primary" if cls == "ortholog_one2one" else (
                 "extended_ambiguous_only" if cls == "ambiguous" else "exclude")
-            w.writerow([g, sigs, cls, len(targets), target_str, decision])
+            w.writerow([g, canonical or "", method, sigs, cls, len(targets), target_str, decision])
 
     # per-signature primary (one2one) human symbol sets
     primary_human_sets = {}
@@ -132,13 +199,16 @@ def main():
         f_lineage[organ] = organ_set & f_specific
 
     overlap_rows = []
-    md_lines = ["# mike_verzi (normal-context fetal/revival) x D/F/P gene-overlap audit\n"]
+    md_lines = ["# mike_verzi (normal-context fetal/revival) x D/F/P gene-overlap audit (v2, post case-fix)\n"]
     md_lines.append(
-        "Per Step 6a design: before any scoring, check whether each of the 5 "
-        "independently-published normal-tissue fetal/revival/regeneration gene "
-        "sets (mouse->human orthology-mapped, primary = Compara-confirmed "
-        "one-to-one only) shares genes with D-shared, F-specific (global + 7 "
-        "lineage modules), or P-specific.\n"
+        "v2: fixes PR #19 round-1 blocker -- v1's mouse->human mapping silently "
+        "dropped genes whose GMT symbol case didn't exactly match BioMart's "
+        "canonical mouse Gene name (e.g. Col1A1/Tnfrsf12A/Tmsb4X/Ly6A and bulk "
+        "S100A*/Slc* families), misclassifying real orthologs as "
+        "NOT_FOUND_IN_BIOMART. Fixed via a full unfiltered mouse-gene BioMart "
+        "pull + explicit exact-then-case-insensitive local join "
+        "(mike_verzi_symbol_resolution.tsv has the full raw->canonical->ensembl "
+        "provenance for every gene).\n"
     )
     md_lines.append("## Signature -> human ortholog resolution\n")
     md_lines.append("| Signature | n mouse genes | n primary (one2one) human | % resolved |")
@@ -148,8 +218,8 @@ def main():
         n_primary = len(primary_human_sets[sig])
         md_lines.append(f"| `{sig}` | {n_mouse} | {n_primary} | {100*n_primary/n_mouse:.1f}% |")
 
-    md_lines.append("\n## D/F/P overlap (primary human gene sets)\n")
-    md_lines.append("| Signature | D-shared (6) | F-specific global (2,504) | P-specific (78) |")
+    md_lines.append(f"\n## D/F/P overlap (primary human gene sets)\n")
+    md_lines.append(f"| Signature | D-shared ({len(d_shared)}) | F-specific global ({len(f_specific)}) | P-specific ({len(p_specific)}) |")
     md_lines.append("|---|---|---|---|")
     for sig in sets:
         hg = primary_human_sets[sig]
@@ -184,13 +254,14 @@ def main():
         f.write("\n".join(md_lines) + "\n")
 
     # console summary
-    print("Ortholog classification (all 1,923 unique mouse genes):")
+    print("\nOrtholog classification (all unique mouse genes, v2):")
     print(Counter(v[0] for v in classification.values()))
-    print("\nPer-signature resolution:")
+    print("\nPer-signature resolution (v2):")
     for sig, mouse_genes in sets.items():
         print(f"  {sig}: {len(mouse_genes)} mouse -> {len(primary_human_sets[sig])} primary human "
               f"({100*len(primary_human_sets[sig])/len(mouse_genes):.1f}%)")
-    print(f"\nWrote {OUT_DIR}/mike_verzi_human_FINAL.tsv")
+    print(f"\nWrote {OUT_DIR}/mike_verzi_symbol_resolution.tsv")
+    print(f"Wrote {OUT_DIR}/mike_verzi_human_FINAL.tsv")
     print(f"Wrote {OUT_DIR}/mike_verzi_dfp_overlap.tsv")
     print(f"Wrote {OUT_DIR}/mike_verzi_dfp_overlap_summary.md")
 

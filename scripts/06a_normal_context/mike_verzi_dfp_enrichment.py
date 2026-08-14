@@ -1,28 +1,45 @@
 #!/usr/bin/env python3
 """
-Gene-set enrichment (not just raw overlap) of the 5 mike_verzi normal-context
-fetal/revival signatures against D-shared / F-specific (global + 7 lineage
-modules) / P-specific, per user request: raw overlap counts aren't
-comparable across D/F/P targets that differ ~400x in size (D-shared=6 vs
-F-specific=2,504) -- a hypergeometric enrichment score (fold-enrichment +
-BH-FDR-corrected p-value) is the properly size-normalized version of the
-same question, and is the standard statistic for this kind of gene-set
-comparison (same category of test as GSEA/Fisher's-exact overlap analysis).
+EXPLORATORY / ARCHIVAL enrichment of the 5 mike_verzi normal-context
+fetal/revival signatures against the pan-organ HDMA-based D-shared /
+F-specific (global + 7 lineage) / P-specific gene sets.
 
-Background gene universe: 23,272 human protein-coding genes, queried
-directly from Ensembl BioMart (gene_biotype=protein_coding, GRCh38,
-jun2026 archive) -- not assumed from a textbook figure.
+Per PR #19 round-2 review: this result is retained for the historical
+record (it's part of what motivated the Step 4a gut re-anchoring, see
+docs/STEP4A_GUT_FDEV_DESIGN.md) but is NOT presented as a validated
+biological finding and NOT cited as evidence for the gut redirect -- the
+gut redirect is justified independently by the anatomical mismatch (HDMA
+has no gut/colon organ at all), not by this enrichment's null result.
+The real enrichment test belongs downstream of a real F_Colon-developmental,
+against a source-data-aware measurable gene universe (not yet built).
 
-For each (signature, target) pair:
-  k = observed overlap (primary one2one human genes only, same set used
-      in the raw-overlap audit)
-  n = signature's primary human gene-set size
-  K = target's gene-set size
-  N = background (23,272)
-  fold_enrichment = (k/n) / (K/N)
-  p = hypergeometric survival function P(X >= k), one-sided over-representation
-  fdr = BH-corrected p across all signature x target tests (55 tests:
-        5 signatures x 11 targets [D-shared, F-specific-global, 7 lineage, P-specific])
+This is the canonical script (fixes PR #19 round-1 REQUEST_CHANGES blocker
+#2 -- v1, archived at archived/mike_verzi_dfp_enrichment.v1_buggy_universe.py,
+hardcoded the hypergeometric background to N=23,272 (all human
+protein-coding genes) without restricting n_signature/K_target/k_overlap to
+a shared, meaningful gene universe. Since every mike_verzi primary signature
+is, by construction, drawn only from human genes that ARE the human
+ortholog target of some mouse gene with a Compara one2one call, a human
+gene with NO eligible mouse->human one2one ortholog can never
+mathematically appear in ANY primary mike_verzi signature -- yet v1 counted
+it in N, silently inflating the null denominator with genes never actually
+"at risk" of being drawn into the signature side of the test.
+
+Universe actually implemented this round (honestly scoped, not overclaimed):
+
+  U = {human genes with >=1 Compara-verified one2one mouse ortholog}
+
+n = |signature ^ U|, K = |target ^ U|, k = |signature ^ target ^ U|, N = |U|
+-- all four derived from the same explicit gene list, not a bare constant.
+**Per round-2 review, explicitly NOT claiming**: U is not further
+intersected with "23,272 protein-coding genes" (Compara one2one calls are
+essentially always protein-coding on both sides in practice, but this was
+never verified against the actual protein-coding list, so it's not stated
+as fact) nor with "genes actually measurable in the HDMA/placental/GTEx/HPA
+matrices used to build D/F/P" (no such saved universe file exists yet;
+reconstructing it means pulling gene panels from the underlying platform
+matrices -- a real follow-up task for when a real F_Colon-developmental
+enrichment is run, out of scope for this archival HDMA result).
 
 Usage: python3 mike_verzi_dfp_enrichment.py
 """
@@ -37,7 +54,7 @@ OUT_DIR = os.path.join(REPO, "results/06a_normal_context")
 DFP_DIR = os.path.join(REPO, "results/04_dfp_signature/dfp_gene_sets")
 ORGANS = ["Adrenal", "Liver", "Skin", "Spleen", "Stomach", "Thymus", "Thyroid"]
 
-BACKGROUND_N = 23272  # human protein-coding genes, Ensembl BioMart, verified this session
+PROTEIN_CODING_N = 23272  # human protein-coding genes, Ensembl BioMart, verified in Step 6a round 1
 
 
 def load_gene_set(path):
@@ -61,19 +78,40 @@ def bh_fdr(pvals):
 def main():
     sets = json.load(open(f"{OUT_DIR}/mike_verzi_sets_raw.json"))
 
-    # reload primary human sets (written by build_mike_verzi_human_final.py)
     primary_human_sets = {}
     for sig in sets:
         with open(f"{OUT_DIR}/{sig}_human_primary.txt") as f:
             primary_human_sets[sig] = {l.strip() for l in f if l.strip()}
 
-    d_shared = load_gene_set(f"{DFP_DIR}/D_shared_FINAL.txt")
-    f_specific = load_gene_set(f"{DFP_DIR}/F_specific_FINAL.txt")
-    p_specific = load_gene_set(f"{DFP_DIR}/P_specific_FINAL.txt")
+    # --- build U: human genes with >=1 Compara one2one mouse ortholog ---
+    rows = list(csv.DictReader(open(f"{OUT_DIR}/mouse_biomart_full.tsv"), delimiter="\t"))
+    one2one_human_targets = {
+        r["Human gene name"] for r in rows
+        if r["Human gene name"] and r["Human homology type"] == "ortholog_one2one"
+    }
+    print(f"Human genes with >=1 Compara one2one mouse ortholog (any mouse gene, "
+          f"not just mike_verzi's): {len(one2one_human_targets)}", flush=True)
+
+    # protein-coding background, same verified list as v1 (results/06a_normal_context
+    # doesn't keep the raw BioMart protein-coding pull as a committed file -- re-derive
+    # the same PROTEIN_CODING_N constant's *set*, not just its count, is out of scope
+    # here since v1 only saved the count; approximate U with the one2one-ortholog set
+    # itself, which is already a strict subset of protein-coding genes in practice
+    # (mouse Compara orthology calls are essentially always protein-coding on both
+    # sides) -- flagged explicitly, not silently assumed identical to PROTEIN_CODING_N.
+    U = one2one_human_targets
+    N = len(U)
+    print(f"U (this round's universe) = human genes with >=1 Compara one2one mouse "
+          f"ortholog = {N} (vs. v1's unrestricted N={PROTEIN_CODING_N} protein-coding "
+          f"background)", flush=True)
+
+    d_shared = load_gene_set(f"{DFP_DIR}/D_shared_FINAL.txt") & U
+    f_specific = load_gene_set(f"{DFP_DIR}/F_specific_FINAL.txt") & U
+    p_specific = load_gene_set(f"{DFP_DIR}/P_specific_FINAL.txt") & U
     f_lineage = {}
     for organ in ORGANS:
         organ_set = load_gene_set(f"{DFP_DIR}/F_developmental_{organ}.txt")
-        f_lineage[organ] = organ_set & f_specific
+        f_lineage[organ] = (organ_set & load_gene_set(f"{DFP_DIR}/F_specific_FINAL.txt")) & U
 
     targets = {"D-shared": d_shared, "F-specific-global": f_specific}
     for organ in ORGANS:
@@ -81,15 +119,15 @@ def main():
     targets["P-specific"] = p_specific
 
     results = []
-    for sig, human_set in primary_human_sets.items():
+    for sig, human_set_raw in primary_human_sets.items():
+        human_set = human_set_raw & U
         n = len(human_set)
         for tname, tset in targets.items():
             K = len(tset)
             k = len(human_set & tset)
-            expected = n * K / BACKGROUND_N
-            fold = (k / n) / (K / BACKGROUND_N) if k > 0 else 0.0
-            # hypergeom.sf(k-1, N, K, n) = P(X >= k)
-            p = hypergeom.sf(k - 1, BACKGROUND_N, K, n) if k > 0 else 1.0
+            expected = n * K / N if N else 0.0
+            fold = (k / n) / (K / N) if (k > 0 and n > 0 and K > 0) else 0.0
+            p = hypergeom.sf(k - 1, N, K, n) if k > 0 else 1.0
             results.append({
                 "signature": sig, "target": tname, "n_signature": n,
                 "K_target": K, "k_overlap": k, "expected": round(expected, 3),
@@ -111,11 +149,10 @@ def main():
         for r in results:
             w.writerow(r)
 
-    print(f"Background: {BACKGROUND_N} human protein-coding genes (Ensembl BioMart)")
+    print(f"\nUniverse N = {N} (v1 used unrestricted N={PROTEIN_CODING_N})")
     print(f"Total tests: {len(results)} (5 signatures x 11 targets)")
     print(f"Wrote {out_path}")
 
-    # console summary: per signature, which target has max fold-enrichment
     print("\nPer-signature top enrichment target (by fold-enrichment among FDR<0.05):")
     from collections import defaultdict
     by_sig = defaultdict(list)
