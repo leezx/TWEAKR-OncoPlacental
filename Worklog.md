@@ -470,7 +470,18 @@ PR #10 merged (`97f133c`). Picked up the reviewer's explicit next step: F-develo
 
 **`adult_excluded` real distributions computed**, catching two real bugs along the way: (1) naive `rank(pct=True, method="average")` put GTEx's massive zero-TPM tie blocks (>50% of genes in a typical tissue) at their *mid*-rank, not the bottom — 0 genes passed at any sensible cutoff; (2) even `method="min"` left percentile *degenerate* across that same zero block — every cutoff 5-50 selected an identical gene set, since there's no gene between the zero block (~0th percentile) and the next distinct expression level (~55th). Fixed with a not-detected-floor (TPM/nTPM<1, project-defined) + percentile-computed-only-among-detected-genes design — gives a real, monotonic, non-degenerate gradient. Canonical markers validate correctly (CSH1/PSG1 never detected in any of GTEx's 68 tissues; GATA3/KRT7/HLA-G detected more broadly, matching their known lower placental specificity). Full writeup: `results/04_dfp_signature/adult_excluded_audit/adult_excluded_percentile_audit.md`.
 
-Neither F-developmental's "elevated" cutoff nor `adult_excluded`'s exact percentile/quorum is frozen — real distributions + open questions reported for review, same discipline as every prior threshold. Not yet submitted for review as of this entry.
+Neither F-developmental's "elevated" cutoff nor `adult_excluded`'s exact percentile/quorum is frozen — real distributions + open questions reported for review, same discipline as every prior threshold.
+
+### PR #11 approved — three concrete design decisions for the next round
+
+**APPROVE**: "这轮的定位是 distribution audit，而不是冻结 cutoff；按这个 scope，我没有发现需要阻止合并的 blocker。" Both findings (HDMA gene-mapping gap, adult_excluded tie-handling bugs) endorsed as genuine, correctly-fixed pre-flight QC — HDMA mapping fix explicitly praised for not silently overwriting the reviewed PR #4 default-assay map, and for the built-in 217,606/0-mismatch consistency check. `adult_excluded`'s not-detected-floor + percentile-among-detected design endorsed as restoring a real, interpretable threshold knob, and explicitly noted as *not* having smuggled in the `<1` floor as a GTEx/HPA official rule, and *not* having frozen a percentile this round — "这个 exploratory calibration 是合格的."
+
+**Three concrete decisions for the next round** (not resolved here, flagged for the actual cutoff-calibration PR):
+1. **Split StomachEsophagus.** The MUC5AC/KRT13 marker evidence proves the 6 Stomach and 1 Esophagus samples are genuinely different tissue identities — continuing to pool them "creates a fictional 'gastroesophageal' fetal organ." Stomach (n=6) can proceed into F-developmental; Esophagus (n=1) doesn't meet the cross-sample-replication bar and should be explicitly marked `insufficient-replication`, not forced into its own F-developmental signature.
+2. **Thymus's organ-matched adult exclusion**: OK to fill the gap with HPA, but must be explicitly labeled `HPA-only`, never disguised as GTEx-equivalent for schema symmetry — track per-gene provenance (`adult_reference = GTEx+HPA / GTEx-only / HPA-only`).
+3. **Whole-body adult exclusion**: don't patch GTEx's Thymus gap by just appending HPA as a fictional "69th GTEx tissue." Cleaner: treat GTEx whole-body and HPA whole-body as two independent adult-depletion evidence sources, then decide AND vs. primary+supportive — preserves the cross-platform-independence discipline from PR #5.
+
+Explicit next step: real F-developmental "elevated" cutoff + `adult_excluded` cutoff/quorum calibration, with StomachEsophagus split first before recomputing.
 
 ### Repo layout (as of this session)
 
