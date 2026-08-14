@@ -4,15 +4,21 @@ Design approved in PR #14 (`docs/STEP5_TIER2_VALIDATION.md`). This document
 reports the compute results and the interpretation reached before submitting
 for review.
 
-**PR #15 review round 1 (REQUEST_CHANGES) fixed two things, both folded
-into this version**: (1) the organ-matched background comparison originally
-used a single unmatched random draw with no null distribution — replaced
-with a 500-permutation, expression-detectability-matched null (see "Result
-2" below); (2) a factual wording error ("81/84 genes show no adult
-single-cell signal" — the correct split is 69/84 zero-hit, 15/84 with at
-least one hit) — corrected in "Result 1" below. The whole-body D/P
-pseudobulk methodology itself was confirmed consistent with PR #14's
-approved contract and did not need to be rerun.
+**PR #15 went through 2 review rounds, both folded into this version.**
+Round 1 (REQUEST_CHANGES) fixed two things: (1) the organ-matched
+background comparison originally used a single unmatched random draw with
+no null distribution — replaced with a 500-permutation,
+expression-detectability-matched null (see "Result 2" below); (2) a
+factual wording error ("81/84 genes show no adult single-cell signal" —
+the correct split is 69/84 zero-hit, 15/84 with at least one hit) —
+corrected in "Result 1" below. Round 2 (REQUEST_CHANGES) caught that the
+82 (organ, cell_type) permutation tests from round 1's fix were being
+called "significant" at an uncorrected `p<0.05` with no multiple-testing
+correction — fixed by adding Benjamini-Hochberg FDR (global across all 82
+tests, pre-registered as primary; organ-wise as reference), re-run in the
+same official script (see "Result 2"). The whole-body D/P pseudobulk
+methodology itself was confirmed consistent with PR #14's approved
+contract in both rounds and never needed to be rerun.
 
 ## What was run
 
@@ -145,38 +151,61 @@ eligible donor-celltype samples with CPM≥1, computed from the same data
 being tested), and each of 500 permutations draws one random gene per
 F-specific gene from its matching decile — giving a background panel
 matched in size AND expression-level composition. Reports null median, 95%
-interval, and an empirical one-sided p-value (fraction of the 500
-permutation flag rates ≥ the observed rate) per (organ, cell_type).
+interval, and an empirical one-sided p-value per (organ, cell_type), using
+the standard finite-permutation "add-one" correction `(n_ge+1)/(n_perm+1)`
+so p can never round to an exact 0.
 
-**Result: the earlier ~2.2–3.2× Thymus enrichment was substantially an
-artifact of the unmatched background.** Under the expression-matched null:
+**PR #15 review round 2 fix**: 82 (organ, cell_type) hypotheses are tested
+here (Liver 12 + Skin 18 + Spleen 23 + Thymus 29). Reviewer correctly
+flagged that reporting uncorrected `p<0.05` as "significant" across 82
+tests will produce several nominal positives by chance alone even under a
+true null everywhere — needed multiple-testing correction before any of
+these could be called a real finding. Fixed (job 3620553, same script,
+re-run in full — no need to redo the 500 permutations themselves, just the
+correction step, but kept in the single official script for
+reproducibility): added Benjamini-Hochberg FDR computed two ways —
+**global** (all 82 tests at once, pre-registered here as the primary
+interpretation) and **organ-wise** (within each organ's own tests,
+reported for reference only). Renamed the `p<0.05` column
+`nominal_p_lt_0.05` and reserved "significant" strictly for
+`fdr_global < 0.05`.
 
-| Organ | Cell types tested | Significant at p<0.05 | Enrichment among significant hits |
-|---|---|---|---|
-| Liver | 12 | **0** | — (no organ-matched signal at all) |
-| Skin | 18 | 4 (stromal cell, muscle cell, endothelial cell, T cell) | 1.11–1.27× |
-| Spleen | 23 | 2 (endothelial cell, innate lymphoid cell) | 1.20–1.34× |
-| Thymus | 29 | 7 (capillary/arterial/venous endothelium, fibroblast, macrophage, medullary thymic epithelial cell, vascular smooth muscle) | 1.06–1.29× |
+**Result: the Thymus signal is robust to correction; Skin/Spleen's are
+much less so.** Under global BH-FDR<0.05 (82 tests):
 
-Thymus still has the most cell types clearing significance (7/29, vs. 0/12
-in Liver), and medullary thymic epithelial cell remains among the
-significant hits (1.29×) — consistent with, though far more modest than
-originally reported, the AIRE/FEZF2 "promiscuous gene expression"
-candidate explanation. But **22 of Thymus's 29 cell types, and every one of
-Liver's 12, show no significant difference from an expression-matched
-random panel** — the naive uniform-background comparison had overstated
-both the breadth (nearly every Thymus cell type) and the magnitude (2.2–3.2×
-vs. the corrected 1.06–1.29×) of the effect. The real, corrected finding is
-a narrower and much smaller signal in Thymus stromal/endothelial/mTEC
-populations specifically, not an organ-wide 2–3× elevation.
+| Organ | Cell types tested | Nominal p<0.05 | **Global-FDR-significant** | Enrichment (FDR-significant) |
+|---|---|---|---|---|
+| Liver | 12 | 0 | **0** | — |
+| Skin | 18 | 4 | **2** (stromal cell, muscle cell) | 1.19–1.27× |
+| Spleen | 23 | 2 | **2** (endothelial cell, innate lymphoid cell) | 1.20–1.34× |
+| Thymus | 29 | 7 | **7 — all 7 survive** (capillary/arterial/venous endothelium, fibroblast, macrophage, medullary thymic epithelial cell, vascular smooth muscle) | 1.06–1.29× |
+
+**11 of 82 (organ, cell_type) tests survive global FDR correction** — all 7
+of Thymus's nominal hits survive intact (the Thymus signal did not shrink
+under correction, unlike the reviewer's stated concern that it might);
+Skin loses 2 of 4 nominal hits (`endothelial cell` — organ-wise FDR=0.048
+passes but global FDR=0.055 narrowly fails, a genuine borderline case
+worth flagging rather than rounding either way; `T cell` fails both).
+Medullary thymic epithelial cell remains significant (1.29×, global
+FDR=0.0083) — still consistent with, though modest relative to, the
+AIRE/FEZF2 "promiscuous gene expression" candidate explanation. **22 of
+Thymus's 29 cell types, and all of Liver's 12, show no significant
+difference from an expression-matched, FDR-corrected null.** The corrected,
+reportable finding is: a real but narrow signal (11/82 cell types) with
+modest effect sizes (1.06–1.34×), concentrated in Thymus
+stromal/endothelial/mTEC populations and smaller pockets in Skin/Spleen —
+not the originally reported organ-wide 2–3× Thymus elevation, which was
+substantially inflated by the unmatched, uncorrected background comparison.
 
 **This does not motivate re-opening the frozen F-specific signature**,
 for the same structural reasons as before (the frozen `F_specific_FINAL.txt`
 already excludes anything overlapping `P_developmental_primary84` and
 underwent its own adult-exclusion calibration in Step 4; this Tier-2 check
 tests the pre-final per-organ *candidate* lists, a superset) — reinforced
-now by the corrected effect sizes being modest (≤1.34×) rather than the
-originally reported 2–3×. The organ-matched flagged list
+now by both the corrected effect sizes being modest (≤1.34×) and only 11 of
+82 tested cell types surviving rigorous multiple-testing-corrected
+statistical evidence, rather than the originally reported 2–3× organ-wide
+Thymus elevation. The organ-matched flagged list
 (`organ_matched_F_specific_FLAGGED.tsv`) and the permutation-null table
 (`background_permutation_null.tsv`) are retained as the audit trail;
 Thymus's 7 significant cell types (and Spleen's/Skin's smaller sets) should
@@ -202,7 +231,7 @@ projection).
    projection (not a re-calibration of Step 4's frozen cutoffs).
 2. Proceed to the next step in the reviewer's PR #13 guidance: project the
    frozen D/F/P signature onto real CRC Oncofetal single-cell/spatial data.
-   Thymus's 7 significant cell types (mTEC, fibroblast, vascular smooth
-   muscle, 3 endothelial subtypes) are noted as a modest (1.06-1.29x),
-   expression-matched-null-confirmed audit finding but do not block this,
-   since CRC is not thymus tissue.
+   Thymus's 7 cell types that survive global BH-FDR<0.05 (mTEC, fibroblast,
+   vascular smooth muscle, 3 endothelial subtypes) are noted as a modest
+   (1.06-1.29x), expression-matched-null-and-multiple-testing-corrected
+   audit finding but do not block this, since CRC is not thymus tissue.

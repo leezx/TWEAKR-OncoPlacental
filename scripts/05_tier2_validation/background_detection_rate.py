@@ -118,8 +118,11 @@ def matched_permutation_null(hit_matrix, detectability, f_genes, n_perm=N_PERM, 
     null_median = np.median(null_rates, axis=0)
     null_p2_5 = np.percentile(null_rates, 2.5, axis=0)
     null_p97_5 = np.percentile(null_rates, 97.5, axis=0)
-    # one-sided empirical p: fraction of permutations with rate >= observed
-    empirical_p = (null_rates >= observed.values[None, :]).mean(axis=0)
+    # One-sided empirical p, with the standard "add-one" finite-permutation
+    # correction (North et al. 2002 / Davison & Hinkley) so p can never be
+    # reported as an exact 0 -- with n_perm=500 the finite floor is 1/501.
+    n_ge = (null_rates >= observed.values[None, :]).sum(axis=0)
+    empirical_p = (n_ge + 1) / (n_perm + 1)
 
     result = pd.DataFrame({
         "cell_type": hit_matrix.columns,
@@ -134,6 +137,22 @@ def matched_permutation_null(hit_matrix, detectability, f_genes, n_perm=N_PERM, 
     result["enrichment_vs_null_median"] = (result["observed_F_flag_rate"] / result["null_median"].replace(0, np.nan)).round(2)
     result["outside_null_95pct_interval"] = (result["observed_F_flag_rate"] > result["null_p97_5"]) | (result["observed_F_flag_rate"] < result["null_p2_5"])
     return result.round(4)
+
+
+def bh_fdr(pvals):
+    """Benjamini-Hochberg FDR (q-values) for a 1-D array of p-values."""
+    pvals = np.asarray(pvals, dtype=float)
+    n = len(pvals)
+    order = np.argsort(pvals)
+    ranked = pvals[order]
+    raw_q = ranked * n / np.arange(1, n + 1)
+    # enforce monotonicity: q(i) <= q(i+1) is required, achieved by a
+    # running minimum from the largest rank down
+    q = np.minimum.accumulate(raw_q[::-1])[::-1]
+    q = np.clip(q, 0, 1)
+    out = np.empty(n)
+    out[order] = q
+    return out
 
 
 rows = []
@@ -157,11 +176,35 @@ for organ in F_MATCHED_ORGANS:
           f"above the {N_PERM}-permutation expression-matched null (p<0.05, one-sided)")
 
 final = pd.concat(rows, ignore_index=True)
+
+# Multiple-testing correction: 82 (organ, cell_type) hypotheses tested
+# (Liver 12 + Skin 18 + Spleen 23 + Thymus 29) -- an uncorrected p<0.05
+# threshold is expected to produce several nominal positives by chance
+# alone even under a true null everywhere. BH-FDR computed two ways:
+# GLOBAL (across all 82 tests at once) is the primary interpretation,
+# pre-registered here as primary rather than picked post-hoc; organ-wise
+# FDR (within each organ's own tests) is reported alongside for reference,
+# since the 4 organs were run as logically separate checks.
+final["fdr_global"] = bh_fdr(final["empirical_p_value"].values).round(4)
+final["fdr_organwise"] = final.groupby("organ")["empirical_p_value"].transform(lambda p: bh_fdr(p.values)).round(4)
+final["nominal_p_lt_0.05"] = final["empirical_p_value"] < 0.05
+final["significant_fdr_global_0.05"] = final["fdr_global"] < 0.05
+final["significant_fdr_organwise_0.05"] = final["fdr_organwise"] < 0.05
+
 final.to_csv(f"{OUT_DIR}/background_permutation_null.tsv", sep="\t", index=False)
-print(f"\n=== Full per-(organ,cell_type) permutation-null comparison ===")
+print(f"\n=== Full per-(organ,cell_type) permutation-null comparison ({len(final)} hypotheses tested) ===")
 print(final.to_string(index=False))
 print(f"\nWrote {OUT_DIR}/background_permutation_null.tsv")
 
-sig = final[final.empirical_p_value < 0.05].sort_values(["organ", "empirical_p_value"])
-print(f"\n=== Cell types with F-specific rate significantly above expression-matched null (p<0.05) ===")
-print(sig.to_string(index=False) if len(sig) else "(none)")
+nominal = final[final["nominal_p_lt_0.05"]].sort_values(["organ", "empirical_p_value"])
+print(f"\n=== Cell types with NOMINAL p<0.05 (uncorrected, {len(final)} tests total -- "
+      f"NOT the same as FDR-significant) ===")
+print(nominal.to_string(index=False) if len(nominal) else "(none)")
+
+sig_global = final[final["significant_fdr_global_0.05"]].sort_values(["organ", "fdr_global"])
+print(f"\n=== Cell types significant at GLOBAL BH-FDR < 0.05 (primary interpretation, {len(final)} tests) ===")
+print(sig_global.to_string(index=False) if len(sig_global) else "(none survive global FDR correction)")
+
+sig_organ = final[final["significant_fdr_organwise_0.05"]].sort_values(["organ", "fdr_organwise"])
+print(f"\n=== Cell types significant at ORGAN-WISE BH-FDR < 0.05 (reference only) ===")
+print(sig_organ.to_string(index=False) if len(sig_organ) else "(none survive organ-wise FDR correction)")
