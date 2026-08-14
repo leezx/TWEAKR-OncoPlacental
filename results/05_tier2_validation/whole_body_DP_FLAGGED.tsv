@@ -1,0 +1,55 @@
+organ	cell_type	gene	n_eligible_donors	n_donors_detected	donor_detection_fraction	median_cpm	max_cpm	single_donor_evidence	cross_donor_consistent_hit	gene_set
+Liver	endothelial cell of hepatic sinusoid	RPA4	2	2	1.0	1.79	2.54	False	True	P_specific
+Liver	endothelial cell of hepatic sinusoid	ZNF257	2	2	1.0	2.25	2.54	False	True	P_specific
+Liver	endothelial cell of hepatic sinusoid	ZNF850	2	2	1.0	23.67	37.19	False	True	P_specific
+Skin	cd8-positive, alpha-beta memory t cell	GJB7	2	2	1.0	4.07	6.83	False	True	P_specific
+Skin	cd8-positive, alpha-beta memory t cell	ZNF850	2	2	1.0	2.54	3.95	False	True	P_specific
+Skin	endothelial cell	RPA4	2	2	1.0	3.29	5.23	False	True	P_specific
+Skin	macrophage	RPA4	2	2	1.0	2.12	3.03	False	True	P_specific
+Skin	mast cell	ERVFRD-1	2	2	1.0	4.13	4.35	False	True	P_specific
+Skin	muscle cell	RPA4	2	2	1.0	8.64	14.21	False	True	P_specific
+Skin	nkt cell	TMEM191C	2	2	1.0	2.6	2.98	False	True	P_specific
+Skin	regulatory t cell	GCM1	2	2	1.0	158.25	314.55	False	True	P_specific
+Spleen	cd4-positive, alpha-beta memory t cell	ZNF850	3	3	1.0	2.79	5.61	False	True	P_specific
+Spleen	classical monocyte	TMEM191C	3	3	1.0	1.66	2.27	False	True	P_specific
+Spleen	endothelial cell	ZNF257	3	3	1.0	2.16	2.96	False	True	P_specific
+Spleen	endothelial cell	ZNF850	3	3	1.0	5.18	13.07	False	True	P_specific
+Spleen	hematopoietic stem cell	HTRA4	2	2	1.0	2.84	4.36	False	True	P_specific
+Spleen	hematopoietic stem cell	ZNF257	2	2	1.0	6.49	8.62	False	True	P_specific
+Spleen	hematopoietic stem cell	ZNF850	2	2	1.0	8.67	8.72	False	True	P_specific
+Spleen	intermediate monocyte	RPA4	2	2	1.0	2.13	2.87	False	True	P_specific
+Spleen	intermediate monocyte	ZNF695	2	2	1.0	7.13	11.48	False	True	P_specific
+Spleen	intermediate monocyte	ZNF850	2	2	1.0	4.22	5.57	False	True	P_specific
+Spleen	macrophage	RPA4	3	3	1.0	1.48	4.0	False	True	P_specific
+Spleen	macrophage	ZNF257	3	3	1.0	2.73	3.2	False	True	P_specific
+Spleen	memory b cell	RPA4	3	3	1.0	1.2	9.24	False	True	P_specific
+Spleen	memory b cell	ZNF257	3	3	1.0	5.35	17.21	False	True	P_specific
+Spleen	naive b cell	ZNF257	3	3	1.0	5.01	10.48	False	True	P_specific
+Spleen	naive b cell	ZNF850	3	3	1.0	1.77	3.49	False	True	P_specific
+Spleen	naive thymus-derived cd8-positive, alpha-beta t cell	LAIR2	3	3	1.0	25.53	60.71	False	True	P_specific
+Spleen	naive thymus-derived cd8-positive, alpha-beta t cell	ZNF257	3	3	1.0	2.13	5.03	False	True	P_specific
+Spleen	nk cell	LAIR2	3	3	1.0	25.97	54.88	False	True	P_specific
+Spleen	regulatory t cell	ZNF257	3	3	1.0	4.02	17.95	False	True	P_specific
+Spleen	type i nk t cell	ZNF257	2	2	1.0	3.38	5.1	False	True	P_specific
+Thymus	capillary endothelial cell	ZNF114	2	2	1.0	3.34	4.73	False	True	P_specific
+Thymus	capillary endothelial cell	ZNF257	2	2	1.0	2.89	4.68	False	True	P_specific
+Thymus	cd4-positive helper t cell	TMEM191C	2	2	1.0	2.76	2.85	False	True	P_specific
+Thymus	cd4-positive helper t cell	TSKS	2	2	1.0	1.39	1.7	False	True	P_specific
+Thymus	cd4-positive helper t cell	ZNF257	2	2	1.0	6.05	7.94	False	True	P_specific
+Thymus	endothelial cell of artery	KISS1	2	2	1.0	2.16	2.18	False	True	P_specific
+Thymus	endothelial cell of artery	PCDH11X	2	2	1.0	3.55	4.97	False	True	D_shared
+Thymus	endothelial cell of artery	RPA4	2	2	1.0	2.2	2.8	False	True	P_specific
+Thymus	endothelial cell of artery	ZNF257	2	2	1.0	2.49	3.74	False	True	P_specific
+Thymus	endothelial cell of artery	ZNF850	2	2	1.0	2.69	3.21	False	True	P_specific
+Thymus	macrophage	HTRA4	2	2	1.0	1.53	1.54	False	True	P_specific
+Thymus	monocyte	RPA4	2	2	1.0	1.44	1.64	False	True	P_specific
+Thymus	nk cell	HTRA4	2	2	1.0	1.92	1.96	False	True	P_specific
+Thymus	nk cell	LAIR2	2	2	1.0	70.65	127.6	False	True	P_specific
+Thymus	nk cell	TMEM191C	2	2	1.0	2.85	3.75	False	True	P_specific
+Thymus	nk cell	ZBTB8B	2	2	1.0	1.92	1.96	False	True	P_specific
+Thymus	nk cell	ZNF257	2	2	1.0	4.85	7.83	False	True	P_specific
+Thymus	vascular associated smooth muscle cell	ZNF850	2	2	1.0	2.14	2.69	False	True	P_specific
+Thymus	vein endothelial cell	ZNF257	2	2	1.0	2.3	2.49	False	True	P_specific
+Thymus	vein endothelial cell	ZNF850	2	2	1.0	2.45	3.62	False	True	P_specific
+Large_Intestine	transit amplifying cell of large intestine	ZNF695	2	2	1.0	9.32	11.85	False	True	P_specific
+Large_Intestine	transit amplifying cell of large intestine	ZNF850	2	2	1.0	1.52	1.7	False	True	P_specific

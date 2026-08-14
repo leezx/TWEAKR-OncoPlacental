@@ -1,0 +1,83 @@
+organ	cell_type	F_specific_flag_rate	random_gene_flag_rate	n_F_specific_genes	enrichment_over_background
+Liver	endothelial cell	0.0	0.0	800	
+Liver	endothelial cell of hepatic sinusoid	0.3183	0.1913	800	1.66
+Liver	erythrocyte	0.0	0.0	800	
+Liver	fibroblast	0.0	0.0	800	
+Liver	hepatocyte	0.0637	0.1125	800	0.57
+Liver	intrahepatic cholangiocyte	0.0	0.0	800	
+Liver	liver dendritic cell	0.0	0.0	800	
+Liver	macrophage	0.0	0.0	800	
+Liver	monocyte	0.0	0.0	800	
+Liver	neutrophil	0.0	0.0	800	
+Liver	nk cell	0.0	0.0	800	
+Liver	t cell	0.0776	0.0737	800	1.05
+Skin	cd1c-positive myeloid dendritic cell	0.1098	0.1383	1128	0.79
+Skin	cd4-positive helper t cell	0.0591	0.0771	1128	0.77
+Skin	cd4-positive, alpha-beta memory t cell	0.1056	0.1197	1128	0.88
+Skin	cd8-positive, alpha-beta cytotoxic t cell	0.1183	0.1445	1128	0.82
+Skin	cd8-positive, alpha-beta memory t cell	0.1489	0.1631	1128	0.91
+Skin	endothelial cell	0.2735	0.1933	1128	1.41
+Skin	epithelial cell	0.0	0.0	1128	
+Skin	macrophage	0.1943	0.1871	1128	1.04
+Skin	mast cell	0.1542	0.1516	1128	1.02
+Skin	melanocyte	0.0	0.0	1128	
+Skin	muscle cell	0.1964	0.1454	1128	1.35
+Skin	naive thymus-derived cd4-positive, alpha-beta t cell	0.1193	0.1383	1128	0.86
+Skin	naive thymus-derived cd8-positive, alpha-beta t cell	0.0665	0.0984	1128	0.68
+Skin	nk cell	0.1193	0.1401	1128	0.85
+Skin	nkt cell	0.1457	0.1543	1128	0.94
+Skin	regulatory t cell	0.1299	0.1401	1128	0.93
+Skin	stromal cell	0.3136	0.1844	1128	1.7
+Skin	t cell	0.1352	0.1232	1128	1.1
+Spleen	cd141-positive myeloid dendritic cell	0.0	0.0	1090	
+Spleen	cd1c-positive myeloid dendritic cell	0.0735	0.145	1090	0.51
+Spleen	cd4-positive, alpha-beta memory t cell	0.1394	0.1688	1090	0.83
+Spleen	cd8-positive, alpha-beta memory t cell	0.18	0.189	1090	0.95
+Spleen	cd8-positive, alpha-beta t cell	0.0	0.0	1090	
+Spleen	classical monocyte	0.1987	0.1982	1090	1.0
+Spleen	endothelial cell	0.2887	0.2092	1090	1.38
+Spleen	erythrocyte	0.0165	0.0266	1090	0.62
+Spleen	hematopoietic stem cell	0.2173	0.1954	1090	1.11
+Spleen	innate lymphoid cell	0.1131	0.1156	1090	0.98
+Spleen	intermediate monocyte	0.2338	0.2128	1090	1.1
+Spleen	macrophage	0.247	0.2183	1090	1.13
+Spleen	mature nk t cell	0.0	0.0	1090	
+Spleen	memory b cell	0.247	0.2138	1090	1.16
+Spleen	naive b cell	0.1844	0.1853	1090	1.0
+Spleen	naive thymus-derived cd4-positive, alpha-beta t cell	0.1306	0.1697	1090	0.77
+Spleen	naive thymus-derived cd8-positive, alpha-beta t cell	0.1416	0.1706	1090	0.83
+Spleen	neutrophil	0.0977	0.156	1090	0.63
+Spleen	nk cell	0.1723	0.1927	1090	0.89
+Spleen	plasma cell	0.169	0.189	1090	0.89
+Spleen	plasmacytoid dendritic cell	0.0	0.0	1090	
+Spleen	regulatory t cell	0.1339	0.1578	1090	0.85
+Spleen	type i nk t cell	0.1756	0.1908	1090	0.92
+Thymus	b cell	0.0	0.0	1191	
+Thymus	capillary endothelial cell	0.5646	0.1982	1191	2.85
+Thymus	cd4-positive helper t cell	0.4594	0.2091	1191	2.2
+Thymus	cd8-positive, alpha-beta cytotoxic t cell	0.0	0.0	1191	
+Thymus	cd8-positive, alpha-beta t cell	0.0	0.0	1191	
+Thymus	dendritic cell	0.0	0.0	1191	
+Thymus	dn1 thymic pro-t cell	0.0	0.0	1191	
+Thymus	dn3 thymocyte	0.0	0.0	1191	
+Thymus	dn4 thymocyte	0.0	0.0	1191	
+Thymus	endothelial cell of artery	0.6313	0.2124	1191	2.97
+Thymus	endothelial cell of lymphatic vessel	0.0	0.0	1191	
+Thymus	erythrocyte	0.0	0.0	1191	
+Thymus	fast muscle cell	0.0	0.0	1191	
+Thymus	fibroblast	0.6501	0.2032	1191	3.2
+Thymus	immature natural killer cell	0.0	0.0	1191	
+Thymus	innate lymphoid cell	0.0	0.0	1191	
+Thymus	macrophage	0.5038	0.2074	1191	2.43
+Thymus	mature nk t cell	0.0	0.0	1191	
+Thymus	medullary thymic epithelial cell	0.5954	0.1872	1191	3.18
+Thymus	memory b cell	0.0	0.0	1191	
+Thymus	monocyte	0.4773	0.199	1191	2.4
+Thymus	naive b cell	0.0	0.0	1191	
+Thymus	naive regulatory t cell	0.0	0.0	1191	
+Thymus	nk cell	0.4679	0.2099	1191	2.23
+Thymus	plasma cell	0.2429	0.1369	1191	1.77
+Thymus	t follicular helper cell	0.0	0.0	1191	
+Thymus	thymocyte	0.0	0.0	1191	
+Thymus	vascular associated smooth muscle cell	0.5928	0.194	1191	3.06
+Thymus	vein endothelial cell	0.5877	0.2032	1191	2.89
