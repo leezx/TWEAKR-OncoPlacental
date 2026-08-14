@@ -14,7 +14,7 @@ User-requested (2026-08-13): report a global % after every completed task, using
 | D. Step 1 Inventory | 4% | done | 100% |
 | E. Step 2 gene-ID mapping | 6% | done | 100% |
 | F. Step 3 prep (collision rule + adult reference) | 7% | done — PR #5 merged | 100% |
-| G. Step 4 core: D/F/P pseudobulk signature construction | 20% | P-developmental frozen; F-developmental pseudobulk built+verified; adult_excluded real distributions computed; exact F-developmental/adult_excluded cutoffs + final gene lists still pending | ~72% |
+| G. Step 4 core: D/F/P pseudobulk signature construction | 20% | P-developmental frozen; F-developmental elevated+adult_excluded combined calibration done with a proposed cutoff (AFP-validated); final freeze + D/F/P gene-list assembly remain | ~82% |
 | H. Tier-2 validation (Tabula Sapiens, post-freeze) | 10% | not started | 0% |
 | I. Apply D/F/P to CRC Oncofetal cells, answer Q1 | 20% | not started | 0% |
 | J. Q2–Q6 (remaining 6-question framework, unscoped) | 20% | not started | 0% |
@@ -31,6 +31,8 @@ User-requested (2026-08-13): report a global % after every completed task, using
 - **`adult_excluded`**: computed real within-tissue percentile distributions from GTEx (68 tissues) and HPA (39 non-placenta tissues), organ-matched and whole-body. Caught and fixed two real problems along the way: naive average-rank percentile put GTEx's massive zero-TPM tie blocks (>50% of genes in a typical tissue) at their *mid*-rank instead of the bottom; and even min-rank tie-breaking left percentile *degenerate* across that same zero block (every cutoff 5-50 selected an identical gene set). Fixed with a not-detected-floor + percentile-among-detected design, giving a real, non-degenerate, monotonic gradient. Canonical markers validate correctly (CSH1/PSG1 never detected in any of GTEx's 68 tissues; broader-function genes like GATA3/KRT7/HLA-G detected more widely, matching known biology).
 
 Neither F-developmental's exact "elevated" cutoff nor `adult_excluded`'s exact percentile/quorum is frozen yet — real distributions reported for review, same discipline as every prior threshold in this project. G now ~72% of its 20% weight: P-developmental fully frozen; F-developmental pseudobulk built+verified (gene-mapping gap found and fixed along the way); `adult_excluded` real distributions computed (two tie-handling bugs found and fixed); exact cutoffs for both and final D/F/P gene-list assembly remain.)
+
+**Updated total: ~46%** (delta +2 from ~44%: PR #11 merged (`54dff03`). Implemented the reviewer's 3 design decisions and ran the actual combined F-developmental calibration: split StomachEsophagus locally (Stomach n=6 used, Esophagus n=1 marked `insufficient-replication`), updated `hdma_organ_to_{gtex,hpa}_tissue_map.tsv` accordingly, and computed `elevated(gene,organ)` (within-organ percentile-among-detected + sample-detection quorum) combined with organ-matched `adult_excluded` (provenance-tagged GTEx+HPA / HPA-only per organ — Thymus explicitly `HPA-only`, never disguised as GTEx-equivalent). Quorum turned out not to discriminate (a gene clearing the percentile bar is almost always detected in every sample, not just a majority) — the percentile cutoff does the real work. **Strong unplanned validation**: AFP, the textbook oncofetal gene, is directly verified to be excluded from the Liver F-developmental candidate set at `adult_excl_pct=10` but included at `25` — same calibration lesson as P-developmental's ERVFRD-1/KRT7 case. Proposing `elevated_pct=90`, `adult_excl_pct=25` (`f_developmental_calibration.md`), pending reviewer sign-off. G now ~82% of its 20% weight: both P-developmental and F-developmental have real, calibrated, marker-validated proposed cutoffs; only formal freeze (review round) and final D/F/P set-logic assembly (`STEP4_DFP_DESIGN.md`'s D-shared/F-specific/P-specific partition) remain before Step 4's core deliverable is complete.)
 
 When reporting progress: recompute the weighted sum, state the delta from the last reported number, and update this table in the same commit as the work it reflects.
 
@@ -482,6 +484,16 @@ Neither F-developmental's "elevated" cutoff nor `adult_excluded`'s exact percent
 3. **Whole-body adult exclusion**: don't patch GTEx's Thymus gap by just appending HPA as a fictional "69th GTEx tissue." Cleaner: treat GTEx whole-body and HPA whole-body as two independent adult-depletion evidence sources, then decide AND vs. primary+supportive — preserves the cross-platform-independence discipline from PR #5.
 
 Explicit next step: real F-developmental "elevated" cutoff + `adult_excluded` cutoff/quorum calibration, with StomachEsophagus split first before recomputing.
+
+### F-developmental calibration: implementing PR #11's three decisions, AFP validation
+
+PR #11 merged (`54dff03`). User asked to speed up — implemented all 3 decisions and ran the real combined calibration in one pass rather than spreading across rounds.
+
+Split StomachEsophagus locally (pseudobulk columns partitioned by sample-name tissue label, unambiguous): Stomach n=6, Esophagus n=1 (`insufficient-replication`, excluded from F-developmental). Updated `hdma_organ_to_gtex_tissue_map.tsv` / `hdma_organ_to_hpa_tissue_map.tsv` with separate Stomach/Esophagus rows, pushed to Argos.
+
+Wrote `scripts/04_dfp_signature/f_developmental_calibration.py`: combines HDMA pseudobulk (not-detected-floor + percentile-among-detected, same design as `adult_excluded`, checked HDMA's own zero-inflation directly — 8-10% exact zero, less extreme than GTEx but real) with organ-matched `adult_excluded`, provenance-tagged per organ (Thymus explicitly `HPA-only`). Ran on Argos (job 3620506), results verified byte-exact.
+
+**AFP sanity check, unplanned and decisive**: alpha-fetoprotein — the textbook oncofetal gene — showed CPM 613-1,484 across all 7 fetal Liver samples (median percentile 99.7, detected 7/7) vs. GTEx/HPA adult liver TPM/nTPM of 0.26-3.4. Directly verified AFP is excluded from the Liver F-developmental candidate set at `adult_excl_pct=10` (HPA liver within-tissue percentile 20.5 fails a ≤10 bar) but included at `25` — the same calibration lesson as P-developmental's ERVFRD-1/KRT7 case. Proposing `elevated_pct=90`, `adult_excl_pct=25` (quorum found not to discriminate at these percentile levels) — written up in `f_developmental_calibration.md`, folded into `STEP4_STATISTICAL_DESIGN.md`, submitting for review.
 
 ### Repo layout (as of this session)
 
