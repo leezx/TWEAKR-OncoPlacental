@@ -57,13 +57,19 @@ annotation is used as-is (not re-derived) — same principle as Step 5's
 does not re-cluster or re-annotate someone else's atlas, it uses the
 already-published cell-type calls.
 
-**Secondary / independent replication: `HTAN_CRC_progressive_plasticity`.**
+**Secondary: `HTAN_CRC_progressive_plasticity`.**
 Smaller but very cleanly annotated — importantly, it separates malignant cells
 from *named, specific* normal epithelial subtypes (not just "normal" as one
 bucket) and from non-tumor tissue, and explicitly separates Primary vs.
-Metastasis. Different underlying studies than the meta-atlas (avoids
-double-dipping on the same source data when checking whether a finding
-replicates).
+Metastasis. **Not yet labeled "independent replication" of the meta-atlas** —
+per review, the meta-atlas's 54 constituent studies were not checked for
+whether they include HTAN's own cohort, and CRC meta-atlases commonly
+integrate other public studies wholesale. A **study-provenance overlap
+audit** (cross-referencing HTAN's patient/sample identifiers against the
+meta-atlas's `dataset`/`study_id`/`NCBI_BioProject_accession`/etc. obs
+columns) is required before any claim of independent replication; until that
+audit runs, HTAN is used as a secondary **technical/external validation**
+dataset, not asserted to be a non-overlapping source.
 
 **Tertiary / liver-metastasis context: `CRLM_NMP_ATLAS`.** Smaller malignant
 population (4,051 cells) and TME-focused, but relevant given the project's
@@ -86,15 +92,50 @@ one could resolve.
    (`datasets/HGNC_gene_id_mapping/`) — needs a coverage check against these
    4 datasets' specific Ensembl ID sets before assuming it's sufficient (same
    discipline as Step 2's original 9.3%/4.6% coverage audit, not assumed).
-2. **Scoring method for single-cell gene-set projection**: Step 4's original
-   percentile-based scoring was designed for bulk/pseudobulk data
-   (organ-level, not cell-level). For single-cell, propose `scanpy.tl.score_genes`
-   (Seurat `AddModuleScore`-equivalent: mean expression of the gene set minus
-   mean expression of an expression-level-matched control gene set) — directly
-   analogous in spirit to the expression-matched permutation-null design just
-   built and reviewer-approved in Step 5, and it is the field-standard method
-   for this exact "does this cell express this curated gene program" question.
-   Proposed for D-shared, F-specific, and P-specific scored separately per cell.
+2. **Scoring method for single-cell gene-set projection — revised after review
+   (blocker fix, no compute run yet).** The original proposal was to compute
+   `scanpy.tl.score_genes` (Seurat `AddModuleScore`-equivalent) separately for
+   D-shared/F-specific/P-specific and compare the raw scores directly (e.g.
+   "F score > P score" implying "more fetal-somatic than placental"). Reviewer
+   correctly caught that this is invalid: D-shared (6 genes), F-specific
+   (2,504 genes) and P-specific (78 genes) differ ~32x in size between F and P
+   alone, and have fundamentally different compositional structure — F-specific
+   is a union across 7 fetal organs, internally lineage-heterogeneous;
+   P-specific is a single, strict whole-body-adult-depleted program.
+   `score_genes` answers "is this cell enriched for this one gene set relative
+   to its own matched control," not "how does this gene set's enrichment
+   compare in magnitude to a different, differently-sized, differently-structured
+   gene set" — raw scores across signatures share no common scale, so a naive
+   comparison could reflect signature architecture, not biology.
+
+   **Revised scoring contract**: for each dataset, independently build an
+   expression-matched null distribution *per signature* (D-shared, F-specific,
+   P-specific, and each per-organ F module below) — directly analogous to the
+   matched-permutation-null design just approved in Step 5: sample many
+   random gene panels of the same size from the same expression-detectability
+   strata as the real signature, compute the same `score_genes`-style statistic
+   for each, and convert every cell/sample's *observed* raw score into a
+   **standardized enrichment (z-score relative to the null) or empirical
+   percentile within that signature's own null** before any cross-signature
+   comparison. Only these null-calibrated, common-scale values (not raw
+   `score_genes` output) may be used to say a cell/sample looks more
+   F-like vs. P-like vs. D-like.
+
+   **Lineage-resolved F modules, not one monolithic F-specific score
+   (blocker fix)**: Step 4 already established F-developmental is strongly
+   organ-specific (`F_developmental_<Organ>.txt`, 7 separate per-organ sets
+   underlying the union that became `F_specific_FINAL.txt`) — many genes
+   belong to only one fetal organ. Scoring only the pooled 2,504-gene union
+   risks diluting a real, narrow signal (e.g. if CRC's fetal-like reactivation
+   is specifically intestinal/GI-developmental) against the other six organs'
+   unrelated genes. Compute will score **both** the global F-specific set
+   (kept for set-logic/completeness) **and** each of the 7 per-organ F modules
+   separately (each restricted to genes also in `F_specific_FINAL.txt`, i.e.
+   organ module ∩ F-specific, to stay within the frozen, P-deduplicated
+   signature) — biological interpretation of "is CRC's Oncofetal state
+   fetal-somatic" should center on the lineage-resolved (per-organ, especially
+   GI/intestinal) modules, with the global F score used only as a coarse,
+   secondary summary.
 3. **Aggregation / donor-awareness**: per the standing donor/sample-aware
    discipline (Steps 4/5), per-cell scores will be aggregated to
    per-patient/per-sample pseudobulk-style summaries (median score, fraction of
@@ -108,9 +149,21 @@ one could resolve.
 4. **Primary hypothesis test**: within-patient malignant-vs-matched-normal-epithelial
    contrast (available directly in HTAN's annotation; the meta-atlas would need
    normal/polyp samples cross-referenced via `medical_condition`/`sample_type`) —
-   do malignant cells show elevated D/F/P scores relative to their own patient's
-   normal epithelial cells, controlling for patient identity? This is the direct
-   test of "oncofetal reactivation" and avoids simple between-patient confounds.
+   do malignant cells show elevated null-calibrated D/F/P enrichment (per item 2,
+   not raw scores) relative to their own patient's normal epithelial cells,
+   controlling for patient identity? This is the direct test of "oncofetal
+   reactivation" and avoids simple between-patient confounds.
+5. **Study-provenance overlap audit (added after review)**: before calling
+   `HTAN_CRC_progressive_plasticity` an independent-replication check against
+   the `CRC_single_cell_atlas_2025` meta-atlas, cross-reference HTAN's
+   patient/sample identifiers against the meta-atlas's per-cell `dataset`/
+   `study_id`/`NCBI_BioProject_accession`/`SRA_sample_accession`/etc. obs
+   columns (already inventoried this round, see table above) to check whether
+   HTAN's own cohort is one of the meta-atlas's 54 constituent studies. If
+   overlap is found, HTAN is downgraded from "replication" language to
+   "technical/external validation" (already the working label pending this
+   audit, per the dataset-plan section above) and the meta-atlas's 54-study
+   count should be reported net of any HTAN overlap where relevant.
 
 ## What this step is not
 
