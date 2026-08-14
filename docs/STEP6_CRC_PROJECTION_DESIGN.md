@@ -12,6 +12,17 @@ adding an explicit **Layer 1 / Layer 2 structure** (see the new section below,
 "Independent Oncofetal anchor (Layer 1)") — Layer 1 locates/defines Oncofetal
 status using a gene signature with zero overlap in construction with D/F/P;
 only Layer 2 projects the frozen D/F/P signature onto Layer-1-identified cells.
+
+**PR #16 review round 3 (REQUEST_CHANGES, then withdrawn once verified)**
+asked for concrete proof that the M11/revCSC anchor is actually independent —
+construction-independent, not just "found in a different directory" — and for
+the exact provenance of the 297,307-cell subset it lives on. Both were checked
+directly (reading the actual NMF pipeline script, checking file mtimes,
+querying the atlas for the subset's cell-type/study/platform composition) and
+are folded into the "Independent Oncofetal anchor" section below; reviewer
+confirmed this closes the circularity concern and also refined the primary
+question and analysis hierarchy (see "Revised analysis structure" below).
+
 This is the step that finally answers the project's original Q1 (`docs/PROJECT_SUMMARY.md:9-13`):
 
 > Is CRC's "Oncofetal" malignant epithelial cell state actually one program, or a
@@ -89,6 +100,40 @@ the published revCSC signature were both established using zero information
 from this project's D/F/P developmental-atlas construction (HDMA/GTEx/HPA/
 Arutyunyan/Nature2026/etc. never enter this NMF or Jaccard-overlap computation).
 
+**Independence verified concretely, on three separate axes, per PR #16 review
+round 3 (REQUEST_CHANGES → withdrawn once verified)** — the reviewer required
+direct evidence rather than a plausibility claim, so each axis was checked
+against the actual files/scripts, not asserted:
+
+1. **Construction independence**, confirmed by reading `metamodule_fnmf.s2c.crc.R`
+   directly: M11 is a purely expression-only, unsupervised discovery. Per-sample
+   fastNMF is run independently on each of the meta-atlas's constituent samples
+   (input: the expression matrix only); the resulting per-sample NMF factors are
+   compared pairwise by Jaccard similarity; hierarchical clustering (`hclust`) on
+   that similarity matrix, cut (`cutree`) at a chosen module count, produces
+   M01-M21. **No gene set, no fetal/placenta/trophoblast reference, and no
+   revCSC signature enters this construction step at any point.**
+2. **Annotation independence**: the revCSC Jaccard-overlap comparison
+   (`NMF/csc_signature_jaccard/`, `NMF/revCSC_overlap_tables/`) was run *after*
+   M01-M21 were already fixed by the clustering above — it asks "which of these
+   21 already-frozen modules looks most like the published revCSC signature,"
+   not "which genes should define a module called M11." revCSC is a post-hoc
+   biological annotation of a pre-existing module, not a construction input.
+3. **Chronological independence**, confirmed by file mtimes: M11's top-gene
+   table (`deliver.mm_top_genes.csv`) is dated 2026-07-15; the revCSC-overlap
+   validation (`revCSC_overlap_summary.md`) is dated 2026-07-22; this project's
+   own `F_specific_FINAL.txt` (the frozen D/F/P signature) is dated 2026-08-14 —
+   roughly a month later. D/F/P could not have influenced M11's discovery.
+
+**Net effect on the project's causal/analytical framing** (this is the version
+to carry into any write-up): CRC expression data → unsupervised discovery of
+M11 → independent finding that M11 resembles the published revCSC signature →
+(a month later, independently) construction of the D/F/P normal-development
+framework → *only now* asking what developmental ancestry explains M11. This is
+a stronger design than "pick a published Oncofetal signature and score cancer
+cells with it" — the cancer data grew its own M11 state first; D/F/P is used
+after the fact to interpret it, not to find it.
+
 **One real gap found, not glossed over**: the readily-available per-cell module
 score table (`NMF/viz_signature_MM_alt_clean_byscore_wardD2/addmodulescore.df.tsv`,
 297,307 rows) covers 13 of 21 MPs (M01, M04, M05, M08, M10, M12, M13, M15, M16,
@@ -104,28 +149,66 @@ comparability); what must stay independent is the *gene content* defining
 "Oncofetal," which it does: M11's gene list has no construction-time dependency
 on D/F/P.**
 
-## Revised analysis structure: Layer 1 → Layer 2
+**297,307-cell subset provenance, checked directly (not assumed)**: this is
+**not** a random slice of the 665,473-cell atlas. Every one of the 297,307
+cells maps to the h5ad's `obs_names` by exact barcode string (100% overlap,
+verified directly: `n_ids in modulescore file = 297307`, `overlap = 297307`).
+It is a **malignant-only NMF discovery subset**: 198,126 `Cancer cell` +
+99,181 `CRLM` (no normal/immune/polyp cells), COAD (152,712) + READ (30,300)
+only, drawn from 14 of the meta-atlas's 54 constituent studies and 3 of 9
+platforms (10x 5p, 10x 3p, BD Rhapsody). **Per reviewer instruction, the reason
+for this narrower-than-full-atlas coverage is stated honestly as unresolved,
+not guessed**: *the pre-existing NMF analysis was available for 297,307
+malignant cells from 14 constituent studies and three platforms; the reason
+for the restriction relative to the full atlas remains to be established.*
+This does not block using M11 as an anchor — it does mean M11 status is only
+defined for this 297,307-cell subset, not claimed for the full 665,473-cell
+atlas.
 
-1. **Layer 1 (independent of D/F/P)**: score every malignant cell in
-   `CRC_single_cell_atlas_2025` for the M11 gene signature (using the top50 list
-   as primary, top100/top200 as sensitivity checks) via the null-calibrated
-   `score_genes` framework below. Define "Oncofetal-high" cells/patients from
-   this M11 score alone (percentile-based threshold, calibrated the same way as
-   every other threshold in this project — not picked to make a downstream
-   result look clean).
-2. **Layer 2 (D/F/P projection)**: onto the Layer-1-identified Oncofetal-high
-   cells/patients (and, per reviewer's suggestion, across the *entire* malignant
-   population as a continuous check, not only the hard-thresholded subset),
-   project the frozen D-shared / F-specific (global + per-organ modules) /
-   P-specific signatures using the same null-calibrated scoring. Test: (a) do
-   Oncofetal-high cells show elevated D/F/P enrichment relative to Oncofetal-low
-   malignant cells and to normal epithelial cells (within-patient contrast); (b)
-   does the M11 score correlate continuously with F/P/D enrichment across all
-   malignant cells, independent of any hard threshold; (c) *which* per-organ F
-   module (if any) is elevated — this is what actually answers "is CRC's
-   Oncofetal program fetal-somatic, and if so, from which fetal lineage."
+## Revised analysis structure: two distinct cell populations, three analyses
 
-Only after Layer 1 + Layer 2 both run can the project's original Q1 be answered
+Per reviewer guidance, **two populations must be kept explicit and not
+conflated**, though they validate each other:
+
+- **M11 analysis cohort** = the 297,307-cell malignant-only NMF discovery
+  subset. Answers: what is the developmental identity of the independently
+  discovered M11/revCSC meta-program?
+- **Full-atlas D/F/P cohort** = all malignant cells passing gene/scoring QC
+  across the full 665,473-cell atlas (not restricted to the NMF subset).
+  Answers: what F/P/D developmental landscape exists across the CRC malignant
+  compartment overall — independent of whether a cell has an M11 score?
+
+**Primary question, reframed** (per review — stronger and less presuppositional
+than the original "are CRC malignant cells F-dominant or P-dominant"): *What is
+the developmental identity of the independently discovered CRC M11/revCSC
+meta-program?* This does not presuppose the answer is P-high (placental) —
+if M11 turns out to be strongly F-specific with P-specific defining a separate,
+orthogonal malignant state, that is an equally (or more) valuable result: it
+would mean "OncoFetal" and "OncoPlacental" are not the same thing renamed, but
+two genuinely separable axes of developmental reactivation, plus whatever
+D-shared core they hold in common.
+
+1. **Primary analysis: M11/revCSC ↔ D/F/P continuous decomposition**, on the
+   297,307-cell M11 analysis cohort. Correlate the (null-calibrated) M11 score
+   against the (null-calibrated) D-shared / F-specific (global + per-organ) /
+   P-specific scores **continuously — not binarized into M11-high/M11-low up
+   front** — with patient- and study-level validation (no single
+   patient/study driving the correlation). This is the direct, least-assumption
+   answer to "what developmental ancestry explains M11."
+2. **Secondary analysis: M11-high cells' developmental composition.** Using a
+   calibrated M11-high threshold (not picked post-hoc to flatter a result),
+   check whether M11-high malignant cells are preferentially P-specific, a
+   particular F-lineage (especially GI/intestinal, given CRC's tissue of
+   origin), D-shared, or in fact split into multiple separable developmental
+   substates rather than one program.
+3. **Tertiary analysis: full-atlas, M11-independent D/F/P landscape.** Score
+   D/F/P across the full-atlas D/F/P cohort without reference to M11 at all.
+   This can surface a state the "Oncofetal" framework itself might miss — e.g.
+   a P-high/M11-low malignant population that exists outside what M11 captures,
+   which would itself be a genuinely new finding, not just "M11 has placental
+   genes in it."
+
+Only after these three analyses run can the project's original Q1 be answered
 with a non-circular measurement. If Layer 1's M11 anchor turns out to have some
 unresolvable problem once compute starts (e.g., too few cells clear a sensible
 Oncofetal-high threshold), the fallback is to rename the deliverable "CRC
