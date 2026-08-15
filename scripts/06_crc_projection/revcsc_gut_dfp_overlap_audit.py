@@ -6,9 +6,17 @@ Per Worklog.md's "what's next": re-run the M11/revCSC CRC decomposition
 (Step 6, PR #16/#17, design fully approved but compute never run) against
 the new Gut-specific D/F/P instead of the pan-organ one. This is the first
 concrete step -- same discipline as the original revcsc_dfp_overlap_audit.py
-(PR #16/#17), but against F_Colon-developmental/F_SI-developmental/
-D_Colon-shared/D_SI-shared/P_Colon-specific/P_SI-specific instead of
+(PR #16/#17), against D_Colon-shared/D_SI-shared/P_Colon-specific/
+P_SI-specific/F_Colon-specific/F_SI-specific instead of
 D_shared_FINAL/F_specific_FINAL/P_specific_FINAL/F_developmental_<Organ>.
+
+**PR #25 round-1 correction**: the F-arm input must be `F_{region}-specific`
+(F ^ NOT P, the same P-deduplicated role `F_specific_FINAL` played in the
+original design -- reviewer caught that the first version of this script
+used the raw `F_{region}-developmental` instead, which still contains the
+D-overlap genes and would have broken the D/F/P mutual-exclusivity the
+original Step 6 design explicitly required). `F_{region}-developmental`
+is intentionally NOT used here for that reason.
 
 Uses the FINAL frozen, ortholog-audited revCSC sets (not re-derived from
 the raw CSC table): revCSC_symbols.primary27.txt (primary, Compara
@@ -38,10 +46,13 @@ OUT_DIR = sys.argv[1] if len(sys.argv) > 1 else f"{REPO}/results/06_crc_projecti
 os.makedirs(OUT_DIR, exist_ok=True)
 
 GUT_SETS = [
-    "F_Colon-developmental", "F_SI-developmental",
+    "F_Colon-specific", "F_SI-specific",  # P-deduplicated Layer 2 F input (see docstring correction)
     "D_Colon-shared", "D_SI-shared",
     "P_Colon-specific", "P_SI-specific",
-    "F_Gut-core",
+    "F_Gut-core",  # NOT P-deduplicated (F_Colon-developmental ^ F_SI-developmental, no P_developmental
+                   # filter at all) -- reported for completeness only, not a Layer 2 scoring input
+                   # (per docs/STEP4A_GUT_ADULT_VALIDATION.md's own estimand-mismatch finding for
+                   # this same set)
 ]
 
 
