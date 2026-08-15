@@ -3,13 +3,24 @@
 # user's explicit directive): preranked GSEA using the real edgeR logFC
 # (T_g, the continuous fetal-vs-adult-colon/SI differential statistic) as
 # the ranking statistic -- not a binary overlap cut. Tests each of the 5
-# independent mike_verzi signatures against the full ranked gene list from
+# independent mike_verzi signatures against the ranked gene list from
 # each region's primary edgeR fit (LargeInt_edgeR_primary.tsv /
 # SmallInt_edgeR_primary.tsv), using fgsea (Bioconductor's canonical
 # preranked-GSEA implementation).
 #
+# PR #22 round-1 fix (reviewer blocker 1): the ranked list is now
+# restricted to the SAME universe U = one2one-ortholog-eligible ^
+# region-filterByExpr-tested locked for layers 1/3 (mike_verzi_gut_
+# enrichment_permutation.py), not the full ~15k filterByExpr-tested
+# gene list. Genes without a one-to-one mouse ortholog can structurally
+# never be a signature member (the mike_verzi human_primary.txt files
+# are themselves built only from one2one orthologs), so including them
+# in the ranked list as guaranteed misses shifts the ES/NES/p reference
+# space away from layers 1/3's universe -- not a cosmetic difference.
+#
 # Usage: Rscript mike_verzi_gut_gsea.R <out_dir>
 # Reads results/06a_normal_context/<SIG>_human_primary.txt (5 files)
+#       results/06a_normal_context/mouse_biomart_full.tsv (one2one filter)
 #       results/04a_dfp_gut/edgeR/{LargeInt,SmallInt}_edgeR_primary.tsv
 # Writes <out_dir>/mike_verzi_gut_gsea_results.tsv
 
@@ -32,6 +43,12 @@ sig_lists <- lapply(SIGNATURES, function(s) {
 })
 names(sig_lists) <- SIGNATURES
 
+# one2one ortholog-eligible universe, same source/filter as layers 1/3
+biomart <- read.delim(file.path(MIKE_VERZI_DIR, "mouse_biomart_full.tsv"))
+one2one <- unique(biomart$Human.gene.name[biomart$Human.homology.type == "ortholog_one2one" &
+                                           nzchar(biomart$Human.gene.name)])
+cat(sprintf("Human genes with >=1 Compara one2one mouse ortholog: %d\n", length(one2one)))
+
 all_results <- list()
 
 for (label in names(REGIONS)) {
@@ -40,11 +57,14 @@ for (label in names(REGIONS)) {
 
   # ranking statistic: real edgeR logFC (T_g), per the design doc's stated
   # preference -- the exact continuous fetal-vs-adult differential
-  # statistic, not a p-value-derived or binarized substitute
-  ranks <- edger$logFC
-  names(ranks) <- edger$gene
+  # statistic, not a p-value-derived or binarized substitute.
+  # Restricted to U = one2one ^ region-filterByExpr-tested (fix above).
+  edger_U <- edger[edger$gene %in% one2one, ]
+  ranks <- edger_U$logFC
+  names(ranks) <- edger_U$gene
   ranks <- sort(ranks, decreasing = TRUE)
-  cat(sprintf("=== %s (%s): %d genes ranked by real edgeR logFC ===\n", label, region, length(ranks)))
+  cat(sprintf("=== %s (%s): %d genes ranked by real edgeR logFC (U = one2one ^ filterByExpr-tested) ===\n",
+              label, region, length(ranks)))
 
   set.seed(20260815)  # fixed seed for fgsea's permutation-based p-value estimation, stated explicitly
   fgsea_res <- fgsea(pathways = sig_lists, stats = ranks, minSize = 5, maxSize = 5000, eps = 0)

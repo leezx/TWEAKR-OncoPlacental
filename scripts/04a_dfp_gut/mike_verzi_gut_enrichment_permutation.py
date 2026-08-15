@@ -28,11 +28,11 @@ Layer 1 -- hypergeometric enrichment:
   BH-FDR across all 10 tests (5 signatures x 2 regions) together
 
 Layer 3 -- size-and-expression-matched permutation null (10,000 draws):
-  For each real signature gene, its logCPM decile bin (from the real
+  For each real signature gene, its logCPM 20-quantile bin (from the real
   edgeR fit, a real measured expression-level covariate, not an assumed
   one) is recorded; each permutation draws one random gene per bin
   (without replacement within a draw) from the same universe, preserving
-  BOTH exact gene-set size and expression-decile composition. Reports
+  BOTH exact gene-set size and expression-quantile-bin composition. Reports
   observed overlap, null-expected overlap, fold-enrichment vs. null,
   empirical p-value, and null Z-score -- the strongest defense against
   the "gene-set size explains the overlap" critique, per the user's
@@ -218,10 +218,19 @@ def main():
             w.writerow(r)
     print(f"\nWrote {enrichment_path}")
 
+    # PR #22 round-1 fix (reviewer blocker 2): the permutation layer is also
+    # 5 signatures x 2 regions = 10 hypothesis tests, exactly like layer 1 --
+    # apply the same BH-FDR across all 10 empirical_p together rather than
+    # reporting only the nominal p (which layer 1 does not do on its own).
+    perm_pvals = [r["empirical_p"] for r in permutation_rows]
+    perm_fdrs = bh_fdr(perm_pvals)
+    for r, fdr in zip(permutation_rows, perm_fdrs):
+        r["empirical_fdr"] = float(fdr)
+
     permutation_path = f"{OUT_DIR}/mike_verzi_gut_permutation_null.tsv"
     with open(permutation_path, "w", newline="") as f:
         cols = ["region", "signature", "n_signature_in_U", "observed_overlap", "null_expected_overlap",
-                "null_std_overlap", "fold_enrichment_vs_null", "empirical_p", "null_z_score"]
+                "null_std_overlap", "fold_enrichment_vs_null", "empirical_p", "empirical_fdr", "null_z_score"]
         w = csv.DictWriter(f, fieldnames=cols, delimiter="\t")
         w.writeheader()
         for r in permutation_rows:

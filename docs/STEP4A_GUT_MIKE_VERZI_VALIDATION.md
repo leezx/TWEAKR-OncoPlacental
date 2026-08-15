@@ -4,19 +4,21 @@ Executes the three-layer statistical validation planned in `docs/STEP4A_GUT_FDEV
 
 **Non-circularity**: `mike_verzi` signatures come from an independent mouse study; `F_{Colon,SI}-developmental` come from independent human fetal-vs-adult edgeR DE. Neither informed the other. This is genuine external validation, not a consistency check on the same data.
 
+**Revised after PR #22 round-1 REQUEST_CHANGES** — the reviewer caught 3 real, substantive issues in the first submission (all statistical/interpretive, none touching the underlying gut D/F/P or edgeR results). See "Round-1 corrections" below; the numbers in this doc are the corrected ones.
+
 ## Design
 
-- **Universe** (locked before testing, region-specific): `U = {human genes with ≥1 Compara one2one mouse ortholog} ∩ {genes passing filterByExpr in that region's primary edgeR fit}`. Same "eligible to appear in either set" logic used to fix `F_Gut-core`'s universe in PR #21. `N = 11,646` (`LargeInt`/Colon), `N = 11,661` (`SmallInt`/SI).
+- **Universe** (locked before testing, region-specific, and now applied consistently across **all three layers** — see round-1 correction #1): `U = {human genes with ≥1 Compara one2one mouse ortholog} ∩ {genes passing filterByExpr in that region's primary edgeR fit}`. Same "eligible to appear in either set" logic used to fix `F_Gut-core`'s universe in PR #21. `N = 11,646` (`LargeInt`/Colon), `N = 11,661` (`SmallInt`/SI).
 - **Layer 1 — hypergeometric enrichment**: fold-enrichment, odds ratio with 95% CI (Haldane-Anscombe continuity-corrected), one-sided hypergeometric p-value, BH-FDR across all 10 tests (5 signatures × 2 regions) together.
-- **Layer 2 — preranked GSEA (primary evidence, per the user's explicit directive)**: `fgsea`, ranked by the real edgeR `logFC` from each region's primary fit — the continuous fetal-vs-adult differential statistic, not a binarized cutoff. `minSize=5, maxSize=5000, eps=0`, `set.seed(20260815)`.
-- **Layer 3 — size-and-expression-matched permutation null**: 10,000 draws per (signature × region). Each real signature gene's `logCPM` decile bin (20 bins, from the real edgeR fit) is recorded; each permutation draws one random gene per bin from `U`, preserving exact gene-set size and expression-strata composition. Reports observed overlap, null-expected overlap, fold-vs-null, empirical p (`(#perm≥observed + 1)/(n_perm+1)`), null Z-score. This is the strongest available defense against "the overlap is just gene-set size/detectability."
+- **Layer 2 — preranked GSEA (primary evidence, per the user's explicit directive)**: `fgsea`, ranked by the real edgeR `logFC` from each region's primary fit, **restricted to the same universe `U`** as layers 1/3 — the continuous fetal-vs-adult differential statistic, not a binarized cutoff. `minSize=5, maxSize=5000, eps=0`, `set.seed(20260815)`.
+- **Layer 3 — size-and-expression-matched permutation null**: 10,000 draws per (signature × region), universe `U`. Each real signature gene's `logCPM` 20-quantile bin (from the real edgeR fit) is recorded; each permutation draws one random gene per bin from `U`, preserving exact gene-set size and expression-strata composition. Reports observed overlap, null-expected overlap, fold-vs-null, empirical p (`(#perm≥observed + 1)/(n_perm+1)`), **BH-FDR across the same 10 tests** (round-1 correction #2), and null Z-score.
 - Fixed seed `20260815` throughout, stated for reproducibility.
 
-Code: `scripts/04a_dfp_gut/mike_verzi_gut_enrichment_permutation.py` (layers 1+3), `scripts/04a_dfp_gut/mike_verzi_gut_gsea.R` (layer 2), run via `scripts/04a_dfp_gut/run_mike_verzi_gut_validation.sh` (qsub job 3620768, completed cleanly, stderr empty). Outputs in `results/04a_dfp_gut/mike_verzi_validation/`.
+Code: `scripts/04a_dfp_gut/mike_verzi_gut_enrichment_permutation.py` (layers 1+3), `scripts/04a_dfp_gut/mike_verzi_gut_gsea.R` (layer 2), run via `scripts/04a_dfp_gut/run_mike_verzi_gut_validation.sh` (qsub job 3620772, completed cleanly, stderr empty). Outputs in `results/04a_dfp_gut/mike_verzi_validation/`.
 
 ## Results
 
-All numbers below are the real, unedited script output, pulled back from Argos and md5-verified byte-exact.
+All numbers below are the real, unedited script output from the corrected re-run, pulled back from Argos and md5-verified byte-exact.
 
 ### Layer 1 — hypergeometric enrichment
 
@@ -33,55 +35,67 @@ All numbers below are the real, unedited script output, pulled back from Argos a
 | SI | FETAL_SPHEROID_EPITHELIUM_GENES | 203 | 24 | 1.20 | 1.25 [0.81–1.91] | 0.206 | 0.258 (ns) |
 | SI | REVIVAL_STEM_CELL_GENES | 206 | 11 | 0.54 | 0.53 [0.29–0.97] | 0.994 (depleted) | 0.994 (ns) |
 
-### Layer 3 — permutation null (10,000 draws, size + logCPM-decile matched)
+### Layer 3 — permutation null (10,000 draws, size + logCPM-20-quantile-bin matched, universe `U`)
 
-| Region | Signature | Observed | Null expected | Fold vs. null | Empirical p | Z |
-|---|---|---|---|---|---|---|
-| Colon | FETAL_INTESTINE_GENES | 169 | 107.5 | **1.57** | **1e-4** | **6.76** |
-| Colon | REGENERATIVE_EPITHELIUM | 33 | 13.8 | **2.39** | **1e-4** | **5.64** |
-| Colon | YAP_SIGNALING_GENES | 40 | 30.2 | 1.33 | 0.0352 | 1.96 |
-| Colon | FETAL_SPHEROID_EPITHELIUM_GENES | 25 | 21.6 | 1.16 | 0.243 (ns) | 0.79 |
-| Colon | REVIVAL_STEM_CELL_GENES | 12 | 14.3 | 0.84 | 0.779 (ns) | -0.65 |
-| SI | FETAL_INTESTINE_GENES | 151 | 102.8 | **1.47** | **1e-4** | **5.30** |
-| SI | REGENERATIVE_EPITHELIUM | 19 | 12.4 | 1.53 | 0.0363 | 2.02 |
-| SI | YAP_SIGNALING_GENES | 39 | 29.4 | 1.33 | 0.0396 | 1.90 |
-| SI | FETAL_SPHEROID_EPITHELIUM_GENES | 24 | 21.1 | 1.14 | 0.286 (ns) | 0.66 |
-| SI | REVIVAL_STEM_CELL_GENES | 11 | 19.7 | 0.56 (depleted) | 0.990 (ns) | -2.08 |
+BH-FDR now applied across the same 10 tests as layer 1 (round-1 correction #2) — several nominally-under-0.05 empirical p's do **not** survive correction.
 
-### Layer 2 — preranked GSEA (primary evidence, ranked by real logFC)
+| Region | Signature | Observed | Null expected | Fold vs. null | Empirical p | Empirical FDR | Z |
+|---|---|---|---|---|---|---|---|
+| Colon | FETAL_INTESTINE_GENES | 169 | 107.7 | **1.57** | 1e-4 | **3.3e-4** | **6.61** |
+| Colon | REGENERATIVE_EPITHELIUM | 33 | 13.8 | **2.39** | 1e-4 | **3.3e-4** | **5.65** |
+| Colon | YAP_SIGNALING_GENES | 40 | 30.1 | 1.33 | 0.0349 | 0.070 (ns) | 1.97 |
+| Colon | FETAL_SPHEROID_EPITHELIUM_GENES | 25 | 21.6 | 1.16 | 0.247 | 0.353 (ns) | 0.80 |
+| Colon | REVIVAL_STEM_CELL_GENES | 12 | 14.4 | 0.83 | 0.786 | 0.873 (ns) | -0.67 |
+| SI | FETAL_INTESTINE_GENES | 151 | 102.8 | **1.47** | 1e-4 | **3.3e-4** | **5.30** |
+| SI | REGENERATIVE_EPITHELIUM | 19 | 12.4 | 1.54 | 0.0350 | 0.070 (ns) | 2.02 |
+| SI | YAP_SIGNALING_GENES | 39 | 29.6 | 1.32 | 0.0427 | 0.071 (ns) | 1.89 |
+| SI | FETAL_SPHEROID_EPITHELIUM_GENES | 24 | 21.3 | 1.13 | 0.289 | 0.361 (ns) | 0.65 |
+| SI | REVIVAL_STEM_CELL_GENES | 11 | 19.6 | 0.56 (depleted) | 0.991 | 0.991 (ns) | -2.10 |
+
+Only the 3 strongest hits (Colon FETAL_INTESTINE, Colon REGENERATIVE_EPITHELIUM, SI FETAL_INTESTINE) survive 10-test FDR at the permutation layer; the 3 borderline nominal-p<0.05 results (Colon YAP, SI REGENERATIVE_EPITHELIUM, SI YAP) all land at FDR≈0.07 and are **not** significant once corrected for the same multiple-testing burden layer 1 was already held to.
+
+### Layer 2 — preranked GSEA (primary evidence, ranked by real logFC, universe `U`)
 
 | Region | Signature | Size | NES | p | padj | Direction |
 |---|---|---|---|---|---|---|
-| Colon | FETAL_INTESTINE_GENES | 998 | **+1.50** | 1.5e-07 | **7.7e-07** | fetal-up ✓ |
-| Colon | REGENERATIVE_EPITHELIUM | 119 | **+1.70** | 3.6e-04 | **9.0e-04** | fetal-up ✓ |
-| Colon | YAP_SIGNALING_GENES | 288 | **-1.30** | 0.0199 | 0.0249 | **adult-up** |
-| Colon | FETAL_SPHEROID_EPITHELIUM_GENES | 205 | **-1.38** | 0.0114 | 0.0190 | **adult-up** |
-| Colon | REVIVAL_STEM_CELL_GENES | 206 | -1.01 | 0.444 | 0.444 (ns) | — |
-| SI | FETAL_INTESTINE_GENES | 993 | **+1.46** | 1.5e-06 | **7.4e-06** | fetal-up ✓ |
-| SI | REGENERATIVE_EPITHELIUM | 114 | **+1.46** | 0.0131 | 0.0164 | fetal-up ✓ |
-| SI | YAP_SIGNALING_GENES | 284 | **-1.32** | 0.0091 | 0.0152 | **adult-up** |
-| SI | FETAL_SPHEROID_EPITHELIUM_GENES | 203 | **-1.72** | 2.8e-05 | **7.0e-05** | **adult-up** |
-| SI | REVIVAL_STEM_CELL_GENES | 206 | -1.06 | 0.301 | 0.301 (ns) | — |
+| Colon | FETAL_INTESTINE_GENES | 998 | **+1.42** | 1.5e-05 | **7.6e-05** | fetal-up ✓ |
+| Colon | REGENERATIVE_EPITHELIUM | 119 | **+1.63** | 1.6e-03 | **2.0e-03** | fetal-up ✓ |
+| Colon | YAP_SIGNALING_GENES | 288 | **-1.47** | 3.7e-04 | **9.2e-04** | **adult-up** |
+| Colon | FETAL_SPHEROID_EPITHELIUM_GENES | 205 | **-1.54** | 5.8e-04 | **9.6e-04** | **adult-up** |
+| Colon | REVIVAL_STEM_CELL_GENES | 206 | -1.14 | 0.125 | 0.125 (ns) | — |
+| SI | FETAL_INTESTINE_GENES | 993 | **+1.44** | 1.1e-05 | **2.7e-05** | fetal-up ✓ |
+| SI | REGENERATIVE_EPITHELIUM | 114 | **+1.40** | 0.0224 | 0.0280 | fetal-up ✓ |
+| SI | YAP_SIGNALING_GENES | 284 | **-1.45** | 1.7e-03 | **2.8e-03** | **adult-up** |
+| SI | FETAL_SPHEROID_EPITHELIUM_GENES | 203 | **-1.85** | 1.1e-06 | **5.3e-06** | **adult-up** |
+| SI | REVIVAL_STEM_CELL_GENES | 206 | -1.18 | 0.109 | 0.109 (ns) | — |
 
-## Interpretation — honest, not cherry-picked
+## Interpretation — honest, not cherry-picked, FDR-consistent across all three layers
 
-**Two of five signatures triangulate as genuinely fetal-enriched across all three independent layers, in both regions:**
+**Two of five signatures triangulate as genuinely fetal-enriched across all three FDR-corrected layers, in both regions:**
 
-- **`FETAL_INTESTINE_GENES`** — the strongest and most consistent result. Significant positive hypergeometric enrichment (FDR<1e-7 both regions), the permutation null rejects at its floor (empirical p=1e-4, the minimum measurable at 10,000 draws) with Z≈5.3–6.8, and GSEA gives strongly significant positive NES (padj<1e-5 both regions) — genes are ranked toward the fetal-up end of the real, continuous edgeR effect, not just present in the significant-gene overlap. This is the cleanest possible triangulation.
-- **`REGENERATIVE_EPITHELIUM`** — same pattern, strong in Colon (fold=2.80, permutation Z=5.64, GSEA padj=9.0e-4) and directionally consistent but weaker in SI (fold=1.68, permutation Z=2.02, GSEA padj=0.016) — still nominally significant on all three layers in both regions.
+- **`FETAL_INTESTINE_GENES`** — the strongest and most consistent result. Significant hypergeometric enrichment (FDR<1e-7 both regions), permutation FDR=3.3e-4 both regions (Z≈5.3–6.6), and GSEA gives significant positive NES (padj<8e-5 both regions). All three layers agree, FDR-corrected, in both regions.
+- **`REGENERATIVE_EPITHELIUM`** — full triangulation in **Colon** (hypergeometric FDR=9.2e-8, permutation FDR=3.3e-4, GSEA padj=2.0e-3). In **SI**, the pattern is weaker once permutation is FDR-corrected: hypergeometric FDR=0.035 and GSEA padj=0.028 are both significant, but permutation is only nominal (p=0.035, FDR=0.070, ns). So SI REGENERATIVE_EPITHELIUM is 2-of-3-layers significant after correction, directionally consistent on the third, not full triangulation.
 
-**One signature shows a real, unresolved discordance that is being reported plainly rather than smoothed over: `YAP_SIGNALING_GENES`.** Its hypergeometric and permutation tests show weak but nominally significant *positive* overlap enrichment with the fetal-up significant-gene set (fold≈1.4, permutation Z≈1.9–2.0, both FDR/empirical-p just under 0.04). But GSEA — using the full 284–288-gene set against the complete continuous ranking, not just the binary significant-overlap subset — gives significant **negative** NES in both regions (padj=0.025 Colon, 0.015 SI): the bulk of the YAP signature's genes actually skew toward the adult-up end of the real fetal-vs-adult ranking. These are not contradictory bugs; they are two different, both-real statistics describing the same gene set: a minority of YAP-signaling genes are among the significant fetal-up hits (driving the overlap test), while the set as a whole is, on average, shifted toward the adult side of the ranking (driving GSEA). Read together, `YAP_SIGNALING_GENES` does **not** support "YAP signaling as a whole is part of this fetal gut program" — if anything the GSEA result points the other way.
+**One signature shows a real, unresolved discordance, reported plainly: `YAP_SIGNALING_GENES`.** Hypergeometric shows nominally significant positive overlap enrichment (FDR=0.035 Colon, 0.036 SI). Permutation shows the same direction but does **not** survive FDR correction in either region (FDR=0.070/0.071, ns) — so the overlap-based signal is weak and not robust to the same multiple-testing standard used elsewhere. GSEA — the primary evidence layer, using the full 284–288-gene set against the complete continuous ranking — gives significant **negative** NES in both regions (padj=9.2e-4 Colon, 2.8e-3 SI): the bulk of the signature's genes skew toward the adult-up end of the ranking. Taken together, `YAP_SIGNALING_GENES` does **not** support "YAP signaling as a whole is part of this fetal gut program" — the only FDR-robust signal for this set (GSEA) points the other way.
 
-**`FETAL_SPHEROID_EPITHELIUM_GENES` shows no positive support, and a significant negative GSEA signal in SI.** Hypergeometric and permutation are both non-significant in both regions (fold≈1.2, permutation p≈0.24–0.29). GSEA is non-significant in Colon (p=0.011, but that's *negative* direction, i.e. this set skews adult-up, weakly) and clearly significant negative in SI (NES=-1.72, padj=7.0e-5) — a real, reportable adult-skewed signal, the strongest negative finding in the whole validation.
+**`FETAL_SPHEROID_EPITHELIUM_GENES` shows no positive support on the overlap-based layers, and significant negative GSEA in *both* regions.** Hypergeometric and permutation are both non-significant in both regions (hypergeometric FDR=0.230/0.258, permutation FDR=0.353/0.361). GSEA is significant negative in **both** Colon (NES=-1.54, padj=9.6e-4) and SI (NES=-1.85, padj=5.3e-6) — the strongest and most consistent negative finding in the whole validation.
 
-**`REVIVAL_STEM_CELL_GENES` shows no signal anywhere** — non-significant (in fact numerically depleted) on hypergeometric, non-significant on permutation, non-significant on GSEA, in both regions. A clean, honest null.
+**`REVIVAL_STEM_CELL_GENES` shows no signal anywhere** — non-significant (numerically depleted) on hypergeometric, non-significant on permutation, non-significant on GSEA, in both regions. A clean, honest null.
 
-**Bottom line**: the re-anchored `F_Colon-developmental`/`F_SI-developmental` gene sets are genuinely, robustly externally validated by 2 of 5 independent published mouse fetal/regenerative intestinal signatures (`FETAL_INTESTINE_GENES`, `REGENERATIVE_EPITHELIUM`) — a real, triangulated, non-circular positive result. The other 3 signatures (`YAP_SIGNALING_GENES`, `FETAL_SPHEROID_EPITHELIUM_GENES`, `REVIVAL_STEM_CELL_GENES`) do not support a naive "all fetal/revival mouse signatures should be fetal-up in this human DE" expectation — two show no signal, and two (YAP, spheroid) show a genuine skew toward the *adult* side on the primary (GSEA) evidence layer. This is reported as-is; no signature was dropped, reweighted, or re-run to "improve" the pattern.
+**Bottom line**: the re-anchored `F_Colon-developmental`/`F_SI-developmental` gene sets are robustly, FDR-consistently externally validated by `FETAL_INTESTINE_GENES` in both regions and by `REGENERATIVE_EPITHELIUM` in Colon (full triangulation) with weaker, partial support in SI. Of the remaining three signatures: `REVIVAL_STEM_CELL_GENES` shows no signal anywhere; `YAP_SIGNALING_GENES` and `FETAL_SPHEROID_EPITHELIUM_GENES` both show a significant *adult*-skewed signal on GSEA (the primary evidence layer) in both regions, with no FDR-robust positive support on the overlap-based layers. This is reported as-is; no signature was dropped, reweighted, or re-run to improve the pattern.
+
+## Round-1 corrections (PR #22 REQUEST_CHANGES, 3 real issues)
+
+1. **Blocker — GSEA's ranked universe didn't match layers 1/3.** The original GSEA script ranked all ~15k `filterByExpr`-tested genes per region, not the `one2one-ortholog-eligible ∩ filterByExpr-tested` universe (`U`, N=11,646/11,661) locked for layers 1/3. Genes without a one-to-one mouse ortholog can structurally never be a `mike_verzi` signature member (the signature files are themselves built only from one2one orthologs), so including them as guaranteed misses shifted GSEA's ES/NES/p reference space away from layers 1/3's. **Fixed**: `mike_verzi_gut_gsea.R` now restricts the ranked list to `U` before running `fgsea`, using the same `mouse_biomart_full.tsv` one2one filter as the Python script. Re-run confirms the conclusions are unchanged in direction, and in fact strengthened (e.g. Colon `FETAL_SPHEROID_EPITHELIUM_GENES` padj tightened from 0.019 to 9.6e-4 — see correction #3).
+2. **Blocker — the permutation layer's 10 tests weren't BH-FDR corrected, while layer 1's identical 10 tests were**, so the two overlap-based layers were being held to inconsistent statistical standards. Three nominal-p<0.05 permutation results (Colon YAP p=0.035, SI REGENERATIVE_EPITHELIUM p=0.035, SI YAP p=0.043) do **not** survive BH-FDR across the same 10 tests (all land at FDR≈0.07). **Fixed**: `mike_verzi_gut_enrichment_permutation.py` now computes and reports `empirical_fdr` (BH across all 10 tests) alongside `empirical_p`; this doc's interpretation now treats permutation FDR, not nominal p, as the significance criterion, matching layer 1.
+3. **A factual contradiction in the original write-up**: the results table itself already showed Colon `FETAL_SPHEROID_EPITHELIUM_GENES` GSEA as significant (`padj=0.019 < 0.05`), but the interpretation text described it as "non-significant in Colon." **Fixed**: after the universe correction (#1), Colon is now unambiguously significant (`padj=9.6e-4`), consistent with SI — the interpretation above states this correctly, and a related miscount in the original "bottom line" (which said "two show no signal, and two show adult skew" for what were actually three remaining signatures) is also corrected.
+
+Also fixed alongside (non-blocking, reviewer-suggested): `20-quantile bin` terminology used consistently instead of the imprecise `decile bin` (the code always used 20 bins, not 10).
 
 ## Outputs
 
 `results/04a_dfp_gut/mike_verzi_validation/`:
 - `mike_verzi_gut_hypergeometric_enrichment.tsv`
-- `mike_verzi_gut_permutation_null.tsv`
-- `mike_verzi_gut_gsea_results.tsv` (includes leading-edge gene lists per signature/region)
+- `mike_verzi_gut_permutation_null.tsv` (now includes `empirical_fdr`)
+- `mike_verzi_gut_gsea_results.tsv` (universe-restricted; includes leading-edge gene lists per signature/region)
 - `validation_run_metadata.json` (n_permutations=10000, n_expression_bins=20, rng_seed=20260815, n_tests=10)
