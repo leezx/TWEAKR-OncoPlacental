@@ -1,0 +1,5 @@
+SmallInt primary-vs-5prime-sensitivity concordance (14978 shared genes after filterByExpr in both):
+  Pearson r (logFC): 1.0000
+  Spearman rho (logFC): 1.0000
+  Sign-concordance (all shared genes): 0.9852
+  Sign-concordance (primary FDR<0.05 genes, n=3041): 1.0000
