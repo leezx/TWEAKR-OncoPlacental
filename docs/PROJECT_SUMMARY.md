@@ -141,15 +141,69 @@ stale definition). Full design/audit trail: `docs/STEP4_DFP_DESIGN.md`,
 `docs/STEP4_STATISTICAL_DESIGN.md`, and the `*_audit.md` files under
 `results/04_dfp_signature/`.
 
+**Status update (2026-08-15)**: everything below this point (Tier-2
+validation, M11/revCSC CRC decomposition against this pan-organ D/F/P) is
+now real and CLOSED/merged — see `Worklog.md` for the full detail. More
+importantly, the pan-organ D/F/P built here is **no longer the primary
+CRC coordinate system** — see "Step 4a — Gut re-anchoring" below.
+
+## Step 4a — Re-anchoring F-developmental on real fetal gut data (CLOSED for construction; NEW primary CRC coordinate system)
+
+The pan-organ HDMA F-lineage above (Adrenal/Liver/Skin/Spleen/
+StomachEsophagus/Thymus/Thyroid) has **zero gut/colon organ
+representation** — a real scientific mismatch for a CRC project, surfaced
+when a hypergeometric enrichment check of 5 independent published
+fetal/revival mouse signatures (`mike_verzi_fetal_signature.gmt`) against
+this F-lineage came back honestly null (1/50 tests FDR<0.05). User
+directed a full re-anchoring rather than a small patch: `F_Colon-
+developmental` (large intestine, primary) and `F_SI-developmental` (small
+intestine, secondary parallel), built from the **Gut Cell Atlas**
+(Elmentaite et al., *Nature* 2021), using the same-atlas's own combined
+fetal+pediatric+adult epithelium object for a real fetal-vs-adult
+pseudobulk DE (edgeR, `~10X + source_family + Age_group`, Second-
+trimester-fetal vs. Adult) — not an HDMA-style percentile port against an
+external adult reference.
+
+Went through 3 PRs (#19 close-out of the enrichment finding, #20 design,
+#21 real compute) and ~10 real review rounds total, catching genuine bugs
+each time — not wording nitpicks: a case-sensitivity bug that had wrongly
+excluded 382 mouse genes from an ortholog mapping; a pseudobulk-donor
+design audit that found and fixed a real chemistry/cohort confound; a
+mathematically false threshold-calibration claim; a real gene-ID mix-up
+(`IGF2` vs. `IGF2-1`, BioMart-verified) that had hidden the single
+strongest calibration marker; a wrong hypergeometric background inflating
+an enrichment claim from a real 5.68× to a false ~11×; and an unreliable
+regex-based duplicate-symbol heuristic replaced with a real, authoritative
+BioMart lookup. Every one of these was caught by the reviewer or by
+directly re-checking the data, not assumed away.
+
+**Frozen result** (`results/04a_dfp_gut/dfp_gut_gene_sets/`):
+`F_Colon-developmental`=1,456 genes, `F_SI-developmental`=1,456 genes,
+`D_Colon-shared`=5 (`KISS1`/`LGALS14`/`LGSN`/`TRIM71`/`ZNF114`),
+`D_SI-shared`=4 (`CCDC169`/`DLX4`/`TRIM71`/`ZNF257`), `F_Gut-core`=712
+genes (5.68× enrichment over the correctly-computed chance overlap).
+Calibrated against real oncofetal markers — `AFP` (logFC=+9.85/+9.89,
+FDR<3e-6 both regions) is the single strongest signal, matching its
+textbook role. Full design/audit trail: `docs/STEP4A_GUT_FDEV_DESIGN.md`,
+`docs/STEP4A_GUT_COMPUTE_RESULTS.md`.
+
+The original pan-organ HDMA D/F/P above is **not deleted** — demoted to a
+secondary "pan-fetal / non-gut developmental validation framework."
+
 ## What's next (not started)
 
-- **Tier-2 validation**: Tabula Sapiens (adult single-cell) independent
-  check that P-specific/F-specific genes are genuinely absent across
-  adult cell types — held out of signature definition specifically so
-  this validation is not circular.
-- **Apply the frozen D/F/P signature to real CRC Oncofetal cells**
-  (single-cell/spatial) — this is the step that actually answers the
-  project's original question.
+- **Three-layer statistical validation** of `F_Colon-developmental`/
+  `F_SI-developmental` against the 5 independent `mike_verzi` mouse
+  signatures: hypergeometric enrichment (CI/OR), preranked GSEA (using
+  the real edgeR `logFC` as the continuous ranking statistic — now
+  available for the first time), and size/expression-matched permutation
+  nulls. This is the explicit next step.
+- **External adult-negative validation** (GTEx/HPA/Tabula Sapiens) of the
+  new gut-specific gene sets.
+- **Re-run the M11/revCSC CRC decomposition** (already designed and
+  compute-ready, see Step 6 in `Worklog.md`) against the new Gut-specific
+  D/F/P instead of the pan-organ one — this is what actually answers the
+  project's original Q1 with the anatomically-correct reference.
 - **Q2–Q6** of the original 6-question framework — entirely unscoped,
   comes after the above.
 
