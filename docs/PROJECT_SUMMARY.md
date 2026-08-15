@@ -147,7 +147,7 @@ now real and CLOSED/merged — see `Worklog.md` for the full detail. More
 importantly, the pan-organ D/F/P built here is **no longer the primary
 CRC coordinate system** — see "Step 4a — Gut re-anchoring" below.
 
-## Step 4a — Re-anchoring F-developmental on real fetal gut data (CLOSED for construction; NEW primary CRC coordinate system)
+## Step 4a — Re-anchoring F-developmental on real fetal gut data (CLOSED; NEW primary CRC coordinate system)
 
 The pan-organ HDMA F-lineage above (Adrenal/Liver/Skin/Spleen/
 StomachEsophagus/Thymus/Thyroid) has **zero gut/colon organ
@@ -190,14 +190,36 @@ textbook role. Full design/audit trail: `docs/STEP4A_GUT_FDEV_DESIGN.md`,
 The original pan-organ HDMA D/F/P above is **not deleted** — demoted to a
 secondary "pan-fetal / non-gut developmental validation framework."
 
+### External validation — three-layer statistical test vs. 5 independent `mike_verzi` signatures (CLOSED)
+
+Tested `F_Colon-developmental`/`F_SI-developmental` against the 5
+independent `mike_verzi` mouse fetal/regenerative intestinal signatures
+(never used in construction) with three layers sharing one locked
+universe (`one2one-ortholog-eligible ∩ filterByExpr-tested`, Colon
+N=11,646, SI N=11,661): hypergeometric enrichment (fold/OR/95% CI/
+BH-FDR), preranked GSEA (`fgsea`, ranked by the real edgeR `logFC`,
+primary evidence), and a 10,000-draw size-and-expression-matched
+permutation null (BH-FDR across the same 10 tests as layer 1). Went
+through 2 real review rounds (PR #22): round 1 caught GSEA's ranked
+universe not matching layers 1/3, the permutation layer missing
+multiple-testing correction (which flips 3 borderline results from
+nominally-significant to not, once corrected), and a factual
+contradiction between the results table and the interpretation text;
+round 2 caught a remaining overclaim in the interpretation's own
+section header. **APPROVED and merged** (`f1a59a0`).
+
+**Honest, FDR-consistent result** (`docs/STEP4A_GUT_MIKE_VERZI_VALIDATION.md`):
+`FETAL_INTESTINE_GENES` fully triangulates (all 3 layers significant,
+both regions) — the strongest validation of the re-anchoring.
+`REGENERATIVE_EPITHELIUM` fully triangulates in Colon, partial (2-of-3
+layers) in SI. `YAP_SIGNALING_GENES` and `FETAL_SPHEROID_EPITHELIUM_GENES`
+both show significant *adult*-skewed GSEA (the primary evidence layer)
+in both regions, with no FDR-robust positive signal on the overlap-based
+layers — a real discordance, reported as-is. `REVIVAL_STEM_CELL_GENES`
+shows no signal on any layer, either region.
+
 ## What's next (not started)
 
-- **Three-layer statistical validation** of `F_Colon-developmental`/
-  `F_SI-developmental` against the 5 independent `mike_verzi` mouse
-  signatures: hypergeometric enrichment (CI/OR), preranked GSEA (using
-  the real edgeR `logFC` as the continuous ranking statistic — now
-  available for the first time), and size/expression-matched permutation
-  nulls. This is the explicit next step.
 - **External adult-negative validation** (GTEx/HPA/Tabula Sapiens) of the
   new gut-specific gene sets.
 - **Re-run the M11/revCSC CRC decomposition** (already designed and
