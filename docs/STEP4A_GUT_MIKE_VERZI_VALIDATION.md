@@ -71,7 +71,7 @@ Only the 3 strongest hits (Colon FETAL_INTESTINE, Colon REGENERATIVE_EPITHELIUM,
 
 ## Interpretation — honest, not cherry-picked, FDR-consistent across all three layers
 
-**Two of five signatures triangulate as genuinely fetal-enriched across all three FDR-corrected layers, in both regions:**
+**`FETAL_INTESTINE_GENES` fully triangulates as genuinely fetal-enriched across all three FDR-corrected layers, in both regions; `REGENERATIVE_EPITHELIUM` fully triangulates in Colon, with 2-of-3-layers support in SI:**
 
 - **`FETAL_INTESTINE_GENES`** — the strongest and most consistent result. Significant hypergeometric enrichment (FDR<1e-7 both regions), permutation FDR=3.3e-4 both regions (Z≈5.3–6.6), and GSEA gives significant positive NES (padj<8e-5 both regions). All three layers agree, FDR-corrected, in both regions.
 - **`REGENERATIVE_EPITHELIUM`** — full triangulation in **Colon** (hypergeometric FDR=9.2e-8, permutation FDR=3.3e-4, GSEA padj=2.0e-3). In **SI**, the pattern is weaker once permutation is FDR-corrected: hypergeometric FDR=0.035 and GSEA padj=0.028 are both significant, but permutation is only nominal (p=0.035, FDR=0.070, ns). So SI REGENERATIVE_EPITHELIUM is 2-of-3-layers significant after correction, directionally consistent on the third, not full triangulation.
