@@ -1,0 +1,11 @@
+pair	revcsc_panel	dfp_panel	n_cells_total	n_donors	n_donors_estimable	pooled_pearson_r_all_cells	pooled_spearman_rho_all_cells	pooled_not_estimable_reason	max_abs_delta_pearson_r_leave_one_donor_out	max_abs_delta_pearson_r_leave_one_study_out	robust_to_no_single_donor_or_study
+revCSC_primary27_full__vs__D_Gut-shared	revCSC_primary27_full	D_Gut-shared	665473	529	475	0.012070459313690662	0.0165857300586673		0.009702031500637531	0.008650465868413448	True
+revCSC_primary27_full__vs__P_Gut-specific	revCSC_primary27_full	P_Gut-specific	665473	529	475	-0.030751487240195274	-0.023734432972983846		0.01968558132648468	0.018795612268149853	True
+revCSC_primary27_minus_CLU__vs__F_Colon-specific	revCSC_primary27_minus_CLU	F_Colon-specific	665473	529	475	0.012031176127493382	-0.017110307890997708		0.029006979428231716	-0.053459194488823414	False
+revCSC_primary27_minus_ASS1__vs__F_SI-specific	revCSC_primary27_minus_ASS1	F_SI-specific	665473	529	475	0.09951339662075043	0.012605535746226		-0.051045339554548264	-0.11816380359232426	False
+revCSC_primary27_minus_CLU_ASS1__vs__F_Gut-specific	revCSC_primary27_minus_CLU_ASS1	F_Gut-specific	665473	529	475	0.11906599998474121	0.003638318595850204		-0.05339716374874115	-0.13793352432549	False
+revCSC_extended28_full__vs__D_Gut-shared	revCSC_extended28_full	D_Gut-shared	665473	529	475	0.02189445309340954	0.026221244533040925		0.010812165215611458	0.00986352376639843	True
+revCSC_extended28_full__vs__P_Gut-specific	revCSC_extended28_full	P_Gut-specific	665473	529	475	-0.035886865109205246	-0.026667432427160766		0.020400524139404297	0.019407885149121284	True
+revCSC_extended28_minus_CLU__vs__F_Colon-specific	revCSC_extended28_minus_CLU	F_Colon-specific	665473	529	475	0.04642104730010033	0.01850388511448832		0.03146899864077568	-0.05357501422986388	False
+revCSC_extended28_minus_ASS1__vs__F_SI-specific	revCSC_extended28_minus_ASS1	F_SI-specific	665473	529	475	0.1510409414768219	0.03572989735929448		-0.058275043964385986	-0.13694440480321646	True
+revCSC_extended28_minus_CLU_ASS1__vs__F_Gut-specific	revCSC_extended28_minus_CLU_ASS1	F_Gut-specific	665473	529	475	0.17558538913726807	0.0448936504498453		-0.05637531727552414	-0.1493881158530712	True

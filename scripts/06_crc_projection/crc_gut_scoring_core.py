@@ -388,12 +388,25 @@ def score_all_panels(adata, n_perm, panels=None, seed=SEED, checkpoint_dir=None,
     n_testable_report = {}
     for panel in panels:
         ckpt_path = f"{checkpoint_dir}/{panel}.n{n_perm}.parquet" if checkpoint_dir else None
+        n_testable_path = f"{checkpoint_dir}/{panel}.n{n_perm}.n_testable.txt" if checkpoint_dir else None
         if ckpt_path and os.path.exists(ckpt_path):
             print(f"  {panel}: checkpoint found, loading {ckpt_path}", flush=True)
             df = pd.read_parquet(ckpt_path)
             out[f"{panel}_percentile"] = df[f"{panel}_percentile"].values
             out[f"{panel}_zscore"] = df[f"{panel}_zscore"].values
-            n_testable_report[panel] = int(df.attrs.get("n_testable", -1)) if hasattr(df, "attrs") else -1
+            # BUG FIX: DataFrame.attrs does not survive a to_parquet/
+            # read_parquet round-trip, so n_testable was previously always
+            # lost (silently reported as -1) for any checkpoint-reused
+            # panel. Fixed by writing n_testable to a small sidecar file
+            # instead of relying on .attrs.
+            if n_testable_path and os.path.exists(n_testable_path):
+                with open(n_testable_path) as f:
+                    n_testable_report[panel] = int(f.read().strip())
+            else:
+                n_testable_report[panel] = -1
+                print(f"  WARNING: {panel} checkpoint has no sidecar n_testable "
+                      f"file (pre-fix checkpoint) -- reporting -1, re-derive "
+                      f"manually if needed", flush=True)
             continue
 
         panel_ens = load_panel_ensembl_ids(panel)
@@ -410,6 +423,8 @@ def score_all_panels(adata, n_perm, panels=None, seed=SEED, checkpoint_dir=None,
             os.makedirs(checkpoint_dir, exist_ok=True)
             df = out[[f"{panel}_percentile", f"{panel}_zscore"]].copy()
             df.to_parquet(ckpt_path)
+            with open(n_testable_path, "w") as f:
+                f.write(str(n_testable))
             print(f"  {panel}: checkpointed to {ckpt_path}", flush=True)
 
     return out, n_testable_report
