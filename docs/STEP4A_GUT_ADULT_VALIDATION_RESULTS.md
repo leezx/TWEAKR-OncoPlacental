@@ -27,17 +27,19 @@ Honest reading: the typical detected fetal-up gene sits near the *middle* of the
 
 ## Check 1 — Tabula Sapiens, `Large_Intestine`, epithelial-restricted (`F_Colon-developmental` only)
 
-1,344/1,456 genes testable (112 `NOT_TESTABLE`). 13 of 15 donor×epithelial-cell-type samples pass the ≥20-cell floor (2 donors, `TSP14`/`TSP2`), giving 11 eligible epithelial cell types.
+1,344/1,456 genes testable (112 `NOT_TESTABLE`). 13 of 15 donor×epithelial-cell-type samples pass the ≥20-cell floor (2 donors, `TSP14`/`TSP2`), spanning 11 epithelial cell types.
 
-**Primary evidence (direct flags)**: 14,784 (gene, cell type) pairs tested, 1,009 cross-donor-consistent adult-expression flags — but concentrated entirely in 2 of 11 cell types:
+**Bug found and fixed before these numbers were trustworthy**: the first run treated all 11 cell types as one inferential family, but 9 of them are backed by only **1** eligible donor — the cross-donor-consistent flag criterion requires ≥2 donors by definition, so for those 9 a flag is *structurally impossible*, not evidence of anything. Both the observed data and every permutation draw are identically `False` for those columns, producing a degenerate `p=1.0` that isn't a real test — including them inflated the reported "9/11 clean" story with fake, uninformative tests and understated the true (smaller) FDR family. **Fixed**: the permutation/FDR family is now restricted to the 2 cell types where a hit is even structurally possible.
 
-| Cell type | Observed flag rate | Permutation null median | Empirical p | FDR |
-|---|---|---|---|---|
-| `paneth cell of epithelium of large intestine` | 38.8% | 38.7% | 0.445 | 1.0 (ns) |
-| `transit amplifying cell of large intestine` | 36.2% | 36.5% | 0.717 | 1.0 (ns) |
-| **all other 9 epithelial cell types** (enterocyte, immature/mature enterocyte, goblet cell, intestinal crypt stem cell ×2, enteroendocrine cell, tuft cell, large intestine goblet cell) | **0.0%** | 0.0% | 1.0 | 1.0 (ns) |
+**Primary evidence (direct flags)**: 14,784 (gene, cell type) pairs tested across all 11 cell types (11 including the 9 single-donor ones, reported honestly as `single_donor_evidence=True` in the raw output — not used for inference), 1,009 cross-donor-consistent adult-expression flags, concentrated entirely in the 2 genuinely-testable cell types:
 
-**Honest reading, a genuinely reassuring result**: 9 of 11 adult epithelial cell types — including enterocytes, goblet cells, and intestinal stem cells, the most CRC-relevant populations — show **zero** cross-donor-consistent adult-expression flags across the entire 1,344-gene `F_Colon-developmental` panel in this independent adult reference. The two cell types with a nonzero flag rate (Paneth cells, transit-amplifying cells) are **not anomalous**: their observed rate is statistically indistinguishable from the size-and-detectability-matched permutation null (enrichment ≈1.0×, p=0.445/0.717, not significant even nominally, let alone after FDR) — meaning those cell types simply have broadly higher adult detectability for genes of this general expression class, not something specific to the fetal-up panel. No epithelial cell type shows a real, statistically-supported adult-expression anomaly for `F_Colon-developmental`.
+| Cell type | Eligible donors | Observed flag rate | Permutation null median | Empirical p | FDR (2-test family) |
+|---|---|---|---|---|---|
+| `paneth cell of epithelium of large intestine` | 2 | 38.8% | 38.7% | 0.445 | 0.717 (ns) |
+| `transit amplifying cell of large intestine` | 2 | 36.2% | 36.5% | 0.717 | 0.717 (ns) |
+| *9 other epithelial cell types* (enterocyte, immature/mature enterocyte, goblet cell, intestinal crypt stem cell ×2, enteroendocrine cell, tuft cell, large intestine goblet cell) | *1 each* | 0.0% | — | *structurally untestable, excluded from FDR family* | — |
+
+**Honest reading**: the only two epithelial cell types with enough donor replication (`TSP14` + `TSP2` both eligible) to run a real cross-donor-consistent test — Paneth cells and transit-amplifying cells — show **no statistically-supported adult-expression anomaly**: observed rates are indistinguishable from the size-and-detectability-matched permutation null (enrichment ≈1.0×, p=0.445/0.717, not significant even nominally). The other 9 epithelial cell types, including the most CRC-relevant ones (enterocytes, goblet cells, intestinal stem cells), show zero flags in the direct evidence — but this is now correctly reported as **single-donor evidence, not a statistically tested negative** (Tabula Sapiens' `Large_Intestine` file has only 2 donors total, a real data limitation, not a design choice). The genuinely-testable subset is smaller than originally reported, but its conclusion — no adult-expression anomaly detected — is unchanged.
 
 ## Check 3 — Tabula Sapiens, all 5 organs, D/P construction-consistency + independent audit
 
@@ -47,7 +49,7 @@ Honest reading: the typical detected fetal-up gene sits near the *middle* of the
 
 ## Bottom line
 
-- **`F_Colon-developmental`** shows no statistically-supported adult-expression anomaly in any of the 11 eligible adult epithelial cell types tested (Tabula Sapiens, genuinely independent) — the most direct, single-cell-resolution external check available, and it comes back clean. GTEx bulk shows the expected middle-of-distribution detection pattern for most genes, with a real ~10% minority worth flagging for future scrutiny, not evidence against the panel as a whole.
+- **`F_Colon-developmental`** shows no statistically-supported adult-expression anomaly in either of the 2 adult epithelial cell types with enough donor replication to genuinely test (Tabula Sapiens, genuinely independent) — the most direct, single-cell-resolution external check available, and it comes back clean. The other 9 epithelial cell types (including the most CRC-relevant ones) have only single-donor coverage in this dataset and are reported as such, not claimed as tested negatives. GTEx bulk shows the expected middle-of-distribution detection pattern for most genes, with a real ~10% minority worth flagging for future scrutiny, not evidence against the panel as a whole.
 - **`F_SI-developmental`** has no single-cell check available (Tabula Sapiens has no Small_Intestine organ, a stated design limitation) — GTEx terminal-ileum bulk shows a similar pattern to Colon, with the same partial-anatomical-coverage caveat.
 - **D/P sets** remain internally consistent with the whole-body adult-exclusion evidence that helped define them in the first place (GTEx, expected) and reproduce Step 5's already-established, small set of genuine adult-expression flags exactly (Tabula Sapiens, genuinely independent but not new information for this particular 84-gene set).
 

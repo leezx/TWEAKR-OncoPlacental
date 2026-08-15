@@ -185,6 +185,7 @@ def compute_hit_matrix_and_detectability(pb_counts, meta, min_cells=MIN_CELLS, f
     detectability = detected.mean(axis=1)
 
     hit_cols = {}
+    n_donors_per_ct = {}
     for ct, sub in eligible_meta.groupby("cell_type"):
         cols = sub["sample"].values
         n_donors = len(cols)
@@ -194,8 +195,9 @@ def compute_hit_matrix_and_detectability(pb_counts, meta, min_cells=MIN_CELLS, f
         n_detected = sub_detected.sum(axis=1)
         hit = (n_detected == n_donors) & (n_donors >= 2) & (n_detected > 0)
         hit_cols[ct] = hit
+        n_donors_per_ct[ct] = n_donors
     hit_matrix = pd.DataFrame(hit_cols, index=pb_cpm.index)
-    return hit_matrix, detectability
+    return hit_matrix, detectability, n_donors_per_ct
 
 
 def matched_permutation_null(hit_matrix, detectability, f_genes, n_perm=N_PERM, n_bins=N_BINS, seed=SEED):
@@ -292,15 +294,34 @@ def run_check1(var_map):
           f"{n_flagged} cross-donor-consistent adult-expression red flags", flush=True)
 
     # secondary: pre-registered permutation, epithelial-only covariate + hit matrix
-    hit_matrix, detectability = compute_hit_matrix_and_detectability(pb_counts, meta)
-    perm_result = matched_permutation_null(hit_matrix, detectability, testable_symbols)
+    hit_matrix, detectability, n_donors_per_ct = compute_hit_matrix_and_detectability(pb_counts, meta)
+
+    # BUG FIX (found in PR #24 review): a cell type with only 1 eligible donor
+    # can structurally NEVER produce a cross-donor-consistent hit (the flag
+    # criterion requires n_donors>=2 by definition) -- for such a column,
+    # hit_matrix is identically False for every gene, in BOTH the observed
+    # data and every permutation draw, so the resulting "test" is a
+    # degenerate p=1.0 with zero information, not a real non-significant
+    # result. Including it in the BH-FDR family inflates the hypothesis
+    # count with fake tests. Restrict the permutation/FDR family to cell
+    # types with >=2 eligible donors -- the only ones where a
+    # cross-donor-consistent hit is even structurally possible.
+    single_donor_cts = [ct for ct, n in n_donors_per_ct.items() if n < 2]
+    testable_cts = [ct for ct, n in n_donors_per_ct.items() if n >= 2]
+    print(f"Cell types with only 1 eligible donor (structurally cannot produce a "
+          f"cross-donor-consistent hit, EXCLUDED from the permutation/FDR family): "
+          f"{single_donor_cts}", flush=True)
+    hit_matrix_testable = hit_matrix[testable_cts]
+
+    perm_result = matched_permutation_null(hit_matrix_testable, detectability, testable_symbols)
     perm_result["fdr_bh"] = bh_fdr(perm_result["empirical_p_value"].values).round(4)
     perm_result["nominal_p_lt_0.05"] = perm_result["empirical_p_value"] < 0.05
     perm_result["significant_fdr_0.05"] = perm_result["fdr_bh"] < 0.05
     perm_path = f"{OUT_DIR}/check1_tabula_sapiens_permutation_null.tsv"
     perm_result.to_csv(perm_path, sep="\t", index=False)
     print(f"Check 1 permutation layer ({N_PERM} perms, epithelial-only covariate): "
-          f"{len(perm_result)} eligible epithelial cell types tested (BH-FDR family)", flush=True)
+          f"{len(perm_result)} genuinely-testable (>=2-eligible-donor) epithelial cell types "
+          f"tested (BH-FDR family) -- {len(single_donor_cts)} single-donor cell types excluded", flush=True)
     print(perm_result.to_string(index=False), flush=True)
 
     mapping_row = {"gene_set": "F_Colon-developmental (Check1, epithelial)", "n_input": n_input,
