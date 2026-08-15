@@ -17,7 +17,7 @@ sets are Layer 2** — this went through 3 real review rounds to get right
 |---|---|
 | `D_shared_FINAL.txt` (6 genes, **one global axis**) | `D_Gut-shared.txt` (8 genes, computed = `D_Colon-shared ∪ D_SI-shared`) — **the global D axis** |
 | `F_specific_FINAL.txt` (2,504, **one global axis**, coarse/secondary summary) | `F_Gut-specific.txt` (2,192 genes, computed = `(F_Colon-developmental ∪ F_SI-developmental) \ P_developmental`) — **the global F axis**, coarse/secondary summary |
-| 7 per-organ `F_developmental_<Organ>.txt` lineage modules (each ∩ `F_specific_FINAL`) — primary, region-resolved interpretation, **F's unique per-organ feature** | `F_Colon-specific.txt` (1,451) + `F_SI-specific.txt` (1,452) — primary, region-resolved interpretation |
+| 7 per-organ `F_developmental_<Organ>.txt` lineage modules (each ∩ `F_specific_FINAL`) — primary, region-resolved interpretation, **F's unique per-organ feature** | `F_Colon-specific.txt` (1,451) — **primary** regional F, matching Step 4a's locked hierarchy (Colon directly matches CRC's tissue of origin); `F_SI-specific.txt` (1,452) — **secondary, parallel** regional F |
 | `P_specific_FINAL.txt` (78 genes, **one global axis**) | `P_Gut-specific.txt` (76 genes, computed = `P_Colon-specific ∩ P_SI-specific`) — **the global P axis** |
 
 `D_Colon-shared`/`D_SI-shared`/`P_Colon-specific`/`P_SI-specific` remain
@@ -74,6 +74,16 @@ anywhere), vs. the prior symbol-gated method's 44–65 unresolved genes
 per set. The overlap conclusion is numerically unchanged (as expected —
 BioMart-symbol failure was never evidence the underlying gene identity
 was wrong).
+
+**Round 4 (wording only, no recomputation)**: the mapping table above and
+the PR description both labeled `F_Colon-specific` and `F_SI-specific`
+together as "primary, region-resolved interpretation," contradicting
+Step 4a's own locked hierarchy — `F_Colon-developmental`/`F_Colon-specific`
+is the **primary** CRC-facing regional reference (Colon directly matches
+colorectal tissue of origin); `F_SI-developmental`/`F_SI-specific` is the
+**secondary, parallel** regional reference — a distinction this document's
+own results table below already stated correctly, just not consistently
+above it. Fixed in both places; no gene sets or numbers changed.
 
 ## Re-run: revCSC × Gut-D/F/P gene-overlap audit (done, this PR)
 
