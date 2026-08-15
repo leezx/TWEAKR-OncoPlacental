@@ -15,6 +15,25 @@ donor/study-aware primary analysis (crc_gut_scoring_primary_analysis.py).
 Checkpointed per-panel (see crc_gut_scoring_core.score_all_panels) so a
 job that fails partway can be resumed without re-scoring completed panels.
 
+Uses score_genes_fast (crc_gut_scoring_core.py), not repeated real
+scanpy.tl.score_genes calls: profiled empirically (timing probe, not
+guessed) that the naive per-call approach costs ~45-55s/call at this
+scale (dominated by score_genes' own internal full-genome average-
+expression recomputation, done from scratch every call regardless of
+gene-list size -- confirmed by reading scanpy 1.11's _score_genes_bins
+source directly), which extrapolates to ~18h+ for the full 13-panel job
+-- infeasible. score_genes_fast precomputes that binning once and reuses
+it, empirically ~12s/call for the largest panel at full scale (~4-5x
+faster for large panels, more for small ones), and is numerically
+validated against real scanpy.tl.score_genes before use here
+(validate_score_genes_fast.py: byte-identical control-gene-set selection
+plus allclose scores to 1e-4 relative tolerance -- the residual
+difference is pure float64 summation-order noise, not an algorithm
+mismatch). The convergence check (crc_gut_scoring_convergence_check.py)
+deliberately uses the real, non-fast implementation throughout, since
+its whole purpose is validating the statistical design against the
+reference method.
+
 Usage: python3 crc_gut_scoring_full.py <out_dir> [<convergence_check_dir>]
 (run on Argos, argos-codex env)
 """
@@ -60,19 +79,19 @@ def main():
     all_n_testable = {}
 
     if default_panels:
-        print(f"\n=== Scoring {len(default_panels)} panels at N_PERM={DEFAULT_N_PERM} ===", flush=True)
+        print(f"\n=== Scoring {len(default_panels)} panels at N_PERM={DEFAULT_N_PERM} (fast path) ===", flush=True)
         scores, n_testable = score_all_panels(
             adata, n_perm=DEFAULT_N_PERM, panels=default_panels, seed=SEED,
-            checkpoint_dir=checkpoint_dir,
+            checkpoint_dir=checkpoint_dir, fast=True,
         )
         all_scores = scores
         all_n_testable.update(n_testable)
 
     if gated_panels:
-        print(f"\n=== Scoring {len(gated_panels)} gated panels at N_PERM={GATED_N_PERM} ===", flush=True)
+        print(f"\n=== Scoring {len(gated_panels)} gated panels at N_PERM={GATED_N_PERM} (fast path) ===", flush=True)
         scores_gated, n_testable_gated = score_all_panels(
             adata, n_perm=GATED_N_PERM, panels=gated_panels, seed=SEED,
-            checkpoint_dir=checkpoint_dir,
+            checkpoint_dir=checkpoint_dir, fast=True,
         )
         all_scores = scores_gated if all_scores is None else all_scores.join(scores_gated)
         all_n_testable.update(n_testable_gated)

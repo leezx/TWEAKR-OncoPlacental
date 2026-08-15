@@ -160,6 +160,131 @@ def draw_null_gene_set(real_genes_testable, bin_labels, bin_pools, rng):
     return draw
 
 
+SCORE_GENES_CTRL_SIZE = 50
+SCORE_GENES_N_BINS = 25  # scanpy.tl.score_genes's own default -- NOT our
+                          # N_BINS=20 detectability strata; these are two
+                          # independent binning steps kept deliberately
+                          # distinct (see score_genes_fast docstring).
+
+
+def _nan_means_dense_or_sparse(x, axis):
+    from scipy import sparse
+    if sparse.issparse(x):
+        return np.asarray(x.mean(axis=axis)).ravel()
+    return np.nanmean(x, axis=axis)
+
+
+def precompute_score_genes_bins(adata, gene_pool=None, n_bins=SCORE_GENES_N_BINS):
+    """Precomputes scanpy.tl.score_genes's own internal control-gene
+    expression-rank binning ONCE per scored population, so it can be
+    reused across many score_genes-equivalent calls instead of being
+    silently recomputed from scratch inside every call (the actual
+    bottleneck profiled empirically: cost scales with n_cells x n_genes
+    and is otherwise IDENTICAL for a 27-gene and a 2,192-gene panel,
+    confirmed via a timing probe -- 1.6s/9.6s/21.5s per call at
+    20k/100k/300k cells, extrapolating to ~45-55s/call at the full
+    665,473 cells, i.e. an infeasible ~18h+ for the full 13-panel x 101-
+    draw job with the naive per-call approach).
+
+    Exact replica of scanpy 1.11's `_score_genes_bins` (verified by
+    reading `scanpy/tools/_score_genes.py` directly on Argos, argos-codex
+    env) -- `obs_avg` = mean expression per gene_pool gene, `obs_cut` =
+    rank-based bin assignment with `n_items = round(len(obs_avg)/(n_bins-1))`.
+    Returns (obs_avg, obs_cut, gene_pool_index)."""
+    var_names = adata.var_names
+    gene_pool_idx = pd.Index(gene_pool) if gene_pool is not None else var_names
+    x = adata.X
+    obs_avg = pd.Series(_nan_means_dense_or_sparse(x, axis=0), index=var_names)
+    obs_avg = obs_avg.loc[gene_pool_idx]
+    obs_avg = obs_avg[np.isfinite(obs_avg)]
+    n_items = int(np.round(len(obs_avg) / (n_bins - 1)))
+    obs_cut = obs_avg.rank(method="min") // n_items
+    return obs_avg, obs_cut
+
+
+def score_genes_fast(adata, gene_list, obs_cut, ctrl_size=SCORE_GENES_CTRL_SIZE, random_state=0,
+                      return_control_genes=False):
+    """Faithful, faster reimplementation of scanpy.tl.score_genes reusing
+    a precomputed `obs_cut` (see precompute_score_genes_bins) instead of
+    recomputing the expression-rank binning every call. Reproduces the
+    same control-gene-selection algorithm and the same `random_state=0`
+    reseed-per-call behavior scanpy's own default uses (so repeated calls
+    with the same gene_list are deterministic, matching score_genes'
+    behavior exactly) -- validated to reproduce scanpy.tl.score_genes'
+    output to floating-point precision on a held-out check before use in
+    the full-scale run (see validate_score_genes_fast.py).
+
+    Returns a 1D np.ndarray of per-cell scores (gene_list mean expression
+    minus control-gene-pool mean expression)."""
+    gene_list = pd.Index(gene_list).intersection(adata.var_names)
+    if random_state is not None:
+        np.random.seed(random_state)
+
+    control_genes = pd.Index([], dtype="string")
+    for cut in np.unique(obs_cut.loc[gene_list]):
+        r_genes = obs_cut[obs_cut == cut].index
+        if ctrl_size < len(r_genes):
+            r_genes = r_genes.to_series().sample(ctrl_size).index
+        r_genes = r_genes.difference(gene_list)
+        control_genes = control_genes.union(r_genes)
+
+    var_idx = adata.var_names
+    gene_pos = var_idx.get_indexer(gene_list)
+    ctrl_pos = var_idx.get_indexer(control_genes)
+    x = adata.X
+    mean_genes = _nan_means_dense_or_sparse(x[:, gene_pos], axis=1)
+    mean_ctrl = _nan_means_dense_or_sparse(x[:, ctrl_pos], axis=1)
+    score = np.asarray(mean_genes - mean_ctrl).ravel()
+    if return_control_genes:
+        return score, control_genes
+    return score
+
+
+def score_panel_fast(adata, panel_name, panel_ensembl_ids, bin_labels, obs_cut, n_perm, seed=SEED):
+    """Same contract as score_panel (percentile, zscore, n_testable) but
+    using score_genes_fast throughout -- for the full 665,473-cell run,
+    where the naive per-call scanpy.tl.score_genes cost is infeasible.
+    Numerically validated against score_panel's real-scanpy output before
+    being trusted (see validate_score_genes_fast.py)."""
+    atlas_var_set = set(adata.var_names)
+    real_genes = testable_genes(panel_ensembl_ids, atlas_var_set)
+    n_testable = len(real_genes)
+    if n_testable == 0:
+        raise ValueError(f"{panel_name}: 0 testable genes present in atlas")
+
+    bin_pools = {b: idx.tolist() for b, idx in bin_labels.groupby(bin_labels).groups.items()}
+    rng = np.random.default_rng(hash((seed, panel_name)) % (2**32))
+
+    t0 = time.time()
+    real_score = score_genes_fast(adata, real_genes, obs_cut)
+    print(f"    {panel_name}: real score computed in {time.time()-t0:.1f}s "
+          f"(n_testable={n_testable})", flush=True)
+
+    n_cells = adata.n_obs
+    null_scores = np.zeros((n_cells, n_perm), dtype=np.float32)
+    t0 = time.time()
+    for i in range(n_perm):
+        null_genes = draw_null_gene_set(real_genes, bin_labels, bin_pools, rng)
+        null_scores[:, i] = score_genes_fast(adata, null_genes, obs_cut)
+        if (i + 1) % 20 == 0:
+            elapsed = time.time() - t0
+            print(f"    {panel_name}: {i+1}/{n_perm} null draws done "
+                  f"({elapsed:.1f}s, {elapsed/(i+1):.2f}s/draw)", flush=True)
+    print(f"    {panel_name}: all {n_perm} null draws done in {time.time()-t0:.1f}s", flush=True)
+
+    n_less = (null_scores < real_score[:, None]).sum(axis=1)
+    n_equal = (null_scores == real_score[:, None]).sum(axis=1)
+    percentile = (n_less + 0.5 * n_equal) / n_perm * 100.0
+
+    null_mean = null_scores.mean(axis=1)
+    null_std = null_scores.std(axis=1, ddof=1)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        zscore = (real_score - null_mean) / null_std
+    zscore = np.where(null_std > 0, zscore, np.nan)
+
+    return percentile.astype(np.float32), zscore.astype(np.float32), n_testable
+
+
 def score_panel(adata, panel_name, panel_ensembl_ids, bin_labels, n_perm, seed=SEED):
     """Returns (percentile: np.ndarray[n_cells], zscore: np.ndarray[n_cells],
     n_testable: int) for one panel."""
@@ -208,16 +333,33 @@ def score_panel(adata, panel_name, panel_ensembl_ids, bin_labels, n_perm, seed=S
     return percentile.astype(np.float32), zscore.astype(np.float32), n_testable
 
 
-def score_all_panels(adata, n_perm, panels=None, seed=SEED, checkpoint_dir=None):
-    """Runs score_panel for every panel in `panels` (default ALL_PANELS),
-    returns a DataFrame indexed by adata.obs_names with
-    <panel>_percentile / <panel>_zscore columns. If checkpoint_dir is
+def score_all_panels(adata, n_perm, panels=None, seed=SEED, checkpoint_dir=None, fast=False):
+    """Runs score_panel (or score_panel_fast if fast=True -- see that
+    function's docstring for why/when) for every panel in `panels`
+    (default ALL_PANELS), returns a DataFrame indexed by adata.obs_names
+    with <panel>_percentile / <panel>_zscore columns. If checkpoint_dir is
     given, each panel's result is written immediately and skipped on
-    re-run if already present (job-restart safety for a job this long)."""
+    re-run if already present (job-restart safety for a job this long).
+
+    `fast=True` uses score_genes_fast (precomputed control-gene binning,
+    reused across all calls) instead of repeated real
+    scanpy.tl.score_genes calls -- numerically validated equivalent
+    (validate_score_genes_fast.py), used for the full 665,473-cell run
+    where the naive per-call approach is empirically ~18h+ (profiled),
+    infeasible. The convergence check (20,000 cells) uses fast=False
+    (the real function) since its whole purpose is validating the
+    statistical design with the reference implementation."""
     panels = panels or ALL_PANELS
     detectability = compute_detectability(adata)
     bin_labels = bin_detectability(detectability, N_BINS)
     print(f"Detectability strata: {N_BINS} bins over {len(detectability)} genes", flush=True)
+
+    obs_cut = None
+    if fast:
+        t0 = time.time()
+        _, obs_cut = precompute_score_genes_bins(adata)
+        print(f"Precomputed score_genes control-gene bins in {time.time()-t0:.1f}s "
+              f"(reused across all {len(panels)} panels x {n_perm+1} calls each)", flush=True)
 
     out = pd.DataFrame(index=adata.obs_names)
     n_testable_report = {}
@@ -232,7 +374,11 @@ def score_all_panels(adata, n_perm, panels=None, seed=SEED, checkpoint_dir=None)
             continue
 
         panel_ens = load_panel_ensembl_ids(panel)
-        percentile, zscore, n_testable = score_panel(adata, panel, panel_ens, bin_labels, n_perm, seed)
+        if fast:
+            percentile, zscore, n_testable = score_panel_fast(
+                adata, panel, panel_ens, bin_labels, obs_cut, n_perm, seed)
+        else:
+            percentile, zscore, n_testable = score_panel(adata, panel, panel_ens, bin_labels, n_perm, seed)
         out[f"{panel}_percentile"] = percentile
         out[f"{panel}_zscore"] = zscore
         n_testable_report[panel] = n_testable
