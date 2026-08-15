@@ -3,15 +3,29 @@
 # Second-trimester-fetal vs. Adult epithelium, edgeR quasi-likelihood F-test,
 # unpaired design ~ tenX + source_family + Age_group (donors are disjoint
 # individuals between fetal/adult, confirmed in the design audit -- no
-# donor-blocking term). Also runs the mandatory 5'-only sensitivity model
-# (~ source_family + Age_group, tenX dropped -- constant within that
-# subset per the reviewer's non-blocking implementation note) and reports
-# logFC concordance between primary and sensitivity.
+# donor-blocking term).
+#
+# Two robustness checks, per PR #21 REQUEST_CHANGES round 1 (both are
+# SUBSETS of the same primary donor set -- NOT independent data -- worded
+# that way throughout, not as "independent replication"):
+#   1. "5'-only subset sensitivity" (~ source_family + Age_group, tenX
+#      dropped since constant within the subset): all 5'-chemistry donors,
+#      a subset of the primary donor set (LargeInt 8/12, SmallInt 7/10).
+#   2. "Human_colon_16S + 5'-only exact-matched subset" (~ Age_group only,
+#      both tenX and source_family constant within this subset): the
+#      cleanest possible matched-stratum check (LargeInt 2 fetal vs 5
+#      adult, SmallInt 2 vs 4) -- per PR #20's APPROVE round-4 non-blocking
+#      implementation note, not run in the first PR #21 submission,
+#      added here. Purely descriptive: not expected/required to reach
+#      independent significance at this sample size, only checked for
+#      effect direction/rough magnitude concordance with the primary
+#      model.
 #
 # Usage: Rscript run_gut_epi_edgeR.R <region_label>   # LargeInt | SmallInt
 # Reads results/04a_dfp_gut/pseudobulk/<label>_pseudobulk_{counts,meta}.tsv
 # Writes results/04a_dfp_gut/edgeR/<label>_edgeR_primary.tsv
-#        results/04a_dfp_gut/edgeR/<label>_edgeR_5prime_sensitivity.tsv
+#        results/04a_dfp_gut/edgeR/<label>_edgeR_5prime_subset.tsv
+#        results/04a_dfp_gut/edgeR/<label>_edgeR_Human_colon_16S_5prime_exact_matched.tsv
 #        results/04a_dfp_gut/edgeR/<label>_concordance_summary.txt
 
 suppressMessages(library(edgeR))
@@ -81,34 +95,57 @@ cat(sprintf("%s [primary]: %d genes FDR<0.05, %d genes FDR<0.05 & |logFC|>=1\n",
             label, sum(primary$res$FDR < 0.05, na.rm = TRUE),
             sum(primary$res$FDR < 0.05 & abs(primary$res$logFC) >= 1, na.rm = TRUE)))
 
-# --- mandatory 5'-only sensitivity model: ~ source_family + Age_group ---
+# --- mandatory check 1: 5'-only SUBSET (not independent data) ---
 fp <- meta$tenX == "5'"
-cat(sprintf("\n%s: 5'-only sensitivity subset = %d donors (%s)\n",
-            label, sum(fp), paste(table(meta$Age_group[fp]), collapse = " vs ")))
+cat(sprintf("\n%s: 5'-only subset = %d/%d primary donors (%s)\n",
+            label, sum(fp), nrow(meta), paste(table(meta$Age_group[fp]), collapse = " vs ")))
 sens <- run_edgeR(counts[, fp], meta[fp, ], ~ source_family + Age_group,
-                   "Age_groupSecond trim", "5prime_sensitivity")
-out_sens <- file.path(OUT_DIR, paste0(label, "_edgeR_5prime_sensitivity.tsv"))
+                   "Age_groupSecond trim", "5prime_subset")
+out_sens <- file.path(OUT_DIR, paste0(label, "_edgeR_5prime_subset.tsv"))
 write.table(sens$res, out_sens, sep = "\t", row.names = FALSE, quote = FALSE)
 cat(sprintf("%s: wrote %d gene results to %s\n", label, nrow(sens$res), out_sens))
 
-# --- concordance check (mandatory per design doc, not contingent on diagnostics) ---
-shared <- merge(primary$res, sens$res, by = "gene", suffixes = c(".primary", ".sensitivity"))
-cor_pearson <- cor(shared$logFC.primary, shared$logFC.sensitivity, method = "pearson")
-cor_spearman <- cor(shared$logFC.primary, shared$logFC.sensitivity, method = "spearman")
-sign_concordant <- mean(sign(shared$logFC.primary) == sign(shared$logFC.sensitivity), na.rm = TRUE)
+# --- mandatory check 2: Human_colon_16S + 5'-only EXACT-MATCHED subset ---
+# (PR #20 APPROVE round-4 non-blocking note, not run in PR #21's first
+# submission -- added here.) Both tenX and source_family are constant
+# within this subset by construction, so the model is ~ Age_group alone.
+em <- meta$tenX == "5'" & meta$source_family == "Human_colon_16S"
+cat(sprintf("\n%s: Human_colon_16S+5'-only exact-matched subset = %d/%d primary donors (%s)\n",
+            label, sum(em), nrow(meta), paste(table(meta$Age_group[em]), collapse = " vs ")))
+exact <- run_edgeR(counts[, em], meta[em, ], ~ Age_group,
+                    "Age_groupSecond trim", "exact_matched")
+out_exact <- file.path(OUT_DIR, paste0(label, "_edgeR_Human_colon_16S_5prime_exact_matched.tsv"))
+write.table(exact$res, out_exact, sep = "\t", row.names = FALSE, quote = FALSE)
+cat(sprintf("%s: wrote %d gene results to %s\n", label, nrow(exact$res), out_exact))
 
-sig_primary <- shared[shared$FDR.primary < 0.05, ]
-sign_concordant_sig <- if (nrow(sig_primary) > 0) {
-  mean(sign(sig_primary$logFC.primary) == sign(sig_primary$logFC.sensitivity), na.rm = TRUE)
-} else NA
+# --- concordance checks (mandatory per design doc, not contingent on diagnostics) ---
+# Both checks below compare against SUBSETS of the primary donor set, not
+# independent data -- reported as subset/matched-stratum robustness, never
+# as "independent replication".
+concordance <- function(primary_res, other_res, tag) {
+  shared <- merge(primary_res, other_res, by = "gene", suffixes = c(".primary", ".other"))
+  cor_pearson <- cor(shared$logFC.primary, shared$logFC.other, method = "pearson")
+  cor_spearman <- cor(shared$logFC.primary, shared$logFC.other, method = "spearman")
+  sign_concordant <- mean(sign(shared$logFC.primary) == sign(shared$logFC.other), na.rm = TRUE)
+  sig_primary <- shared[shared$FDR.primary < 0.05, ]
+  sign_concordant_sig <- if (nrow(sig_primary) > 0) {
+    mean(sign(sig_primary$logFC.primary) == sign(sig_primary$logFC.other), na.rm = TRUE)
+  } else NA
+  c(
+    sprintf("%s primary-vs-%s subset concordance (%d shared genes after filterByExpr in both -- %s is a SUBSET of the primary donors, not independent data):",
+            label, tag, nrow(shared), tag),
+    sprintf("  Pearson r (logFC): %.4f", cor_pearson),
+    sprintf("  Spearman rho (logFC): %.4f", cor_spearman),
+    sprintf("  Sign-concordance (all shared genes): %.4f", sign_concordant),
+    sprintf("  Sign-concordance (primary FDR<0.05 genes, n=%d): %s",
+            nrow(sig_primary), ifelse(is.na(sign_concordant_sig), "NA (no primary FDR<0.05 genes)", sprintf("%.4f", sign_concordant_sig)))
+  )
+}
 
 summary_lines <- c(
-  sprintf("%s primary-vs-5prime-sensitivity concordance (%d shared genes after filterByExpr in both):", label, nrow(shared)),
-  sprintf("  Pearson r (logFC): %.4f", cor_pearson),
-  sprintf("  Spearman rho (logFC): %.4f", cor_spearman),
-  sprintf("  Sign-concordance (all shared genes): %.4f", sign_concordant),
-  sprintf("  Sign-concordance (primary FDR<0.05 genes, n=%d): %s",
-          nrow(sig_primary), ifelse(is.na(sign_concordant_sig), "NA (no primary FDR<0.05 genes)", sprintf("%.4f", sign_concordant_sig)))
+  concordance(primary$res, sens$res, "5prime_subset"),
+  "",
+  concordance(primary$res, exact$res, "Human_colon_16S_5prime_exact_matched")
 )
 writeLines(summary_lines, file.path(OUT_DIR, paste0(label, "_concordance_summary.txt")))
 cat(paste(summary_lines, collapse = "\n"), "\n")

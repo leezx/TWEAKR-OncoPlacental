@@ -1,5 +1,11 @@
-SmallInt primary-vs-5prime-sensitivity concordance (14978 shared genes after filterByExpr in both):
+SmallInt primary-vs-5prime_subset subset concordance (14978 shared genes after filterByExpr in both -- 5prime_subset is a SUBSET of the primary donors, not independent data):
   Pearson r (logFC): 1.0000
   Spearman rho (logFC): 1.0000
   Sign-concordance (all shared genes): 0.9852
   Sign-concordance (primary FDR<0.05 genes, n=3041): 1.0000
+
+SmallInt primary-vs-Human_colon_16S_5prime_exact_matched subset concordance (14980 shared genes after filterByExpr in both -- Human_colon_16S_5prime_exact_matched is a SUBSET of the primary donors, not independent data):
+  Pearson r (logFC): 0.9999
+  Spearman rho (logFC): 0.9999
+  Sign-concordance (all shared genes): 0.9644
+  Sign-concordance (primary FDR<0.05 genes, n=3042): 1.0000

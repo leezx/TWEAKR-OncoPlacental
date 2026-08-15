@@ -1,0 +1,9 @@
+region	candidate	fdr_cutoff	logfc_cutoff	n_genes	n_markers_detectable	n_markers_retained	markers_retained	all_markers_retained
+LargeInt	FDR<0.05 & logFC>1	0.05	1.0	1456	5	5	AFP;DLK1;PEG10;LGR5;IGF2	True
+LargeInt	FDR<0.05 & logFC>2	0.05	2.0	954	5	5	AFP;DLK1;PEG10;LGR5;IGF2	True
+LargeInt	FDR<0.01 & logFC>1	0.01	1.0	841	5	5	AFP;DLK1;PEG10;LGR5;IGF2	True
+LargeInt	FDR<0.01 & logFC>2	0.01	2.0	708	5	5	AFP;DLK1;PEG10;LGR5;IGF2	True
+SmallInt	FDR<0.05 & logFC>1	0.05	1.0	1456	4	4	AFP;PEG10;LGR5;IGF2	True
+SmallInt	FDR<0.05 & logFC>2	0.05	2.0	853	4	4	AFP;PEG10;LGR5;IGF2	True
+SmallInt	FDR<0.01 & logFC>1	0.01	1.0	700	4	3	AFP;PEG10;IGF2	False
+SmallInt	FDR<0.01 & logFC>2	0.01	2.0	553	4	3	AFP;PEG10;IGF2	False
