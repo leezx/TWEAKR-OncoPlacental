@@ -1,0 +1,6 @@
+{
+  "n_permutations": 10000,
+  "n_expression_bins": 20,
+  "rng_seed": 20260815,
+  "n_tests": 10
+}
