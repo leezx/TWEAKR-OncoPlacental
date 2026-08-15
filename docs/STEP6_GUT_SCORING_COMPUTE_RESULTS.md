@@ -182,10 +182,15 @@ transparently):
   (r = 0.15-0.18) and weakest for `F_Colon-specific` (r = 0.01-0.05)
   despite `F_Colon-specific` being the *primary* regional F axis per
   Step 4a's locked hierarchy — a real, not obviously expected, pattern.
-- **4 of the 5 F comparisons using the primary (27-gene) revCSC are NOT
-  robust** to leave-one-donor-or-study-out (only `D`/`P` pairs and the
-  `extended28` pairing with `F_SI-specific`/`F_Gut-specific` are robust).
-  For `revCSC_primary27_minus_CLU` ↔ `F_Colon-specific` specifically,
+- **4 of the 6 F-comparison pairs are NOT robust** to
+  leave-one-donor-or-study-out: all 3 pairings using the primary
+  (27-gene) revCSC (`F_Colon-specific`, `F_SI-specific`, `F_Gut-specific`)
+  **plus** the `extended28`↔`F_Colon-specific` pairing — not "primary
+  revCSC" alone, corrected from an earlier wrong count/attribution in
+  this doc. Only `extended28`'s pairings with `F_SI-specific` and
+  `F_Gut-specific` are robust among the F comparisons; all 4 D/P pairs
+  (both revCSC variants) are robust. For `revCSC_primary27_minus_CLU` ↔
+  `F_Colon-specific` specifically,
   excluding the single study `Terekhanova_2023_Nature` shifts the pooled
   Pearson r by -0.052 — the largest single-study effect of any pair,
   more than double the pair's own pooled r (0.012). This means the

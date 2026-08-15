@@ -33,6 +33,7 @@ sensitivity value = null-calibrated z-score
 """
 import os
 import time
+import hashlib
 import numpy as np
 import pandas as pd
 import scanpy as sc
@@ -71,6 +72,23 @@ COMPARISON_PAIRS = [
 
 N_BINS = 20
 SEED = 20260815
+
+
+def deterministic_panel_seed(seed, panel_name):
+    """BUG FIX (found by reviewer, PR #27 round 1): per-panel RNG seeds
+    were previously derived via `hash((seed, panel_name)) % (2**32)` --
+    Python's built-in `hash()` on str/tuple is process-randomized
+    (`PYTHONHASHSEED`) by default, so this was NOT actually reproducible
+    from the nominal fixed seed 20260815 across separate qsub process
+    invocations, even though each individual run's null draws were still
+    statistically valid (a real, legitimate random permutation test, just
+    not reproducible on demand as the design's "fixed seed, stated for
+    reproducibility" contract requires). Fixed with a deterministic hash
+    (sha256 over a plain string, unaffected by PYTHONHASHSEED) -- same
+    seed + same panel_name now always gives the same integer, in any
+    process, on any machine."""
+    h = hashlib.sha256(f"{seed}:{panel_name}".encode()).digest()
+    return int.from_bytes(h[:4], "big")
 
 
 def load_panel_ensembl_ids(panel):
@@ -276,7 +294,7 @@ def score_panel_fast(adata, panel_name, panel_ensembl_ids, bin_labels, obs_cut, 
         raise ValueError(f"{panel_name}: 0 testable genes present in atlas")
 
     bin_pools = {b: idx.tolist() for b, idx in bin_labels.groupby(bin_labels).groups.items()}
-    rng = np.random.default_rng(hash((seed, panel_name)) % (2**32))
+    rng = np.random.default_rng(deterministic_panel_seed(seed, panel_name))
 
     t0 = time.time()
     real_score = score_genes_fast(adata, real_genes, obs_cut)
@@ -318,7 +336,7 @@ def score_panel(adata, panel_name, panel_ensembl_ids, bin_labels, n_perm, seed=S
         raise ValueError(f"{panel_name}: 0 testable genes present in atlas")
 
     bin_pools = {b: idx.tolist() for b, idx in bin_labels.groupby(bin_labels).groups.items()}
-    rng = np.random.default_rng(hash((seed, panel_name)) % (2**32))
+    rng = np.random.default_rng(deterministic_panel_seed(seed, panel_name))
 
     t0 = time.time()
     sc.tl.score_genes(adata, gene_list=real_genes, score_name="_tmp_real", use_raw=False)
