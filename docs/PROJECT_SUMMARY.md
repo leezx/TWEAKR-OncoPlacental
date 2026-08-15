@@ -218,10 +218,22 @@ in both regions, with no FDR-robust positive signal on the overlap-based
 layers — a real discordance, reported as-is. `REVIVAL_STEM_CELL_GENES`
 shows no signal on any layer, either region.
 
+### External adult-expression audit — CLOSED (GTEx + Tabula Sapiens, PR #23/#24)
+
+Checked the frozen gut D/F/P against adult references beyond the Gut Cell
+Atlas's own internal contrast. Went through 5 review rounds total (3 design,
+2 compute) — see `Worklog.md`'s PR #23/#24 entry for the full list of real
+bugs caught (estimand mismatches, a false "reused contract" claim, a gene-ID
+mapping contract, a single-donor degenerate-permutation-test bug). Result
+(`docs/STEP4A_GUT_ADULT_VALIDATION_RESULTS.md`): `F_Colon-developmental`
+shows no statistically-supported adult-expression anomaly in the 2 epithelial
+cell types with real Tabula Sapiens donor replication; GTEx bulk shows the
+expected mid-distribution detection pattern with a real ~6.5–10% minority
+worth future scrutiny; D/P sets remain internally consistent and reproduce
+Step 5's known-good result exactly.
+
 ## What's next (not started)
 
-- **External adult-negative validation** (GTEx/HPA/Tabula Sapiens) of the
-  new gut-specific gene sets.
 - **Re-run the M11/revCSC CRC decomposition** (already designed and
   compute-ready, see Step 6 in `Worklog.md`) against the new Gut-specific
   D/F/P instead of the pan-organ one — this is what actually answers the
