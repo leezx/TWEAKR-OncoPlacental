@@ -1,16 +1,20 @@
 # Step 4a external adult-expression audit: results
 
 Executes the design approved in `docs/STEP4A_GUT_ADULT_VALIDATION.md`
-(PR #23, APPROVE after 3 real review rounds). qsub job 3620899 (stderr
-empty, clean run) produced the GTEx outputs (Check 2) and Check 3's
-outputs (both unaffected by the round-1 fix below); Check 1's outputs
-(`check1_tabula_sapiens_permutation_null.tsv`) come from a follow-up
-re-run, **job 3620901** (also stderr empty), after PR #24 round-1 caught
-a real single-donor degenerate-test bug in the original Check 1
-permutation family — see that section for the full fix. All outputs
-pulled back from Argos and md5-verified byte-exact, from whichever job
-actually produced them. Two different scientific questions throughout,
-per the design — never conflated:
+(PR #23, APPROVE after 3 real review rounds). Job provenance, per file
+(all stderr empty, all pulled back and md5-verified byte-exact from
+whichever job actually produced them — PR #24 went through 2 real
+review rounds that each required a real re-run, not just a doc edit):
+GTEx outputs (Check 2) — **job 3620899** (initial, unaffected by either
+fix below); Check 1's permutation output
+(`check1_tabula_sapiens_permutation_null.tsv`) — **job 3620901**
+(round-1 fix: a single-donor degenerate-test bug in the original
+3620899 run, see Check 1 below); Check 3's direct-flags output
+(`check3_tabula_sapiens_direct_flags.tsv`) — **job 3620903** (round-2
+fix: a mutually-exclusive gene-set label had silently dropped dual
+membership for `TRIM71`, see Check 3 below; the 54-flag headline number
+is unchanged by this fix). Two different scientific questions
+throughout, per the design — never conflated:
 
 - **F-arm** (`F_Colon-developmental`, `F_SI-developmental`): **adult-expression / adult-specificity audit**. A flag is a red flag worth manual scrutiny, not proof the gene is a false positive (the frozen definition never required near-zero adult expression). A non-flag is inconclusive, not proof of adult-negativity.
 - **D/P-arm** (`D_Colon-shared`, `D_SI-shared`, `P_Colon-specific` ∪ `P_SI-specific`): GTEx = **construction-consistency audit** (these genes already inherited whole-body GTEx+HPA adult-exclusion evidence from `P_developmental`'s own construction); Tabula Sapiens = genuinely independent held-out check.
@@ -21,13 +25,13 @@ per the design — never conflated:
 
 **F-arm adult-expression audit** — most fetal-up genes ARE detected (median bulk TPM≥1) in adult colon/SI, which is expected and not itself concerning (see reframing above); the informative number is *how high* within the adult tissue's own distribution:
 
-| Set | Tissue | Below floor | Detected | Median percentile (detected) | >90th percentile | >75th percentile |
+| Set | Tissue | Below floor | Detected | Median percentile (of detected) | >90th percentile (% of detected) | >75th percentile (% of detected) |
 |---|---|---|---|---|---|---|
 | `F_Colon-developmental` | Colon_Sigmoid | 343 (23.9%) | 1,092 (76.1%) | 52.8 | 143 (13.1%) | 302 (27.7%) |
 | `F_Colon-developmental` | Colon_Transverse | 332 (23.1%) | 1,103 (76.9%) | 47.5 | 93 (8.4%) | 233 (21.1%) |
 | `F_SI-developmental` | Small_Intestine_Terminal_Ileum | 283 (19.6%) | 1,158 (80.4%) | 53.4 | 128 (11.1%) | 305 (26.3%) |
 
-Honest reading: the typical detected fetal-up gene sits near the *middle* of the adult tissue's own expression distribution (median percentile ≈48–53), not at an extreme — consistent with "fetal significantly higher than adult" without adult expression being trivial. A real minority (~8–13% of testable genes, ~90–150 genes per set) sit above the 90th percentile of the adult tissue's own detected distribution — these are the genuine adult-expression-burden candidates worth flagging for manual review if a stricter "F-specific" tier is ever wanted later; full gene-level list in `gtex_F_adult_expression_audit.tsv`.
+Honest reading: the typical detected fetal-up gene sits near the *middle* of the adult tissue's own expression distribution (median percentile ≈48–53), not at an extreme — consistent with "fetal significantly higher than adult" without adult expression being trivial. A real minority — 8–13% of *detected* genes (the table's `>90th percentile` column) — sit above the 90th percentile of the adult tissue's own detected distribution; as a fraction of all *testable* genes (the more conservative denominator) that's ~6.5–10% (143/1,435=10.0% Colon_Sigmoid, 93/1,435=6.5% Colon_Transverse, 128/1,441=8.9% SI). These are the genuine adult-expression-burden candidates worth flagging for manual review if a stricter "F-specific" tier is ever wanted later; full gene-level list in `gtex_F_adult_expression_audit.tsv`.
 
 **D/P construction-consistency audit** — reused the exact frozen `P_developmental` whole-body criterion (`pct_cut=25, quorum=all_but_1`) unchanged: **92/92 tested gene-set-rows (84 unique genes) still pass**. This is the expected, reassuring result — nothing about `P_developmental`'s own construction or GTEx has changed since Step 4, so the frozen gut D/P membership (which is just a re-partition of the same fixed 84-gene `P_developmental_primary84` by the new gut-specific F sets) should still be internally consistent, and it is.
 
@@ -52,6 +56,8 @@ Honest reading: the typical detected fetal-up gene sits near the *middle* of the
 84 unique genes tested (`D_Colon-shared` 5, `D_SI-shared` 4, `P_Colon-specific` ∪ `P_SI-specific` union-deduplicated 83 — these are always exactly the same 84 genes as `P_developmental_primary84`, since `D_{region} ∪ P_{region}-specific = P_developmental` by construction for any region). 8,568 (organ, cell_type, gene) triples tested, **54 cross-donor-consistent flags** (`D_Colon-shared` 2, `D_SI-shared` 14, `P_union` 38) — concentrated in a small set of genes already known from Step 5 (`RPA4`, `ZNF257`, `ZNF850`, `ZNF695`, `ZNF114`, `GJB7`, `ERVFRD-1`, `TMEM191C`, `GCM1`, `HTRA4`, `LAIR2`, `KISS1`, `TSKS`, `ZBTB8B`).
 
 **Verified directly, not assumed**: this result numerically reproduces Step 5's original pan-organ whole-body validation exactly (same 8,568 triples, same 54 flags, same flagged genes — confirmed `P_developmental_primary84.txt` is literally identical to Step 5's `D_shared_FINAL ∪ P_specific_FINAL`, `diff` clean). This is expected, not a bug: Check 3 tests the same fixed 84-gene `P_developmental` set against the same Tabula Sapiens data with the same methodology as Step 5 — the gut-specific D/F/P re-anchoring only changes how these 84 genes are *labeled* (Colon-D vs Colon-P-specific vs SI-D vs SI-P-specific), not which 84 genes they are. A useful internal-consistency confirmation that this compute pipeline reproduces a known-good prior result correctly, though it adds no new information beyond what Step 5 already established for these particular 84 genes.
+
+**Bug found and fixed** (round-2 review): the output's `gene_set` label was originally computed as mutually-exclusive ("`D_Colon-shared` else `D_SI-shared` else `P_union`"), which silently drops dual membership for any gene in more than one set — `TRIM71` is the one gene shared by `D_Colon-shared` and `D_SI-shared` and was only ever labeled `D_Colon-shared`. Doesn't change the 54-flag headline (`TRIM71` isn't among them, reconfirmed after the fix), but a future region-specific summary sliced by that label alone would have silently misrepresented `TRIM71`'s membership. **Fixed**: added explicit, non-exclusive `in_D_Colon_shared`/`in_D_SI_shared` boolean columns (matching the pattern already used for `in_P_Colon_specific`/`in_P_SI_specific`); `TRIM71` now correctly shows both `True`. Re-run (job 3620903), pulled back and md5-verified.
 
 ## Bottom line
 

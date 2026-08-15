@@ -381,11 +381,24 @@ def run_check3(var_map):
 
     combined = pd.concat(reports, ignore_index=True)
     combined["var_name"] = combined["gene"].map(varname_of_symbol)
+    # BUG FIX (PR #24 round-2 review): a mutually-exclusive "D_Colon-shared
+    # else D_SI-shared else P_union" gene_set label silently drops
+    # membership for any gene in more than one set -- TRIM71 is in BOTH
+    # D_Colon-shared and D_SI-shared (the only gene the two share) and
+    # would only ever get the "D_Colon-shared" label. Doesn't change the
+    # 54-flag headline (TRIM71 isn't among them), but the label alone
+    # would silently misrepresent membership for any future
+    # region-specific summary. Fixed: explicit non-exclusive membership
+    # columns for all four original sets, same pattern already used for
+    # P_Colon_specific/P_SI_specific; gene_set kept only as a coarse,
+    # documented-as-non-exclusive label for quick grouping.
+    combined["in_D_Colon_shared"] = combined["var_name"].isin(d_colon)
+    combined["in_D_SI_shared"] = combined["var_name"].isin(d_si)
+    combined["in_P_Colon_specific"] = combined["var_name"].isin(p_colon)
+    combined["in_P_SI_specific"] = combined["var_name"].isin(p_si)
     combined["gene_set"] = combined["var_name"].apply(
         lambda vn: ("D_Colon-shared" if vn in d_colon else
                     "D_SI-shared" if vn in d_si else "P_union"))
-    combined["in_P_Colon_specific"] = combined["var_name"].isin(p_colon)
-    combined["in_P_SI_specific"] = combined["var_name"].isin(p_si)
     combined_path = f"{OUT_DIR}/check3_tabula_sapiens_direct_flags.tsv"
     combined.to_csv(combined_path, sep="\t", index=False)
     n_flagged = int(combined.cross_donor_consistent_hit.sum())
