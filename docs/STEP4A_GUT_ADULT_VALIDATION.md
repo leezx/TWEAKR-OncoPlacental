@@ -93,19 +93,42 @@ based on this result; it is reported honestly regardless of outcome.
 - `F_Colon-developmental` vs. `Colon_Sigmoid` + `Colon_Transverse` (both
   columns, reported separately — no combination rule needed for reporting).
 - `F_SI-developmental` vs. `Small_Intestine_Terminal_Ileum`.
-- `F_Gut-core`, `D_Colon-shared`, `D_SI-shared` vs. all 68 GTEx tissues
-  (whole-body-style, matching P-specific's original whole-body design —
-  these are cross-region/summary sets, not organ-scoped by their own
-  definition).
+- `D_Colon-shared`, `D_SI-shared` vs. all 68 GTEx tissues (whole-body-style).
+  **`F_Gut-core` excluded from this whole-body check** — see the estimand
+  note below.
 
 ### Check 3: Tabula Sapiens whole-body-style, all 5 organs (unchanged from Step 5's approved design)
 
-`D_Colon-shared` (5 genes), `D_SI-shared` (4 genes), `F_Gut-core` (712
-genes), `P_Colon-specific`, `P_SI-specific` — tested exactly as Step 5
-tested the pan-organ D-shared/P-specific: gene×cell-type×donor evidence
-across all 5 Tabula Sapiens organs combined (Liver, Skin, Spleen, Thymus,
-Large_Intestine), no lineage restriction (matches these sets' own
-whole-body/cross-region definition), same permutation null + BH-FDR.
+`D_Colon-shared` (5 genes), `D_SI-shared` (4 genes), `P_Colon-specific`,
+`P_SI-specific` — tested exactly as Step 5 tested the pan-organ
+D-shared/P-specific: gene×cell-type×donor evidence across all 5 Tabula
+Sapiens organs combined (Liver, Skin, Spleen, Thymus, Large_Intestine),
+no lineage restriction, same permutation null + BH-FDR. **`F_Gut-core`
+excluded here too — see below.**
+
+### A real estimand mismatch, caught before compute: `F_Gut-core` is not a whole-body-defined set
+
+Checked directly against `build_dfp_gut_gene_sets.py` (not assumed):
+`D_Colon-shared`/`D_SI-shared`/`P_Colon-specific`/`P_SI-specific` are all
+built by intersecting/subtracting against `P_developmental_primary84.txt`
+— a set whose own definition already required whole-body adult exclusion
+(Step 4's original `adult_excluded(whole_body)` criterion) — so testing
+them against all 68 GTEx tissues or all 5 Tabula Sapiens organs tests a
+claim that's actually part of their construction logic (an internal
+consistency check, still worth running, but correctly scoped).
+`F_Gut-core`, by contrast, is `F_Colon-developmental ∩ F_SI-developmental`
+— a plain intersection of the two organ-matched gut sets, never filtered
+through `P_developmental` or any whole-body criterion at all. Nothing in
+its definition claims "specific vs. liver/skin/spleen/etc." — only "fetal-up
+in both gut regions." Requiring it to clear a whole-body adult-exclusion
+bar would test an estimand `F_Gut-core` never made a claim about, and a
+failure there would not be a real finding about the gene set, just a
+mismatch between the check and the definition. **`F_Gut-core` is
+therefore excluded from both whole-body-style checks above**; if a
+GTEx/Tabula Sapiens check specific to it is wanted, the correctly-scoped
+version would be organ-matched (Colon + SI tissues only, mirroring how
+it was built), not whole-body — left out of this design pending review
+on whether that narrower check is worth adding.
 
 ## What this does NOT do
 
