@@ -1,0 +1,12 @@
+cell_type	observed_F_flag_rate	null_median	empirical_p_value	n_permutations	n_F_genes_matched	enrichment_vs_null_median	fdr_bh	nominal_p_lt_0.05	significant_fdr_0.05
+enterocyte of epithelium of large intestine	0.0	0.0	1.0	500	1344		1.0	False	False
+goblet cell	0.0	0.0	1.0	500	1344		1.0	False	False
+immature enterocyte	0.0	0.0	1.0	500	1344		1.0	False	False
+intestinal crypt stem cell	0.0	0.0	1.0	500	1344		1.0	False	False
+intestinal crypt stem cell of large intestine	0.0	0.0	1.0	500	1344		1.0	False	False
+intestinal enteroendocrine cell	0.0	0.0	1.0	500	1344		1.0	False	False
+intestinal tuft cell	0.0	0.0	1.0	500	1344		1.0	False	False
+large intestine goblet cell	0.0	0.0	1.0	500	1344		1.0	False	False
+mature enterocyte	0.0	0.0	1.0	500	1344		1.0	False	False
+paneth cell of epithelium of large intestine	0.3884	0.3869	0.4451	500	1344	1.0	1.0	False	False
+transit amplifying cell of large intestine	0.3624	0.3653	0.7166	500	1344	0.99	1.0	False	False
