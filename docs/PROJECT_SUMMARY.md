@@ -244,13 +244,31 @@ global P = `P_Gut-specific` (76 genes). Gene-overlap audit against
 revCSC done — negligible overlap (`CLU`/`ASS1` only), matching the
 original pan-organ finding. See `docs/STEP6_GUT_REANCHOR_DELTA.md`.
 
+### Step 6 primary scoring compute — design locked (PR #26), running
+
+`docs/STEP6_GUT_SCORING_COMPUTE_DESIGN.md` (2 review rounds) locks the
+concrete implementation for the compute above: 13 scored gene sets (8
+revCSC panels — 27-primary + 28-extended/sensitivity, each up to 4
+overlap-exclusion forms — + 5 D/F/P panels), null-calibrated empirical
+percentile as the primary common-scale metric (z-score secondary),
+`N_PERM=100` gated by a 100-vs-500 convergence check, and a concrete
+donor/study-aware validation (composite `donor_key=(study_id,patient_id)`
+— round 2 caught bare `patient_id` isn't documented globally-unique
+across this 36-study meta-atlas). Implementation
+(`scripts/06_crc_projection/crc_gut_scoring_*.py`) is running on Argos.
+A real feasibility problem was found and fixed mid-run: naive
+`scanpy.tl.score_genes` costs ~18h+ at 665,473-cell scale (it recomputes
+a full-genome average-expression binning every call); replaced with
+`score_genes_fast`, a numerically-validated faster reimplementation
+(byte-identical control-gene selection, `allclose` scores) cutting the
+estimated full run to ~1.75h.
+
 ## What's next (not started)
 
-- **The actual null-calibrated scoring/decomposition compute** across the
-  4 inventoried CRC datasets, projecting revCSC + the locked gut D/F/P
-  contract onto real CRC malignant cells — this is what actually answers
-  the project's original Q1 with the anatomically-correct reference. Real,
-  substantial engineering work, not yet started.
+- **Finish the primary scoring compute**: convergence-check completion
+  → full 665,473-cell run → donor/study-aware primary analysis → results
+  write-up → compute review → merge. This is what actually answers the
+  project's original Q1 with the anatomically-correct reference.
 - **Q2–Q6** of the original 6-question framework — entirely unscoped,
   comes after the above.
 
