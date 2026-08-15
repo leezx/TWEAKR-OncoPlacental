@@ -232,12 +232,25 @@ expected mid-distribution detection pattern with a real ~6.5–10% minority
 worth future scrutiny; D/P sets remain internally consistent and reproduce
 Step 5's known-good result exactly.
 
+### Step 6 gut re-anchor — Layer 2 substitution contract locked (PR #25)
+
+The already-approved Step 6 CRC decomposition design (`docs/STEP6_CRC_PROJECTION_DESIGN.md`,
+PR #16/#17) is being re-run against gut-specific D/F/P instead of
+pan-organ — the method itself is unchanged, only which gene sets are
+Layer 2. Went through 4 review rounds to lock: global D = `D_Gut-shared`
+(8 genes), global F = `F_Gut-specific` (2,192, coarse/secondary),
+regional F = `F_Colon-specific` (primary) + `F_SI-specific` (secondary),
+global P = `P_Gut-specific` (76 genes). Gene-overlap audit against
+revCSC done — negligible overlap (`CLU`/`ASS1` only), matching the
+original pan-organ finding. See `docs/STEP6_GUT_REANCHOR_DELTA.md`.
+
 ## What's next (not started)
 
-- **Re-run the M11/revCSC CRC decomposition** (already designed and
-  compute-ready, see Step 6 in `Worklog.md`) against the new Gut-specific
-  D/F/P instead of the pan-organ one — this is what actually answers the
-  project's original Q1 with the anatomically-correct reference.
+- **The actual null-calibrated scoring/decomposition compute** across the
+  4 inventoried CRC datasets, projecting revCSC + the locked gut D/F/P
+  contract onto real CRC malignant cells — this is what actually answers
+  the project's original Q1 with the anatomically-correct reference. Real,
+  substantial engineering work, not yet started.
 - **Q2–Q6** of the original 6-question framework — entirely unscoped,
   comes after the above.
 
