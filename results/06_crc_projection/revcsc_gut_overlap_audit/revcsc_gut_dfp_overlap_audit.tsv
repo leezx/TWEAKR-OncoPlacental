@@ -6,3 +6,4 @@ D_SI-shared	4	4	0	0		0
 P_Colon-specific	79	79	0	0		0	
 P_SI-specific	80	80	0	0		0	
 F_Gut-core	712	695	17	0		0	
+F_Gut-specific	2192	2127	65	2	ASS1;CLU	0	

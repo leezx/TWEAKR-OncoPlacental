@@ -14,7 +14,8 @@ approved. **What changes is only which D/F/P gene sets are Layer 2**:
 | Original (pan-organ, PR #16/#17 approved design) | Now (gut-specific, Step 4a) |
 |---|---|
 | `D_shared_FINAL.txt` (6 genes) | `D_Colon-shared.txt` (5) + `D_SI-shared.txt` (4) |
-| `F_specific_FINAL.txt` (2,504, global, **already `F ∧ ¬P`**) + 7 per-organ `F_developmental_<Organ>.txt` lineage modules (each further intersected with `F_specific_FINAL` to stay P-deduplicated) | `F_Colon-specific.txt` (1,451) + `F_SI-specific.txt` (1,452) — **not** the raw `F_Colon-developmental.txt`/`F_SI-developmental.txt` (1,456 each), which still contain the D-overlap genes; `F_Colon-specific`/`F_SI-specific` are the actual `F ∧ ¬P` sets and play the exact role `F_specific_FINAL` played originally |
+| `F_specific_FINAL.txt` (2,504, global, **already `F ∧ ¬P`**, coarse/secondary summary) | `F_Gut-specific.txt` (2,192, computed — see below) — the coarse/global summary role |
+| 7 per-organ `F_developmental_<Organ>.txt` lineage modules (each further intersected with `F_specific_FINAL` to stay P-deduplicated) — primary, region-resolved interpretation | `F_Colon-specific.txt` (1,451) + `F_SI-specific.txt` (1,452) — primary, region-resolved interpretation |
 | `P_specific_FINAL.txt` (78 genes) | `P_Colon-specific.txt` (79) + `P_SI-specific.txt` (80) |
 
 **Round-1 correction**: the first version of this doc/script wrongly
@@ -32,6 +33,19 @@ the overlap-audit script; re-run confirmed the numeric overlap
 conclusion is unaffected (neither `CLU` nor `ASS1`, the two genes found
 to overlap revCSC, is among the tiny `D_Colon-shared`/`D_SI-shared`
 sets that got removed).
+
+**Round-2 correction**: round-1's fix mapped only the lineage-module role
+of the original F arm, silently dropping the coarse/global
+`F_specific_FINAL` role the original design also explicitly scored
+("score both the global F-specific set ... and each of the 7 per-organ F
+modules separately ... with the global F score used only as a coarse,
+secondary summary"). Fixed: `F_Gut-specific` is now **computed by the
+script** (not hardcoded, not a pre-existing file) as `(F_Colon-developmental
+∪ F_SI-developmental) \ P_developmental` — the exact gut-scoped analogue
+of `F_specific_FINAL`'s own definition, just unioned across both regions
+first. `F_Gut-core` (Colon∩SI, **not** P-deduplicated) remains a separate
+tertiary concordance/core summary — it does not substitute for either the
+global or region-resolved F role.
 
 This is a strictly closer match to CRC's actual tissue of origin (gut
 epithelium) than the pan-organ set ever was — the entire reason for the
@@ -64,20 +78,24 @@ Step 4a adult-validation work.
 | `P_Colon-specific` | 79 | 79 | 0 |
 | `P_SI-specific` | 80 | 80 | 0 |
 | `F_Gut-core` | 712 | 695 | 0 (reported for completeness only — not a Layer 2 input, see note above the mapping table) |
+| `F_Gut-specific` (computed, coarse/global) | 2,192 | 2,127 | **2** (`CLU`, `ASS1`) |
 
 **Overlap is negligible**, matching the original pan-organ audit's
 finding (there, F-specific global shared 2/2,504 genes with revCSC;
-here, each region shares exactly 1). `CLU` (clusterin, a
-stress-response/chaperone gene) and `ASS1` (urea-cycle enzyme, also a
-known stress/metabolic-reprogramming marker) are both plausible generic
-"activated" markers, not developmentally organ-specific — same
-interpretation as the original audit's `ACTA1`/`ANKRD1` finding.
-**Same overlap-exclusion contract as the original design**: primary
-revCSC↔`F_Colon-specific` uses an overlap-excluded revCSC score (drop
-`CLU`, 26 genes) for that one comparison; revCSC↔`F_SI-specific` drops
-`ASS1` (26 genes); all other revCSC↔gut-D/F/P comparisons need no
-exclusion (zero overlap). Full (non-excluded) revCSC score retained as
-a sensitivity check throughout, per the original design.
+here, each region shares exactly 1, and the global `F_Gut-specific`
+union — as expected — shares exactly the union of both, `CLU` + `ASS1`).
+`CLU` (clusterin, a stress-response/chaperone gene) and `ASS1`
+(urea-cycle enzyme, also a known stress/metabolic-reprogramming marker)
+are both plausible generic "activated" markers, not developmentally
+organ-specific — same interpretation as the original audit's
+`ACTA1`/`ANKRD1` finding. **Same overlap-exclusion contract as the
+original design**: primary revCSC↔`F_Colon-specific` uses an
+overlap-excluded revCSC score (drop `CLU`, 26 genes) for that one
+comparison; revCSC↔`F_SI-specific` drops `ASS1` (26 genes);
+revCSC↔`F_Gut-specific` (the coarse/global comparison) drops both (25
+genes); all other revCSC↔gut-D/F/P comparisons need no exclusion (zero
+overlap). Full (non-excluded) revCSC score retained as a sensitivity
+check throughout, per the original design.
 
 ## What's next (not in this PR — a separate, larger compute step)
 

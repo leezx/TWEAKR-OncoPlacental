@@ -18,6 +18,21 @@ D-overlap genes and would have broken the D/F/P mutual-exclusivity the
 original Step 6 design explicitly required). `F_{region}-developmental`
 is intentionally NOT used here for that reason.
 
+**PR #25 round-2 correction**: the original Step 6 design scored BOTH a
+global `F_specific_FINAL` set (used as a coarse, secondary summary) AND
+the 7 per-organ lineage modules (the primary, region-resolved
+interpretation) -- round-1's fix mapped only the lineage-module role
+(to `F_Colon-specific`/`F_SI-specific`) and dropped the global-summary
+role entirely. Fixed: `F_Gut-specific` is now computed here (not
+hardcoded) as `(F_Colon-developmental ∪ F_SI-developmental) \\
+P_developmental` -- the exact gut-scoped analogue of
+`F_specific_FINAL`'s own definition (`F-specific = F-developmental AND
+NOT P-developmental`, just unioned across both gut regions first). This
+plays the coarse/global role; `F_Colon-specific`/`F_SI-specific` remain
+the primary, region-resolved interpretation; `F_Gut-core`
+(Colon∩SI, NOT P-deduplicated) remains a separate tertiary
+concordance/core summary, not a substitute for either.
+
 Uses the FINAL frozen, ortholog-audited revCSC sets (not re-derived from
 the raw CSC table): revCSC_symbols.primary27.txt (primary, Compara
 one2one-confirmed) and revCSC_symbols.extended28.txt (adds Ly6a, sensitivity
@@ -45,6 +60,8 @@ VAR_ID_MAP = f"{REPO}/results/04a_dfp_gut/gene_id_audit/var_id_map.tsv"
 OUT_DIR = sys.argv[1] if len(sys.argv) > 1 else f"{REPO}/results/06_crc_projection/revcsc_gut_overlap_audit"
 os.makedirs(OUT_DIR, exist_ok=True)
 
+DFP_DIR = f"{REPO}/results/04_dfp_signature/dfp_gene_sets"
+
 GUT_SETS = [
     "F_Colon-specific", "F_SI-specific",  # P-deduplicated Layer 2 F input (see docstring correction)
     "D_Colon-shared", "D_SI-shared",
@@ -53,6 +70,8 @@ GUT_SETS = [
                    # filter at all) -- reported for completeness only, not a Layer 2 scoring input
                    # (per docs/STEP4A_GUT_ADULT_VALIDATION.md's own estimand-mismatch finding for
                    # this same set)
+    # F_Gut-specific is computed in main() (not a pre-existing file) and appended below --
+    # the coarse/global P-deduplicated analogue of the original F_specific_FINAL.
 ]
 
 
@@ -95,9 +114,27 @@ def main():
     var_map = load_var_id_map()
     print(f"var_id_map: {len(var_map)} GCA var_names with a BioMart-resolved authoritative_symbol")
 
+    # F_Gut-specific = (F_Colon-developmental UNION F_SI-developmental) MINUS P_developmental --
+    # computed here, not hardcoded, the gut-scoped analogue of F_specific_FINAL
+    # (round-2 fix: the original delta dropped this coarse/global role entirely).
+    f_colon_dev = load_gene_set(f"{GUT_DFP_DIR}/F_Colon-developmental.txt")
+    f_si_dev = load_gene_set(f"{GUT_DFP_DIR}/F_SI-developmental.txt")
+    p_developmental = load_gene_set(f"{DFP_DIR}/P_developmental_primary84.txt")
+    f_gut_specific = (f_colon_dev | f_si_dev) - p_developmental
+    print(f"F_Gut-specific = (F_Colon-developmental[{len(f_colon_dev)}] u "
+          f"F_SI-developmental[{len(f_si_dev)}]) \\ P_developmental[{len(p_developmental)}] "
+          f"= {len(f_gut_specific)} genes")
+    f_gut_specific_path = f"{OUT_DIR}/F_Gut-specific.txt"
+    with open(f_gut_specific_path, "w") as fh:
+        fh.write("\n".join(sorted(f_gut_specific)) + "\n")
+    print(f"Wrote {f_gut_specific_path}")
+
+    gut_set_gene_lists = {name: load_gene_set(f"{GUT_DFP_DIR}/{name}.txt") for name in GUT_SETS}
+    gut_set_gene_lists["F_Gut-specific"] = f_gut_specific
+
     rows = []
-    for set_name in GUT_SETS:
-        var_names = load_gene_set(f"{GUT_DFP_DIR}/{set_name}.txt")
+    for set_name in GUT_SETS + ["F_Gut-specific"]:
+        var_names = gut_set_gene_lists[set_name]
         symbols, unresolved = to_symbols(var_names, var_map)
         overlap_primary = sorted(primary & symbols)
         overlap_extended_only = sorted((extended - primary) & symbols)  # Ly6a/LY6A only, if present
