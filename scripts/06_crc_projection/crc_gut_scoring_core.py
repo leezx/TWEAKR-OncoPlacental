@@ -79,10 +79,26 @@ def load_panel_ensembl_ids(panel):
         return [l.strip() for l in f if l.strip()]
 
 
-def load_atlas(n_cells_subset=None, seed=SEED):
+def load_atlas(n_cells_subset=None, seed=SEED, to_csc=False):
     """Loads the full atlas, optionally stratified-subsetting to
     n_cells_subset cells proportional by study_id (used by the
-    convergence check; full run passes n_cells_subset=None)."""
+    convergence check; full run passes n_cells_subset=None).
+
+    `to_csc=True` converts `adata.X` to CSC (compressed sparse column)
+    format after normalization -- profiled empirically (timing probe,
+    not guessed): `layers['counts']` (and the X rebuilt from it) is CSR
+    (row-oriented) by default, and repeated column-slicing (exactly what
+    score_genes_fast does every call: `x[:, gene_pos]`) on a CSR matrix
+    is a well-known scipy inefficiency, confirmed here at real scale --
+    14.4s/call on CSR vs. 0.9s/call on CSC for a 27-gene panel, 3.2s/call
+    on CSC for a 2,173-gene panel, at the full 665,473 cells. The
+    one-time conversion cost (~80s) is negligible against the ~1300+
+    calls a full 13-panel run makes. Only used for the full run's fast
+    path -- the convergence check's real scanpy.tl.score_genes calls are
+    left on the default CSR (matches how score_genes is normally used;
+    changing that path's format isn't necessary since its total runtime
+    was already acceptable and it must stay the untouched reference
+    implementation)."""
     print(f"Loading {ATLAS_H5AD} ...", flush=True)
     t0 = time.time()
     adata = ad.read_h5ad(ATLAS_H5AD)
@@ -111,6 +127,13 @@ def load_atlas(n_cells_subset=None, seed=SEED):
     adata.X = adata.layers["counts"].copy()
     sc.pp.normalize_total(adata, target_sum=1e4)
     sc.pp.log1p(adata)
+
+    if to_csc:
+        t0 = time.time()
+        adata.X = adata.X.tocsc()
+        print(f"Converted X to CSC (for fast repeated column-slicing) in "
+              f"{time.time()-t0:.1f}s", flush=True)
+
     return adata
 
 

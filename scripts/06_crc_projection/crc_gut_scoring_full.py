@@ -73,7 +73,7 @@ def main():
           f"{gated_panels if gated_panels else 'none'}", flush=True)
     default_panels = [p for p in ALL_PANELS if p not in gated_panels]
 
-    adata = load_atlas(n_cells_subset=None)
+    adata = load_atlas(n_cells_subset=None, to_csc=True)
 
     all_scores = None
     all_n_testable = {}
