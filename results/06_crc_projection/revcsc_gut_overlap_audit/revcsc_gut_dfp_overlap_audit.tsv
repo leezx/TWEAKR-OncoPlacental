@@ -1,0 +1,8 @@
+gut_set	n_var_names	n_resolved_symbols	n_unresolved	overlap_primary27_n	overlap_primary27_genes	overlap_extended_only_n	overlap_extended_only_genes
+F_Colon-developmental	1456	1412	44	1	CLU	0	
+F_SI-developmental	1456	1418	38	1	ASS1	0	
+D_Colon-shared	5	5	0	0		0	
+D_SI-shared	4	4	0	0		0	
+P_Colon-specific	79	79	0	0		0	
+P_SI-specific	80	80	0	0		0	
+F_Gut-core	712	695	17	0		0	
