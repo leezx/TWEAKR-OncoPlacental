@@ -1,10 +1,11 @@
 {
   "n_vars_total": 33538,
   "n_duplicate_gene_ids": 0,
-  "n_suffix_affected_var_names": 506,
-  "n_suffix_affected_base_symbols": 104,
+  "n_not_found_in_biomart": 8116,
+  "n_renamed_or_mismatched_by_authoritative_symbol": 3135,
   "p_developmental_primary84_path": "/home/zz950/TWEAKR-OncoPlacental/results/04_dfp_signature/dfp_gene_sets/P_developmental_primary84.txt",
   "n_p_developmental_genes": 84,
   "n_p_developmental_collisions": 0,
-  "p_developmental_collisions": []
+  "p_developmental_collisions": [],
+  "method": "authoritative BioMart external_gene_name comparison per gene_id, NOT a string-pattern (-\\d+ suffix) heuristic"
 }
