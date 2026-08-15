@@ -1,0 +1,6 @@
+gene_set	n_input	n_mapped_ensembl	n_mapped_symbol_fallback	n_present_in_reference	n_not_testable
+F_Colon-developmental	1456	1434	1	1435	21
+F_SI-developmental	1456	1440	1	1441	15
+D_Colon-shared	5	5	0	5	0
+D_SI-shared	4	4	0	4	0
+P_union	83	83	0	83	0
