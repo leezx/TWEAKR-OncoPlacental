@@ -1,0 +1,107 @@
+{
+  "n_donor_multi_10X": 0,
+  "n_donor_multi_batch": 22,
+  "n_donor_multi_fraction": 6,
+  "n_donor_multi_agegroup": 0,
+  "n_total_donors": 41,
+  "candidate_contrasts": {
+    "LargeInt": {
+      "~ Age_group (all fetal pooled vs Adult, First+Second only)": {
+        "n_donors": 22,
+        "n_age_group_levels": 3,
+        "n_10X_levels_among_these_donors": 2,
+        "age_x_10X_donor_crosstab": {
+          "3'": {
+            "Adult": 2,
+            "First trim": 9,
+            "Second trim": 2
+          },
+          "5'": {
+            "Adult": 5,
+            "First trim": 1,
+            "Second trim": 3
+          }
+        }
+      },
+      "~ Age_group (Second trim vs Adult only)": {
+        "n_donors": 12,
+        "n_age_group_levels": 2,
+        "n_10X_levels_among_these_donors": 2,
+        "age_x_10X_donor_crosstab": {
+          "3'": {
+            "Adult": 2,
+            "Second trim": 2
+          },
+          "5'": {
+            "Adult": 5,
+            "Second trim": 3
+          }
+        }
+      },
+      "~ Age_group (First trim vs Adult only)": {
+        "n_donors": 17,
+        "n_age_group_levels": 2,
+        "n_10X_levels_among_these_donors": 2,
+        "age_x_10X_donor_crosstab": {
+          "3'": {
+            "Adult": 2,
+            "First trim": 9
+          },
+          "5'": {
+            "Adult": 5,
+            "First trim": 1
+          }
+        }
+      }
+    },
+    "SmallInt": {
+      "~ Age_group (all fetal pooled vs Adult, First+Second only)": {
+        "n_donors": 21,
+        "n_age_group_levels": 3,
+        "n_10X_levels_among_these_donors": 2,
+        "age_x_10X_donor_crosstab": {
+          "3'": {
+            "Adult": 1,
+            "First trim": 9,
+            "Second trim": 2
+          },
+          "5'": {
+            "Adult": 4,
+            "First trim": 2,
+            "Second trim": 3
+          }
+        }
+      },
+      "~ Age_group (Second trim vs Adult only)": {
+        "n_donors": 10,
+        "n_age_group_levels": 2,
+        "n_10X_levels_among_these_donors": 2,
+        "age_x_10X_donor_crosstab": {
+          "3'": {
+            "Adult": 1,
+            "Second trim": 2
+          },
+          "5'": {
+            "Adult": 4,
+            "Second trim": 3
+          }
+        }
+      },
+      "~ Age_group (First trim vs Adult only)": {
+        "n_donors": 16,
+        "n_age_group_levels": 2,
+        "n_10X_levels_among_these_donors": 2,
+        "age_x_10X_donor_crosstab": {
+          "3'": {
+            "Adult": 1,
+            "First trim": 9
+          },
+          "5'": {
+            "Adult": 4,
+            "First trim": 2
+          }
+        }
+      }
+    }
+  }
+}

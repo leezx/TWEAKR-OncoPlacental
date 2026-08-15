@@ -1,0 +1,333 @@
+{
+  "path": "/home/zz950/DATA/scRNAseq/GutCellAtlas_Elmentaite2021/raw/epi_raw_counts02_v2.h5ad",
+  "shape": {
+    "n_obs": 142113,
+    "n_vars": 33538
+  },
+  "var_names_sample": [
+    "MIR1302-2HG",
+    "FAM138A",
+    "OR4F5",
+    "AL627309.1",
+    "AL627309.3",
+    "AL627309.2",
+    "AL627309.4",
+    "AL732372.1",
+    "OR4F29",
+    "AC114498.1"
+  ],
+  "looks_like_ensembl": false,
+  "var_columns": [
+    "gene_ids",
+    "feature_types"
+  ],
+  "obs_columns": [
+    "Sample name",
+    "Diagnosis",
+    "Age",
+    "sample name",
+    "Region code",
+    "Fraction",
+    "Gender",
+    "Region",
+    "10X",
+    "batch",
+    "n_genes",
+    "n_genes_by_counts",
+    "total_counts",
+    "total_counts_mt",
+    "pct_counts_mt",
+    "doublet_scores",
+    "predicted_doublets",
+    "category",
+    "Age_group",
+    "annotation",
+    "S_score",
+    "G2M_score",
+    "phase"
+  ],
+  "layers": [],
+  "has_raw": false,
+  "obsm_keys": [],
+  "uns_keys": [],
+  "X_integer_fraction": 1.0,
+  "low_cardinality_obs_columns": {
+    "Sample name": {
+      "n_unique": 41,
+      "top30": {
+        "A33 (414C)": 35327,
+        "A34 (417C)": 18829,
+        "F72": 9095,
+        "A32 (411C)": 6457,
+        "BRC2121": 6235,
+        "F73": 5846,
+        "BRC2043": 5561,
+        "BRC2133": 5560,
+        "A38 (432C)": 5159,
+        "A39 (440C)": 4904,
+        "A26 (386C)": 4412,
+        "BRC2258": 3529,
+        "BRC2134": 3252,
+        "BRC2119": 3165,
+        "F66": 2845,
+        "A30 (398B)": 2276,
+        "F78": 2124,
+        "T197": 1942,
+        "T110POS": 1875,
+        "BRC2046": 1729,
+        "T036POS": 1602,
+        "BRC2049": 1232,
+        "T057": 1099,
+        "T024": 978,
+        "T044": 943,
+        "T182": 740,
+        "T203": 738,
+        "T202": 717,
+        "BRC2026": 703,
+        "F67": 595
+      }
+    },
+    "Diagnosis": {
+      "n_unique": 4,
+      "top30": {
+        "Healthy adult": 77364,
+        "fetal": 52194,
+        "Pediatric healthy": 8157,
+        "Pediatric Crohn Disease": 4398
+      }
+    },
+    "Age": {
+      "n_unique": 29,
+      "top30": {
+        "20-25": 37603,
+        "65-70": 18829,
+        "16Wk": 9095,
+        "15Wk": 8691,
+        "25-30": 6457,
+        "9.2Wk": 6235,
+        "10.2Wk": 5561,
+        "9.9Wk": 5560,
+        "60-65": 5159,
+        "45-50": 4904,
+        "70-75": 4412,
+        "4": 4126,
+        "11.1Wk": 3529,
+        "10Wk": 3252,
+        "7.9Wk": 3165,
+        "9": 2682,
+        "17Wk": 2124,
+        "12": 1866,
+        "6.7Wk": 1729,
+        "6.9Wk": 1232,
+        "10": 1214,
+        "6": 1099,
+        "14": 738,
+        "8.4Wk": 703,
+        "12Wk": 595,
+        "7.4Wk": 582,
+        "13": 544,
+        "11": 286,
+        "6.1Wk": 141
+      }
+    },
+    "sample name": {
+      "n_unique": 120,
+      "top30": {
+        "nan": 27578,
+        "A33-CAE-0-SC-45N-1": 9218,
+        "A33-REC-0-SC-45N-1": 8516,
+        "A33-REC-0-SC-45P-1 ": 5767,
+        "A34-DUO-2-SC-45P-1": 4618,
+        "A32-ILE-1-SC-45N-1": 4468,
+        "A33-CAE-0-SC-45P-1": 4381,
+        "A33-APD-0-SC-45P-1": 4097,
+        "F72-FPIL-0-SC-1": 3269,
+        "F72-FTIL-0-SC-1": 3136,
+        "A34-REC-1-SC-45P-1": 2677,
+        "A34-ACL-1-SC-45P-1": 2533,
+        "F72-FMIL-0-SC-1": 2502,
+        "A26-SCL-0-SC-1": 2213,
+        "T036-TIL-SC-EPCAMP": 2051,
+        "T197-TIL-SC-EPCAMP": 1942,
+        "F73-FLI-0-SC-1": 1930,
+        "T110-TIL-SC-EPCAMP": 1875,
+        "A39-TCL--SC-1": 1845,
+        "A33-ACL-0-SC-45P-1": 1763,
+        "A39-JEJ--SC-1": 1742,
+        "A26-TCL-0-SC-1": 1592,
+        "A34-ILE-2-SC-45P-1": 1575,
+        "F73-FMIL-0-SC-1": 1539,
+        "F73-FPIL-0-SC-1": 1523,
+        "A33-SCL-0-SC-45N-1": 1312,
+        "A34-CAE-1-SC-45P-1": 1261,
+        "C74-FTIL-0-SC-1 G": 1159,
+        "C74-FMIL-0-SC-1 G": 1104,
+        "T057-TIL-SC-EPCAMP": 1099
+      }
+    },
+    "Region code": {
+      "n_unique": 18,
+      "top30": {
+        "FPIL": 19497,
+        "REC": 17348,
+        "FTIL": 17277,
+        "CAE": 16719,
+        "TIL": 12555,
+        "FLI": 8408,
+        "SCL": 7541,
+        "FMIL": 7002,
+        "TCL": 6535,
+        "DUO": 6178,
+        "ACL": 6097,
+        "ILE": 5386,
+        "APD": 4689,
+        "JEJ": 2826,
+        "ILE2": 1834,
+        "DCL": 1720,
+        "ILE1": 468,
+        "MLN": 33
+      }
+    },
+    "Fraction": {
+      "n_unique": 5,
+      "top30": {
+        "SC-EPCAMP": 39254,
+        "SC": 37038,
+        "SC-45P": 34686,
+        "SC-45N": 31100,
+        "SC-EPCAMN": 35
+      }
+    },
+    "Gender": {
+      "n_unique": 2,
+      "top30": {
+        "M": 101421,
+        "F": 40692
+      }
+    },
+    "Region": {
+      "n_unique": 5,
+      "top30": {
+        "SmallInt": 73023,
+        "LargeInt": 47020,
+        "REC": 17348,
+        "APD": 4689,
+        "lymph node": 33
+      }
+    },
+    "10X": {
+      "n_unique": 2,
+      "top30": {
+        "3'": 81176,
+        "5'": 60937
+      }
+    },
+    "batch": {
+      "n_unique": 149,
+      "top30": {
+        "WTDAtest7844018": 9218,
+        "WTDAtest7844016": 8516,
+        "WTDAtest7844015": 5767,
+        "Human_colon_16S8001879": 4618,
+        "Human_colon_16S8000513": 4468,
+        "WTDAtest7844017": 4381,
+        "WTDAtest7844013": 4097,
+        "4918STDY7717783": 3286,
+        "Human_colon_16S8159182": 3269,
+        "Human_colon_16S8159184": 3136,
+        "4918STDY7421298": 2932,
+        "Human_colon_16S8001873": 2677,
+        "4918STDY7693758": 2635,
+        "Human_colon_16S8001865": 2533,
+        "Human_colon_16S8159183": 2502,
+        "4918STDY7421297": 2399,
+        "Human_colon_16S8117831": 2213,
+        "4918STDY7693757": 2077,
+        "4918STDY7962470": 1942,
+        "Human_colon_16S8159190": 1930,
+        "4918STDY7702680": 1875,
+        "Human_colon_16S8123917": 1845,
+        "WTDAtest7844024": 1763,
+        "Human_colon_16S8123911": 1742,
+        "4918STDY7714150": 1602,
+        "4918STDY7693760": 1593,
+        "Human_colon_16S8117830": 1592,
+        "Human_colon_16S8001885": 1575,
+        "Human_colon_16S8159188": 1539,
+        "Human_colon_16S8159187": 1523
+      }
+    },
+    "category": {
+      "n_unique": 2,
+      "top30": {
+        "Epithelial": 142104,
+        "Mesenchymal": 9
+      }
+    },
+    "Age_group": {
+      "n_unique": 7,
+      "top30": {
+        "Adult": 77341,
+        "First trim": 31689,
+        "Second trim": 20495,
+        "Pediatric": 8157,
+        "Pediatric_IBD": 4398,
+        "Adult_MLN": 23,
+        "Second trim_MLN": 10
+      }
+    },
+    "annotation": {
+      "n_unique": 25,
+      "top30": {
+        "TA": 50024,
+        "Enterocyte": 37460,
+        "Colonocyte": 14133,
+        "Proximal progenitor": 9655,
+        "Stem cells": 8077,
+        "Goblet cell": 5330,
+        "BEST4+ epithelial": 4555,
+        "Distal progenitor": 3077,
+        "Paneth": 3064,
+        "BEST2+ Goblet cell": 3025,
+        "Tuft": 737,
+        "EECs": 485,
+        "Microfold cell": 457,
+        "EC cells (TAC1+)": 422,
+        "Progenitor (NEUROG3+)": 336,
+        "M/X cells (MLN/GHRL+)": 297,
+        "CLDN10+ cells": 260,
+        "I cells (CCK+)": 227,
+        "D cells (SST+)": 143,
+        "L cells (PYY+)": 118,
+        "K cells (GIP+)": 83,
+        "EC cells (NPW+)": 59,
+        "N cells (NTS+)": 44,
+        "\u03b2 cells (INS+)": 31,
+        "Germ": 14
+      }
+    },
+    "phase": {
+      "n_unique": 3,
+      "top30": {
+        "G1": 81773,
+        "S": 37786,
+        "G2M": 22554
+      }
+    }
+  },
+  "age_related_columns": [
+    "Age",
+    "Age_group"
+  ],
+  "chemistry_related_columns": [
+    "10X"
+  ],
+  "region_related_columns": [
+    "Region code",
+    "Region"
+  ],
+  "donor_related_columns": [
+    "Sample name",
+    "sample name"
+  ]
+}
