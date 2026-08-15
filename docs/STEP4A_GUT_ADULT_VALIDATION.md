@@ -90,16 +90,38 @@ new lookup:**
 
 1. Every GCA `var_name` → `gene_id` (Ensembl) → `authoritative_symbol`
    (BioMart), exactly as already computed and verified in PR #21.
-2. **GTEx**: match primarily by Ensembl ID (GTEx's own `Name` column,
-   version-stripped); fall back to `authoritative_symbol` string match
-   only if Ensembl match fails.
-3. **Tabula Sapiens**: match by `authoritative_symbol` (not the raw GCA
-   `var_name`) against TS's own `var_names` — avoids exactly the
-   `IGF2-1`-vs-`IGF2` mismatch class.
-4. Any GCA gene whose `authoritative_symbol` is unresolved (BioMart
-   `found_in_biomart=False`) or whose mapped ID/symbol is absent from the
-   external reference is marked **`NOT_TESTABLE`** — reported as its own
-   explicit category, **never** silently folded into "adult not detected."
+2. **`NOT_TESTABLE` is dataset-specific, not one blanket rule** (round-2
+   fix — the original single rule contradicted GTEx's own Ensembl-primary
+   matching: `found_in_biomart=False` only means this BioMart snapshot
+   couldn't resolve an authoritative symbol, verified directly in PR #21's
+   own audit code comment ("not necessarily mis-annotated, just
+   unresolved") — it says nothing about whether the gene's Ensembl
+   `gene_id` itself is usable, and the real data has 8,116/33,538 GCA
+   features with no BioMart symbol but **zero** duplicate `gene_id`s.
+   - **GTEx**: `TESTABLE` if the GCA gene's Ensembl `gene_id` is found in
+     GTEx's version-stripped Ensembl IDs (no BioMart symbol resolution
+     required for this path). Only if the Ensembl lookup fails does it
+     fall back to `authoritative_symbol` string match; `NOT_TESTABLE`
+     only if **both** the Ensembl and the symbol-fallback lookups fail.
+   - **Tabula Sapiens**: symbol-only alignment (no Ensembl IDs in this
+     dataset per Step 5's inventory) — `authoritative_symbol` unresolved
+     or absent from TS's `var_names` is `NOT_TESTABLE`, unchanged from
+     the original rule.
+3. **GTEx's approved reference distribution is preserved exactly, not
+   redefined** (round-2 fix): `adult_excluded_percentile_audit.py`'s
+   existing, already-calibrated percentile universe is built by
+   `gtex.groupby("symbol")[tissue_cols].max()` — **symbol-collapsed**,
+   verified directly in that script, not assumed. Ensembl ID is used
+   **only** to resolve GCA gene → correct GTEx `symbol` identity (fixing
+   the `IGF2-1`-vs-`IGF2` mismatch class), then that resolved symbol
+   looks up a row in the existing, unmodified symbol-collapsed matrix —
+   never a new Ensembl-level percentile universe, which would be a
+   different, uncalibrated statistical object. Ensembl-lookup failure
+   falls back to matching `authoritative_symbol` directly against the
+   same symbol-collapsed matrix.
+4. Any GCA gene marked `NOT_TESTABLE` by the rules above is reported as
+   its own explicit category, **never** silently folded into "adult not
+   detected."
 5. Every check's output reports `n_input` / `n_mapped` / `n_present_in_reference`
    / `n_not_testable` alongside the results, so the denominator behind
    every summary statistic is auditable.
@@ -120,18 +142,36 @@ red flag, not a pass/fail on the gene's validity). Restricted to
 labeled `single-donor evidence` otherwise, same as Step 5's Thymus/Liver
 precedent).
 
-**Optional permutation layer, only if run, with its estimand corrected**:
-the original `background_detection_rate.py`'s detectability-matched null
-was computed from *all* eligible adult cell types (whole-organ), which
-would silently pull the matching covariate back to a whole-organ
-estimand the moment the primary hypothesis is epithelial-restricted. If a
-null is run here, its detectability covariate must be computed **only
-from the eligible epithelial donor×cell-type pseudobulks**, not the
-original whole-organ pool. Its p-value supports "adult expression is
-anomalously high in this cell type relative to matched genes" (evidence
-against specificity) — a non-significant result is **inconclusive**, not
-evidence of adult-negativity (same asymmetry as above, restated here
-because this is where it's easiest to misread a null result as a pass).
+**Permutation layer: pre-registered to always run** (round-2 fix — leaving
+it "optional, decide after seeing the direct audit" is a real
+researcher-degree-of-freedom loophole for a design that otherwise insists
+on locking decisions before compute; decided now, not after). Runs as a
+secondary inferential audit alongside the primary direct-flag evidence
+above, with its estimand corrected: the original
+`background_detection_rate.py`'s detectability-matched null was computed
+from *all* eligible adult cell types (whole-organ), which would silently
+pull the matching covariate back to a whole-organ estimand the moment the
+primary hypothesis is epithelial-restricted — here, the detectability
+covariate is computed **only from the eligible epithelial donor×cell-type
+pseudobulks**.
+
+**Hypothesis unit and FDR family, corrected** (round-2 fix): verified
+directly against `background_detection_rate.py` — the original
+permutation test computes **one empirical p-value per (organ, cell_type)**
+for the F gene panel's aggregate cross-donor-consistent detection rate,
+not one per gene×cell-type. The BH-FDR family here is therefore **all
+eligible epithelial cell types tested for the single `F_Colon-developmental`
+panel** — a small family (bounded by the number of epithelial cell types
+in one Tabula Sapiens organ, not by gene count). Permutation count is
+pre-registered at 500 (matching the approved Step 5 precedent, empirical-p
+floor ≈0.002); if this family turns out too large for that resolution to
+be informative, the count is raised before running, not decided
+post-hoc from a first look at the results. Its p-value supports "adult
+expression is anomalously high in this cell type relative to matched
+genes" (evidence against specificity) — a non-significant result is
+**inconclusive**, not evidence of adult-negativity (same asymmetry as
+above, restated here because this is where it's easiest to misread a
+null result as a pass).
 
 ### Check 2: GTEx bulk, adult-expression audit for F / construction-consistency audit for D+P
 
@@ -187,17 +227,15 @@ for `P_Colon-specific`/`P_SI-specific` membership; summaries can be
 sliced by membership afterward but are explicitly labeled as
 overlapping, not independent, evidence.
 
-### Hypothesis family and FDR scope (explicit, was undefined in round-1)
+### Hypothesis family and FDR scope (corrected in round 2 — see Check 1's permutation subsection for the full fix)
 
-If any permutation-based inferential test is run (Check 1 only, and only
-if the optional null layer above is included), its BH-FDR family is
-scoped to **exactly the organ-matched epithelial `F_Colon-developmental`
-tests**, not pooled with Check 2/3's direct-evidence audits (which report
-raw flags/percentiles, not p-values, and so have no FDR family of their
-own). 500 permutations floor the smallest reportable empirical p at
-~0.002 — if the eventual epithelial cell-type × gene hypothesis count
-grows large enough that this resolution becomes limiting, permutation
-count will be increased before finalizing, not left under-resolved.
+The only inferential (p-value-bearing) test in this design is Check 1's
+pre-registered permutation layer. Its BH-FDR family is **all eligible
+epithelial cell types tested for the single `F_Colon-developmental`
+panel** (one empirical p per organ×cell-type, per the corrected
+hypothesis unit above) — not pooled with Check 2/3, which report raw
+flags/percentiles with no p-values and therefore no FDR family of their
+own.
 
 ### F-specific summary (derived, no extra compute)
 
