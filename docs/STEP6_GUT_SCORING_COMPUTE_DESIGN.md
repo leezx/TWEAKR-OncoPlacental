@@ -166,24 +166,40 @@ correlation regardless of what covariates are reported alongside it.
 Corrected to three concrete, executable outputs, computed for every
 revCSC↔D/F/P comparison in the 13-panel inventory:
 
-1. **Per-patient correlation table**: Pearson + Spearman computed
-   separately within each `patient_id`, reported with that patient's
-   `n_cells`. Patients whose correlation is mathematically non-estimable
+**Round 2 correction — donor unit must be composite, not bare
+`patient_id`**: the atlas is a 36-study meta-atlas; bare `patient_id`
+values (e.g. `P1`, `Patient01`) are set by each constituent study
+independently and are not documented as globally unique across studies.
+Using bare `patient_id` as the donor unit risks silently merging
+unrelated patients from different studies who happen to share an ID
+string into one "patient" — which would corrupt exactly the per-patient
+and leave-one-patient-out safeguards this design adds. Fixed by defining
+the donor unit as the composite `donor_key = (study_id, patient_id)`
+everywhere below (per-patient table, equal-donor study summaries, and
+leave-one-donor-out sensitivity) — this is safe regardless of whether
+`patient_id` happens to already be globally unique, so no separate
+uniqueness audit is needed as a prerequisite.
+
+1. **Per-donor correlation table**: Pearson + Spearman computed
+   separately within each `donor_key` (`study_id`, `patient_id`
+   composite), reported with that donor's `n_cells`. Donors whose
+   correlation is mathematically non-estimable
    (e.g. `n_cells` too small, or zero variance in either variable within
-   that patient) are reported as `NOT_ESTIMABLE` with the reason stated
+   that donor) are reported as `NOT_ESTIMABLE` with the reason stated
    — never silently dropped, and never filtered based on the resulting
    correlation value.
-2. **Equal-patient-weighted study summaries**: within each `study_id`,
+2. **Equal-donor-weighted study summaries**: within each `study_id`,
    the study-level correlation is the unweighted mean of its
-   per-patient correlations (from #1), not a cell-pooled correlation
-   that implicitly weights each patient by their cell count. The
+   per-donor correlations (from #1) — since `donor_key` is
+   study-scoped, this is unambiguous — not a cell-pooled correlation
+   that implicitly weights each donor by their cell count. The
    cell-pooled within-study correlation is also reported alongside it,
    explicitly labeled as cell-weighted, so the two are never conflated.
 3. **Leave-one-out pooled sensitivity**: the full-cohort pooled
-   Pearson/Spearman recomputed once per left-out `patient_id` and once
-   per left-out `study_id` (leave-one-patient-out, leave-one-study-out),
+   Pearson/Spearman recomputed once per left-out `donor_key` and once
+   per left-out `study_id` (leave-one-donor-out, leave-one-study-out),
    reporting the resulting correlation's range and which single
-   patient/study (if any) shifts it most. A result is only reported as
+   donor/study (if any) shifts it most. A result is only reported as
    "robust to no single donor/study" if this range stays qualitatively
    stable (same sign, no threshold crossing against the pooled value);
    if it does not, that instability is reported as the finding, not
@@ -230,3 +246,16 @@ prior step.
   weighted study summaries, leave-one-patient/study-out sensitivity) plus
   an `N_PERM=100` vs. `N_PERM=500` convergence check on a fixed
   representative subset.
+- **Round 2 (REQUEST_CHANGES, one blocker)**: reviewer re-cloned the
+  repo at head `0718765` and confirmed all four round-1 fixes present.
+  One remaining real issue: the round-1 donor-aware validation used bare
+  `patient_id`, which is not documented as globally unique across this
+  36-study meta-atlas — a real cross-study ID-collision risk that could
+  silently merge unrelated patients into one "donor," corrupting the
+  very safeguard being added. Fixed by defining the donor unit as the
+  composite `donor_key = (study_id, patient_id)` throughout (per-donor
+  table, equal-donor study summaries, leave-one-donor-out sensitivity) —
+  safe regardless of whether `patient_id` happens to already be globally
+  unique, so no separate uniqueness audit is required. `N_PERM=100`, the
+  13-panel inventory, and empirical percentile as the primary metric
+  were all re-confirmed with no further changes requested.
