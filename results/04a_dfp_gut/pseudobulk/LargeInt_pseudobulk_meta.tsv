@@ -1,0 +1,13 @@
+sample	Age_group	tenX	batch	n_cells	donor	source_family
+A26 (386C)	Adult	5'	Human_colon_16S8117831	4397	A26 (386C)	Human_colon_16S
+A30 (398B)	Adult	3'	WTDAtest7770719	2276	A30 (398B)	WTDAtest
+A32 (411C)	Adult	5'	Human_colon_16S8001903	1410	A32 (411C)	Human_colon_16S
+A33 (414C)	Adult	3'	WTDAtest7844018	16828	A33 (414C)	WTDAtest
+A34 (417C)	Adult	5'	Human_colon_16S8001865	7097	A34 (417C)	Human_colon_16S
+A38 (432C)	Adult	5'	Human_colon_16S8002630	3883	A38 (432C)	Human_colon_16S
+A39 (440C)	Adult	5'	Human_colon_16S8123917	2721	A39 (440C)	Human_colon_16S
+F66	Second trim	3'	Human_colon_16S7985392	582	F66	Human_colon_16S
+F67	Second trim	3'	Human_colon_16S7985395	192	F67	Human_colon_16S
+F72	Second trim	5'	Human_colon_16S8159185	181	F72	Human_colon_16S
+F73	Second trim	5'	Human_colon_16S8159190	1930	F73	Human_colon_16S
+F78	Second trim	5'	FCA_gut8015060	596	F78	FCA_gut
