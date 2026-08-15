@@ -68,11 +68,33 @@ n_dup_base_symbols = var_id_map.loc[var_id_map["base_symbol_is_duplicated"], "ba
 print(f"\nDuplicate gene_ids (would indicate a real feature-collapse bug): {n_dup_gene_id}", flush=True)
 print(f"var_names affected by duplicate-symbol suffixing: {n_dup_base} ({n_dup_base_symbols} base symbols)", flush=True)
 
+# --- P_developmental collision check (real code, not just an ad-hoc
+# one-off command described in prose -- PR #21 round-2 review correctly
+# caught that this claim wasn't backed by any code in this script) ---
+P_DEV_PATH = "/home/zz950/TWEAKR-OncoPlacental/results/04_dfp_signature/dfp_gene_sets/P_developmental_primary84.txt"
+affected_base_symbols = set(var_id_map.loc[var_id_map["base_symbol_is_duplicated"], "base_symbol"].unique())
+with open(P_DEV_PATH) as f:
+    p_dev_genes = {l.strip() for l in f if l.strip()}
+p_dev_collisions = sorted(p_dev_genes & affected_base_symbols)
+
+print(f"\nP_developmental_primary84.txt genes: {len(p_dev_genes)}", flush=True)
+print(f"P_developmental genes colliding with a duplicate-symbol base: {len(p_dev_collisions)} {p_dev_collisions}", flush=True)
+
+with open(f"{OUT_DIR}/p_developmental_collision_check.tsv", "w") as f:
+    f.write("p_developmental_gene\tcollides_with_duplicate_symbol_base\n")
+    for g in sorted(p_dev_genes):
+        f.write(f"{g}\t{g in affected_base_symbols}\n")
+print(f"Wrote {OUT_DIR}/p_developmental_collision_check.tsv", flush=True)
+
 summary = {
     "n_vars_total": int(len(vn)),
     "n_duplicate_gene_ids": int(n_dup_gene_id),
     "n_suffix_affected_var_names": int(n_dup_base),
     "n_suffix_affected_base_symbols": int(n_dup_base_symbols),
+    "p_developmental_primary84_path": P_DEV_PATH,
+    "n_p_developmental_genes": int(len(p_dev_genes)),
+    "n_p_developmental_collisions": int(len(p_dev_collisions)),
+    "p_developmental_collisions": p_dev_collisions,
 }
 with open(f"{OUT_DIR}/gene_id_audit_summary.json", "w") as f:
     json.dump(summary, f, indent=2)
