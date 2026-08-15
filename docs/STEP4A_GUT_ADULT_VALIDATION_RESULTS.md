@@ -2,9 +2,15 @@
 
 Executes the design approved in `docs/STEP4A_GUT_ADULT_VALIDATION.md`
 (PR #23, APPROVE after 3 real review rounds). qsub job 3620899 (stderr
-empty, clean run); all outputs pulled back from Argos and md5-verified
-byte-exact. Two different scientific questions throughout, per the
-design — never conflated:
+empty, clean run) produced the GTEx outputs (Check 2) and Check 3's
+outputs (both unaffected by the round-1 fix below); Check 1's outputs
+(`check1_tabula_sapiens_permutation_null.tsv`) come from a follow-up
+re-run, **job 3620901** (also stderr empty), after PR #24 round-1 caught
+a real single-donor degenerate-test bug in the original Check 1
+permutation family — see that section for the full fix. All outputs
+pulled back from Argos and md5-verified byte-exact, from whichever job
+actually produced them. Two different scientific questions throughout,
+per the design — never conflated:
 
 - **F-arm** (`F_Colon-developmental`, `F_SI-developmental`): **adult-expression / adult-specificity audit**. A flag is a red flag worth manual scrutiny, not proof the gene is a false positive (the frozen definition never required near-zero adult expression). A non-flag is inconclusive, not proof of adult-negativity.
 - **D/P-arm** (`D_Colon-shared`, `D_SI-shared`, `P_Colon-specific` ∪ `P_SI-specific`): GTEx = **construction-consistency audit** (these genes already inherited whole-body GTEx+HPA adult-exclusion evidence from `P_developmental`'s own construction); Tabula Sapiens = genuinely independent held-out check.
