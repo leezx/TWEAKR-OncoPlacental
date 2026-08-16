@@ -48,8 +48,19 @@ correlations are weak — revCSC-high status is not meaningfully
 concentrating F-axis evidence. P-supported biology (P_only + F+P + D+P +
 D+F+P = 8.0% of the full atlas) shows the opposite, small effect: modestly
 *enriched* within the revCSC-high cohort (8.7% of that cohort vs. 8.0%
-full-atlas baseline) — a small, real signal consistent with the primary
-analysis's weak-but-positive revCSC↔P correlation direction.
+full-atlas baseline). **Round-1 review correction (real factual error,
+confirmed and fixed)**: the first draft called this "consistent with the
+primary analysis's weak-but-positive revCSC↔P correlation direction" —
+checked directly against PR #27's committed
+`primary_analysis_overview.tsv`, both revCSC↔P pooled correlations are
+in fact **negative** (`revCSC_primary27_full`↔`P_Gut-specific` Pearson
+r=−0.025; `revCSC_extended28_full`↔`P_Gut-specific` r=−0.030), not
+positive. The corrected, honest statement: this small thresholded-cohort
+enrichment and PR #27's weak, slightly *negative* continuous correlation
+are not logically inconsistent (one is a discrete top-decile-cohort
+comparison, the other a continuous pooled correlation across all cells),
+but they should not be described as sharing the same direction — they do
+not.
 
 **Argmax distortion, quantified again on a different population (same
 real pattern PR #29 first showed)**: the descriptive-only coarse argmax
@@ -118,18 +129,27 @@ is substantially a mechanical consequence of the operational cohort being
 constructed to be exactly 10% of all cells by design — *any* biological
 category with a roughly-uniform-or-worse-than-uniform relationship to
 revCSC rank will show most of its members "outside" a fixed top-10% cut,
-independent of whether real revCSC evidence for those cells is high or
-low. Table 4b, which uses revCSC's own natural (and much larger, ~51%
-of the atlas) evidence threshold, shows the biologically correct picture:
-P-supported cells are **not** concentrated among revCSC-evidence cells,
-but they are not concentrated *away* from them either — an essentially
-even split. **This same near-even-split pattern holds for every
-axis-supported category, including `none`** (133,416 revCSC-supported vs.
-124,681 revCSC-not-supported) — reinforcing, on the full 665,473-cell
-population this time, the primary analysis's core finding that
-revCSC-evidence status is only weakly related to gut-developmental
-axis-supported status. Table 4a's cohort-membership framing and Table
-4b's evidence-based framing are both real, correctly-labeled, and
+regardless of whether those cells meet or fail the pre-specified
+revCSC-support threshold. **Round-1 review correction**: the first draft
+described Table 4b as revCSC's "natural" threshold and its picture as
+"biologically correct" — language that regresses back to exactly the
+absence-of-evidence overclaim PR #30's own review already removed
+(percentile<90 means "does not meet the pre-specified revCSC-support
+threshold," a threshold call, not literal absence of evidence; the
+threshold's atlas-wide selection rate, ~50.8%, is an empirical fact about
+this specific pre-specified cutoff, not a "natural" property of revCSC).
+Restated correctly: Table 4b, using the same pre-specified
+percentile≥90 matched-null-support threshold already used for D/F/P,
+shows the threshold-aligned matched-null-support picture — P-supported
+cells split almost evenly between revCSC-supported (49.5%) and
+revCSC-not-supported (50.5%) at that threshold. **This same near-even
+split holds for every axis-supported category, including `none`**
+(133,416 revCSC-supported vs. 124,681 revCSC-not-supported) —
+reinforcing, on the full 665,473-cell population this time, the primary
+analysis's core finding that revCSC-support status (at percentile≥90) is
+only weakly related to gut-developmental axis-supported status. Table
+4a's operational-cohort-membership framing and Table 4b's
+matched-null-support framing are both real, correctly-labeled, and
 answer different questions — reporting only one would have been
 misleading in opposite directions.
 
@@ -156,9 +176,11 @@ population-wide.
 **What this does NOT show**: formal statistical separability of the F×P
 quadrants (see §3's explicit boundary); a P-high population that revCSC
 "does not capture" in any absolute sense (Table 4a's 89%-outside number
-is a real fact about the fixed-size operational cohort, not evidence that
-revCSC evidence is absent for those cells — Table 4b shows it usually
-isn't); anything about the mechanism behind the F/P split (gene-set size,
+is a real fact about the fixed-size operational cohort, not a claim about
+those cells' revCSC-support status — Table 4b shows most of them are, in
+fact, split close to evenly between revCSC-supported and
+revCSC-not-supported at the same pre-specified percentile≥90 threshold);
+anything about the mechanism behind the F/P split (gene-set size,
 biological program identity, or otherwise — not tested here).
 
 ## What this does NOT do
@@ -172,4 +194,26 @@ D/F/P or revCSC gene set.
 
 ## Review history
 
-Submitting for review before merge, same discipline as every prior step.
+- **Round 1 (REQUEST_CHANGES, "compute/methodology are correct" — 2
+  write-up-only issues, no code change or qsub rerun needed, both
+  confirmed directly before fixing)**: (1) the write-up's Table 4b
+  discussion regressed back to exactly the absence-of-evidence /
+  "natural threshold" overclaiming language PR #30's own design review
+  had already removed (calling percentile≥90 revCSC's "natural"
+  threshold and its picture "biologically correct," implying evidence
+  is "absent" below the bar) — fixed throughout (this doc and the PR
+  body) to consistently say "pre-specified percentile≥90 matched-null
+  support threshold" and "threshold-aligned matched-null-support
+  picture." (2) A real factual sign error: the write-up claimed the
+  small P-enrichment finding was "consistent with the primary
+  analysis's weak-but-positive revCSC↔P correlation direction" —
+  checked directly against PR #27's committed
+  `primary_analysis_overview.tsv`, both revCSC↔P pooled correlations
+  are in fact negative (`revCSC_primary27_full`: Pearson r=−0.025;
+  `revCSC_extended28_full`: r=−0.030), not positive — fixed to state
+  the two findings correctly (not logically inconsistent, since one is
+  a discrete cohort comparison and the other a continuous correlation,
+  but not sharing the same direction as originally miswritten).
+
+Submitting for round-2 review before merge, same discipline as every
+prior step.
