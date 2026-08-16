@@ -26,9 +26,13 @@ the tertiary analysis (the same composition question asked of the
 *entire* 665,473-cell atlas, unconditional on revCSC status) is now also
 closed and confirms this pattern is not an artifact of subsetting to
 revCSC-high cells — it holds population-wide, with the SI-over-Colon
-regional skew getting *stronger*, not weaker, at full scale. See
-Step 6 below and "What's next" for the 2 additional CRC datasets and
-the Q1/Q2/Q4 cross-reference doc still needed to close out the project.
+regional skew getting *stronger*, not weaker, at full scale. A
+cross-reference against the project's original external 6-question
+framework (Q1/Q2/Q3/Q4) confirms Q1/Q2/Q4 are already substantively
+answered by this work and Q3 by the tertiary analysis's F×P quadrant
+table — see "Step 6 Q1/Q2/Q4 cross-reference" below. See "What's next"
+for the one remaining item that closes out the project: extending this
+same pipeline to the 2 additional CRC datasets.
 
 ## Step 1 — Data inventory
 
@@ -384,16 +388,49 @@ matched-null threshold) — the concrete real-data payoff of PR #30's
 design fix. **This closes Step 6's full 3-analysis plan
 (primary/secondary/tertiary) on `CRC_single_cell_atlas_2025`.**
 
+### Step 6 Q1/Q2/Q4 cross-reference — CLOSED (PR #32)
+
+`docs/Q1_Q2_Q4_CROSS_REFERENCE.md` maps this project's already-frozen,
+already-reviewed work onto Q1/Q2/Q4 of the external 6-question framework
+(`2026-GPT-TWEAKR-Oncofetal.md`, located in Zhixins-KB this session, read
+in full for the first time 2026-08-16 — previously only referenced by
+filename). Pure synthesis, no new compute. Went through 4 real review
+rounds — every round caught a genuine wording/provenance issue (D/F/P
+"orthogonal" overclaim vs. their actual mutually-exclusive-partition
+construction; an untested inferential jump claiming the revCSC/M11
+shared structure is "non-developmental"; Q4's Signature 4 mis-framed as
+a decision made in response to the framework rather than a pre-existing
+gap; a compressed mike_verzi summary that read as uniform success when
+the real outcome is mixed; then 2 further population-scope/robustness-
+count slips), all independently re-verified against the committed source
+docs before fixing.
+
+**Answers**: Q1 (D-shared/F-specific/P-specific from normal tissue) is
+already delivered by Steps 4/4a at two resolutions (pan-organ, frozen;
+gut-re-anchored, frozen, the primary CRC coordinate system) — with the
+important nuance that the two resolutions use different evidence types
+per component (threshold-based vs. DE-based) and gut F's external
+validation is genuinely mixed (2 of 5 `mike_verzi` benchmark signatures
+positively triangulate, 1 null, 2 discordant). Q2 (decompose
+revCSC/M11 "Oncofetal") is already answered by Step 6 primary/secondary/
+tertiary — `revCSC` does not decompose onto a single D/F/P axis; `M11`
+concords with `revCSC` far more strongly than any D/F/P axis does, but
+what explains that remaining concordance beyond the tested single-axis
+comparisons is left explicitly open, not overclaimed. Q3 is cross-referenced
+to the tertiary analysis's F×P quadrant table, not re-derived. Q4
+(output signatures for scRNA/spatial) gets a table: 3 of 4 primary
+signatures are frozen/reviewed matches; the 4th ("Consensus Oncofetal")
+and the 2 secondary early/term-placenta modules are genuine gaps relative
+to the framework — reported honestly as gaps, with `revCSC`+`M11`
+noted as an existing reviewed alternative for the former, not a
+substitute deliverable.
+
 ## What's next (not started)
 
 - **2 additional CRC datasets** (`HTAN_CRC_progressive_plasticity`,
   `CRLM_NMP_ATLAS`) — extend the same primary/secondary/tertiary pipeline;
-  not yet scoped.
-- **Q1/Q2/Q4 cross-reference doc**: map this project's existing frozen
-  results explicitly onto the Q1/Q2/Q4 language of the original
-  6-question framework (Q3 is already answered above, by the tertiary
-  analysis's F×P quadrant table). Rescoped 2026-08-16 from the original
-  unscoped "Q2–Q6" item — see `Worklog.md` for the rescope rationale.
+  not yet scoped. **This is the last substantive item for project
+  completion.**
 - **Q5/Q6 of the original 6-question framework** (macrophage/TWEAK-driven
   developmental program; independent functional consequences of the
   placental component) — **explicitly out of scope for project
