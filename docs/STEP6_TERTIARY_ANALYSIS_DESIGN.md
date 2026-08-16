@@ -25,13 +25,16 @@ compute)**: this design does **not** claim to establish that these
 quadrants are *separable states* in the formal statistical sense (distinct
 modes/clusters). Per PR #28's own locked boundary — restated here rather
 than re-litigated — axis-supported status and a threshold-based quadrant
-table can show *axis-defined composition/substructure* (coactivation vs.
-discrete dominance vs. no program), but **cannot by themselves distinguish
-that from a smooth continuous F×P gradient** thresholded at the same
-90th-percentile bar; a genuine separability claim would require an
-additional pre-specified clustering/mixture criterion, out of scope here.
-Every result in this design is described as "quadrant occupancy" /
-"axis-defined composition" throughout, never as "separable states."
+table can show *axis-defined composition/substructure* (**multi-axis
+support vs. single-axis support vs. none** — round-2 correction: not
+"dominance," which is specifically what Step A′'s Δ5-margin predominance
+call establishes, not what the 8-category support table alone
+establishes), but **cannot by themselves distinguish that from a smooth
+continuous F×P gradient** thresholded at the same 90th-percentile bar; a
+genuine separability claim would require an additional pre-specified
+clustering/mixture criterion, out of scope here. Every result in this
+design is described as "quadrant occupancy" / "axis-defined composition"
+throughout, never as "separable states" or "dominance" outside Step A′.
 
 **No new scoring required.** All D/F/P and revCSC per-cell percentiles for
 all 665,473 `CRC_single_cell_atlas_2025` malignant cells already exist,
@@ -58,8 +61,9 @@ Per PR #28/#29's locked, review-tested methodology (not re-litigated here):
   already used throughout Step 6, not a new pick.
 - **8 mutually exclusive, jointly exhaustive categories**: none / D_only /
   F_only / P_only / D+F / D+P / F+P / D+F+P. This is the primary result —
-  it directly answers Q3's actual question (coactivation vs. discrete
-  dominance vs. no program), unlike a forced single-label argmax.
+  it directly answers Q3's axis-composition question (**multi-axis
+  support vs. single-axis support vs. none**, not "dominance" — see the
+  round-2 correction above), unlike a forced single-label argmax.
 - **Coarse 3-way argmax retained only as a cross-tabulated descriptive
   summary** (Step0×StepA cross-tab, per PR #29 round-1's fix) — never used
   alone as evidence of "multiple separable states." PR #29 already showed
@@ -116,10 +120,13 @@ revCSC:
 - **Table 4b — axis-supported category × revCSC matched-null support**
   (`revCSC_primary27_minus_CLU_ASS1_percentile` ≥90, the same
   null-calibrated-evidence semantics as every D/F/P axis in §2, not a
-  cross-cell rank). Interpreted as: *"does P-supported biology exist in
-  cells that also lack matched-null evidence for revCSC itself?"* — the
-  correct construction for the design's actual motivating question (a
-  developmental program existing without revCSC evidence), requiring no
+  cross-cell rank). **Round-2 wording correction**: percentile <90 means
+  the cell does not meet the pre-specified revCSC-support threshold — it
+  is not literally "absence of evidence," which would overclaim a sharp
+  biological boundary that a threshold call does not establish. Interpreted
+  as: *"does P-supported biology exist in cells that are revCSC-not-supported
+  at the same percentile≥90 threshold used for D/F/P?"* — the correct
+  construction for the design's actual motivating question, requiring no
   new scoring since `revCSC_primary27_minus_CLU_ASS1_percentile` is
   already computed for all 665,473 cells.
 
@@ -130,15 +137,20 @@ new.
 
 ## 5. Donor/study-aware aggregation
 
-Every table in §2–§4 reported pooled, plus unweighted mean across donors
-(composite `donor_key`) and across studies — identical machinery to
-`secondary_analysis_composition.py`'s `categorical_donor_study_summary`,
-reused directly (not reimplemented) on the full 665,473-cell population
-instead of the revCSC-high subset.
+Every table in §2–§4 **except the Step0×StepA cross-tab** (see the
+round-2 correction immediately below — that one table is pooled-only by
+construction, same as PR #29's precedent) is reported pooled, plus
+unweighted mean across donors (composite `donor_key`) and across studies
+— identical machinery to `secondary_analysis_composition.py`'s
+`categorical_donor_study_summary`, reused directly (not reimplemented) on
+the full 665,473-cell population instead of the revCSC-high subset.
 
-**Implementation note (flagged in review, applied here rather than left
-implicit)**: `step0_x_stepA_crosstab()` (PR #29) is pooled-only by
-construction — it does not by itself give donor/study aggregation. The
+**Round-2 wording correction**: `step0_x_stepA_crosstab()` (PR #29) is
+**explicitly pooled-only by construction** — it does not, and is not
+required to, give donor/study aggregation, matching PR #29's own
+precedent for this exact descriptive/cross-tabulated table (argmax is
+never more than a descriptive summary, so its cross-tab against Step 0
+is reported at the pooled level only). The
 Q3 quadrant table (§3) and both revCSC joint tables (§4a/§4b) are **not**
 implemented via that pooled-only crosstab helper; instead, each joint
 category (e.g. `"P_only|revCSC_high_top10pct"`) is built as a single
@@ -203,5 +215,20 @@ deliverable" size norm as Step 6 secondary's composition output.
   helper — made explicit in §5 rather than left to be caught in a later
   compute review.
 
-Submitting for round-2 review before any qsub job runs, same discipline
+- **Round 2 (REQUEST_CHANGES, "narrowly" — both round-1 blockers confirmed
+  resolved, 3 small wording/contract cleanups, no new methodology
+  needed)**: (1) leftover "coactivation vs. discrete dominance vs. no
+  program" phrasing in the round-1 correction and §2 incorrectly implied
+  the 8-category support table establishes *dominance*, which is
+  specifically Step A′'s job (Δ5-margin predominance) — fixed to "multi-
+  axis support vs. single-axis support vs. none" throughout. (2) Table
+  4b's "lack matched-null evidence" / "without revCSC evidence" wording
+  overclaimed a sharp absence-of-evidence boundary that a percentile<90
+  threshold call does not establish — fixed to "revCSC-not-supported at
+  percentile≥90." (3) §5's "every table in §2–§4" claim contradicted the
+  intentionally pooled-only `step0_x_stepA_crosstab` (PR #29's own
+  precedent for that specific descriptive table) — fixed by explicitly
+  exempting it rather than leaving an internal contradiction.
+
+Submitting for round-3 review before any qsub job runs, same discipline
 as every prior step.
