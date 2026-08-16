@@ -1,0 +1,49 @@
+panel	normal_subtype	n_patients_paired	wilcoxon_stat	wilcoxon_p	median_malignant_minus_subtype_delta
+D_Gut-shared	BEST4+ colonocyte	17	42.0	0.10888671875	3.450000762939453
+D_Gut-shared	colon goblet cell	21	59.0	0.05019187927246094	5.399997711181641
+D_Gut-shared	colonocyte	21	44.0	0.011346817016601562	3.5999984741210938
+D_Gut-shared	early colonocyte	24	118.0	0.37475037574768066	1.424997329711914
+D_Gut-shared	enteroendocrine cell of colon	18	0.0	7.62939453125e-06	22.75
+D_Gut-shared	intestinal crypt stem cell of colon	25	143.5	0.6091728806495667	-1.0
+D_Gut-shared	secretory cell	24	125.0	0.6925349831581116	0.09999847412109375
+D_Gut-shared	tuft cell of colon	23	110.0	0.41003966331481934	-0.049999237060546875
+F_Gut-specific	BEST4+ colonocyte	17	0.0	0.0002873467456083745	93.4000015258789
+F_Gut-specific	colon goblet cell	21	0.0	5.8053901739185676e-05	97.30000305175781
+F_Gut-specific	colonocyte	21	0.0	5.87322938372381e-05	96.4000015258789
+F_Gut-specific	early colonocyte	24	14.0	1.3113021850585938e-05	69.4000015258789
+F_Gut-specific	enteroendocrine cell of colon	18	74.0	0.6163241267204285	0.5999984741210938
+F_Gut-specific	intestinal crypt stem cell of colon	25	128.0	0.3665854334831238	6.5
+F_Gut-specific	secretory cell	24	1.0	2.0685512936324812e-05	84.69999694824219
+F_Gut-specific	tuft cell of colon	23	0.0	2.6958157832268625e-05	92.5999984741211
+F_Colon-specific	BEST4+ colonocyte	17	0.0	1.52587890625e-05	87.4000015258789
+F_Colon-specific	colon goblet cell	21	0.0	5.949331898591481e-05	87.20000457763672
+F_Colon-specific	colonocyte	21	0.0	9.5367431640625e-07	87.20000457763672
+F_Colon-specific	early colonocyte	24	1.0	2.384185791015625e-07	74.4000015258789
+F_Colon-specific	enteroendocrine cell of colon	18	22.0	0.009882127866148949	-9.099998474121094
+F_Colon-specific	intestinal crypt stem cell of colon	25	49.0	0.0014527440071105957	21.70000457763672
+F_Colon-specific	secretory cell	24	1.0	2.384185791015625e-07	73.85000610351562
+F_Colon-specific	tuft cell of colon	23	1.0	3.081878458033316e-05	67.0
+F_SI-specific	BEST4+ colonocyte	17	0.0	0.0002907607704401016	86.79999542236328
+F_SI-specific	colon goblet cell	21	0.0	5.8053901739185676e-05	93.0999984741211
+F_SI-specific	colonocyte	21	0.0	5.87322938372381e-05	93.0999984741211
+F_SI-specific	early colonocyte	24	13.0	0.00014360842760652304	58.400001525878906
+F_SI-specific	enteroendocrine cell of colon	18	12.0	0.0005340576171875	30.44999885559082
+F_SI-specific	intestinal crypt stem cell of colon	25	137.0	0.507703959941864	7.099998474121094
+F_SI-specific	secretory cell	24	5.0	1.1920928955078125e-06	73.9000015258789
+F_SI-specific	tuft cell of colon	23	0.0	2.6958157832268625e-05	89.4000015258789
+P_Gut-specific	BEST4+ colonocyte	17	49.0	0.32587000727653503	1.149993896484375
+P_Gut-specific	colon goblet cell	21	107.0	0.785365104675293	0.09999847412109375
+P_Gut-specific	colonocyte	21	104.0	0.6892789602279663	0.40000152587890625
+P_Gut-specific	early colonocyte	24	138.5	0.7424669861793518	-1.2749996185302734
+P_Gut-specific	enteroendocrine cell of colon	18	0.0	0.00019609353330451995	8.10000228881836
+P_Gut-specific	intestinal crypt stem cell of colon	25	153.5	0.8086459636688232	-1.4999961853027344
+P_Gut-specific	secretory cell	24	103.0	0.17925168573856354	-2.924997329711914
+P_Gut-specific	tuft cell of colon	23	98.0	0.23447084426879883	-3.3000030517578125
+revCSC_primary27_minus_CLU_ASS1	BEST4+ colonocyte	17	22.0	0.007904052734375	9.300003051757812
+revCSC_primary27_minus_CLU_ASS1	colon goblet cell	21	101.5	0.626510739326477	0.8000030517578125
+revCSC_primary27_minus_CLU_ASS1	colonocyte	21	6.0	0.00014108970935922116	14.400001525878906
+revCSC_primary27_minus_CLU_ASS1	early colonocyte	24	22.0	0.00025485685910098255	30.0
+revCSC_primary27_minus_CLU_ASS1	enteroendocrine cell of colon	18	46.0	0.14879179000854492	2.0500030517578125
+revCSC_primary27_minus_CLU_ASS1	intestinal crypt stem cell of colon	25	55.0	0.0038187929894775152	10.599998474121094
+revCSC_primary27_minus_CLU_ASS1	secretory cell	24	27.0	0.00014960765838623047	14.049999237060547
+revCSC_primary27_minus_CLU_ASS1	tuft cell of colon	23	5.0	5.217665238888003e-05	-3.7999954223632812
