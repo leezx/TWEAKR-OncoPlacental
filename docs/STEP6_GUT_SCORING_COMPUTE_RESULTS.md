@@ -203,12 +203,26 @@ transparently):
 | revCSC_extended28_full ↔ P_Gut-specific | -0.030 | -0.022 | **Yes** |
 | revCSC_extended28_minus_CLU ↔ F_Colon-specific | 0.048 | 0.018 | **No** |
 | revCSC_extended28_minus_ASS1 ↔ F_SI-specific | 0.190 | 0.111 | **Yes** |
-| revCSC_extended28_minus_CLU_ASS1 ↔ F_Gut-specific | 0.172 | 0.030 | **Yes** |
+| revCSC_extended28_minus_CLU_ASS1 ↔ F_Gut-specific | 0.172 | 0.030 | **No** |
 
-**Every pair's robust/non-robust flag is identical to the discarded
-round-1 (buggy-seed) run** — the qualitative conclusion is stable even
-though the seed bug meaningfully changed the convergence gate and the
-exact correlation values.
+**Round 2 correction (found by reviewer, real methodological gap, not
+cosmetic)**: `robust_to_no_single_donor_or_study` was originally computed
+from **Pearson sign stability only**, even though Spearman ρ is reported
+throughout as the co-equal rank-based metric. Direct check against the
+committed per-donor/per-study leave-one-out files found a real case where
+this mattered: `revCSC_extended28_minus_CLU_ASS1` ↔ `F_Gut-specific`
+stayed Pearson-sign-stable under leave-one-out but its Spearman ρ flips
+sign when the same influential study (`Terekhanova_2023_Nature`) is
+excluded — a pair reported "robust" that is not actually rank-stable.
+Fixed: `robust` now requires same-sign stability for **both** Pearson
+and Spearman, both leave-one-donor-out and leave-one-study-out
+(`crc_gut_scoring_primary_analysis.py`). Re-run from the already-scored,
+already-verified per-cell data (no re-scoring needed — only the
+robustness *definition* changed, not any correlation value). This is the
+only pair whose flag changed; **9 of 10 pairs' flags are identical**
+between the Pearson-only and the corrected Pearson-and-Spearman
+criterion — the seed-bug re-run's qualitative stability (see above) still
+holds under the corrected definition too.
 
 **Reported as real, honest numbers — not smoothed over**:
 
@@ -229,22 +243,23 @@ exact correlation values.
   (r = 0.17-0.19) and weakest for `F_Colon-specific` (r = 0.005-0.05)
   despite `F_Colon-specific` being the *primary* regional F axis per
   Step 4a's locked hierarchy — a real, not obviously expected, pattern.
-- **4 of the 6 F-comparison pairs are NOT robust** to
-  leave-one-donor-or-study-out: all 3 pairings using the primary
-  (27-gene) revCSC (`F_Colon-specific`, `F_SI-specific`, `F_Gut-specific`)
-  **plus** the `extended28`↔`F_Colon-specific` pairing — not "primary
-  revCSC" alone. Only `extended28`'s pairings with `F_SI-specific` and
-  `F_Gut-specific` are robust among the F comparisons; all 4 D/P pairs
-  (both revCSC variants) are robust. For `revCSC_primary27_minus_CLU` ↔
-  `F_Colon-specific` specifically, excluding the single study
-  `Terekhanova_2023_Nature` shifts the pooled Pearson r by -0.064 —
-  the largest single-study effect of any pair, more than 13× the pair's
-  own pooled r (0.005). This means the already-weak `F_Colon-specific`
-  correlation is itself substantially driven by one study's contribution,
-  not a consistent cross-cohort signal. This instability is the finding
-  for these 4 pairs, not something to interpret as "revCSC correlates
-  with F" — per the design's own stated contract, non-robust pairs are
-  reported as unstable, not as evidence of association.
+- **5 of the 6 F-comparison pairs are NOT robust** to
+  leave-one-donor-or-study-out (Pearson-and-Spearman criterion, see round
+  2 correction above): all 3 pairings using the primary (27-gene) revCSC
+  (`F_Colon-specific`, `F_SI-specific`, `F_Gut-specific`) **plus** both
+  `extended28`↔`F_Colon-specific` and `extended28`↔`F_Gut-specific`. Only
+  `extended28`'s pairing with `F_SI-specific` is robust among the F
+  comparisons; all 4 D/P pairs (both revCSC variants) are robust. For
+  `revCSC_primary27_minus_CLU` ↔ `F_Colon-specific` specifically,
+  excluding the single study `Terekhanova_2023_Nature` shifts the pooled
+  Pearson r by -0.054 — the largest single-study effect of any pair,
+  more than 11× the pair's own pooled r (0.005). This means the
+  already-weak `F_Colon-specific` correlation is itself substantially
+  driven by one study's contribution, not a consistent cross-cohort
+  signal. This instability is the finding for these 5 pairs, not
+  something to interpret as "revCSC correlates with F" — per the
+  design's own stated contract, non-robust pairs are reported as
+  unstable, not as evidence of association.
 - Equal-donor-weighted vs. cell-weighted within-study summaries and the
   full per-donor tables are committed in full
   (`results/06_crc_projection/gut_scoring_primary_analysis/`) for anyone
@@ -279,6 +294,25 @@ of any frozen gut D/F/P or revCSC gene set.
   both the convergence check and full run were discarded and re-run from
   scratch rather than patched. This document reflects the reproducible
   re-run throughout.
+- **Round 2 (fresh full review after round-1 fixes)**: reviewer re-fetched
+  the PR at head and, while independently re-deriving numbers from the
+  committed TSVs, caught two more real issues. (1) A prose/data
+  mismatch — the results text cited a -0.064 single-study Pearson-r
+  shift, but the committed overview table said -0.054; traced to a
+  column-indexing mistake made while manually re-deriving the number for
+  prose (read `pooled_spearman_rho_excl` instead of
+  `delta_pearson_r_vs_full`) — the committed table's -0.054 was correct
+  all along, only the prose was wrong; fixed, along with the resulting
+  "13×" ratio claim (corrected to ~11×). (2) A real methodological gap —
+  `robust_to_no_single_donor_or_study` was computed from Pearson sign
+  stability only; direct verification against the per-donor/per-study
+  leave-one-out files found `revCSC_extended28_minus_CLU_ASS1` ↔
+  `F_Gut-specific` is Pearson-stable but Spearman-sign-flips when
+  `Terekhanova_2023_Nature` is excluded. Fixed the robustness definition
+  to require both metrics; re-ran the primary-analysis step only (the
+  underlying per-cell scores were untouched, so no re-scoring needed) —
+  exactly 1 of 10 pairs' flag changed (that one, True→False), confirming
+  the fix was narrow and correctly scoped.
 
 Submitting for compute review before merge, same discipline as every
 prior step.

@@ -171,13 +171,31 @@ def main():
                 if losout_df.delta_pearson_r_vs_full.notna().any() else None
             max_shift_donor = float(max_shift_donor_row.delta_pearson_r_vs_full) if max_shift_donor_row is not None else None
             max_shift_study = float(max_shift_study_row.delta_pearson_r_vs_full) if max_shift_study_row is not None else None
-            same_sign_donor = all(
+            # BUG FIX (found by reviewer, PR #27 round 2): robustness was
+            # determined from Pearson sign stability only, even though both
+            # Pearson and Spearman are reported as the primary/secondary
+            # metrics throughout this compute. Direct check found a real
+            # case (revCSC_extended28_minus_CLU_ASS1 vs F_Gut-specific)
+            # where Pearson stays same-sign under leave-one-out but Spearman
+            # flips sign when the same influential study (Terekhanova_2023_Nature)
+            # is excluded -- a pair reported "robust" that is not actually
+            # rank-stable. Fixed: robust now requires same-sign stability
+            # for BOTH metrics, both leave-one-donor-out and
+            # leave-one-study-out.
+            same_sign_donor_r = all(
                 (r_all >= 0) == (v >= 0) for v in lodo_df.pooled_pearson_r_excl.dropna()
             )
-            same_sign_study = all(
+            same_sign_study_r = all(
                 (r_all >= 0) == (v >= 0) for v in losout_df.pooled_pearson_r_excl.dropna()
             )
-            robust = bool(same_sign_donor and same_sign_study)
+            same_sign_donor_rho = all(
+                (rho_all >= 0) == (v >= 0) for v in lodo_df.pooled_spearman_rho_excl.dropna()
+            )
+            same_sign_study_rho = all(
+                (rho_all >= 0) == (v >= 0) for v in losout_df.pooled_spearman_rho_excl.dropna()
+            )
+            robust = bool(same_sign_donor_r and same_sign_study_r
+                          and same_sign_donor_rho and same_sign_study_rho)
 
         overview_rows.append({
             "pair": pair_name, "revcsc_panel": revcsc_panel, "dfp_panel": dfp_panel,
