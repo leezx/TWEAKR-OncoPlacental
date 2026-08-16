@@ -19,7 +19,32 @@ User-requested (2026-08-13): report a global % after every completed task, using
 | I. Apply D/F/P to CRC Oncofetal cells, answer Q1 (M11/revCSC track, now re-anchored on gut-specific D/F/P) | 20% | Design CLOSED (PR #16/#17, merged). Gut re-anchor of the Layer 2 substitution CLOSED (PR #25, merged, 4 review rounds). Primary scoring compute design CLOSED (PR #26, merged, 2 review rounds). **Primary scoring compute CLOSED** (PR #27, merged, 2 real review rounds, real 665,473-cell result: all revCSC↔D/F/P correlations weak, |r|≤0.19, no single-axis "Oncofetal=F" or "=P" finding — see `docs/STEP6_GUT_SCORING_COMPUTE_RESULTS.md`). **Secondary analysis design CLOSED** (PR #28, merged, 4 review rounds). **Secondary analysis compute CLOSED** (PR #29, merged, 3 real review rounds — real result: composition is bimodal not F-dominant; M11 shows real, robust concordance with revCSC substantially stronger than any single D/F/P axis — see `docs/STEP6_SECONDARY_ANALYSIS_RESULTS.md`). **Remaining**: tertiary analysis (full-atlas revCSC-independent landscape) and the 2 secondary/tertiary CRC datasets. | ~95% |
 | K. Step 4a: re-anchor F-developmental on real fetal gut data (NEW primary CRC coordinate system) | 15% (carved from J's unscoped weight, one-time rescheme — see 2026-08-15 entry) | **CLOSED** — PR #19/#20/#21 merged (construction + internal validation); PR #22 merged (three-layer external validation vs. the 5 independent `mike_verzi` signatures — `FETAL_INTESTINE_GENES` fully triangulates in both regions, `REGENERATIVE_EPITHELIUM` fully triangulates in Colon with partial SI support, `YAP_SIGNALING_GENES`/`FETAL_SPHEROID_EPITHELIUM_GENES` show adult-skewed GSEA in both regions, `REVIVAL_STEM_CELL_GENES` null throughout — all FDR-consistent across layers). | 100% |
 | J1. External adult-expression audit of gut D/F/P (GTEx + Tabula Sapiens, beyond phase K's original scope) | 2% (carved from J's unscoped weight, one-time rescheme — see 2026-08-15 entry) | **CLOSED** — PR #23 (design, 3 review rounds) + PR #24 (compute, 2 review rounds) merged. `F_Colon-developmental` shows no statistically-supported adult-expression anomaly in the 2 epithelial cell types with real donor replication (Tabula Sapiens, genuinely independent); GTEx bulk shows expected mid-distribution detection with a real ~6.5–10% minority flagged for future scrutiny; D/P sets remain internally consistent and reproduce Step 5's known-good result exactly. | 100% |
-| J. Q2–Q6 (remaining 6-question framework, unscoped) | 3% (reduced again, see J1 above) | not started | 0% |
+| J. Q1/Q2/Q4 cross-reference doc against the 6-question framework (2026-08-16 rescope, see note below) | 3% | not started | 0% |
+
+**2026-08-16 rescope of phase J (Q1–Q6)**: the original Q1–Q6 6-question
+framework (source: `2026-GPT-TWEAKR-Oncofetal.md#定义清楚Placenta的问题`,
+external to this repo, read for the first time this session) was located
+and reviewed in full. **Q1** (D-shared/F-specific/P-specific developmental
+modules from normal tissue) and **Q2** (decompose revCSC/M11/other
+"Oncofetal" signatures against that framework) turn out to be, in
+substance, exactly what phases G/H/I/K/J1 already built and ran — just
+never explicitly labeled with the Q-numbers. **Q4** (frozen signatures
+usable on scRNA/spatial data) is a direct byproduct of the same frozen
+D/F/P + revCSC + M11 gene sets. **Q3** (does "Oncofetal" split into
+Fetal×Placental quadrant states) overlaps substantially with Step 6
+secondary's axis-supported composition analysis and will be directly,
+explicitly answered by the still-pending tertiary analysis (phase I's
+remaining item). **Q5** (does SPP1+ TAM/TWEAK/Fn14/YAP macrophage
+signaling causally drive a specific developmental program) and **Q6**
+(does the placental component have independent functional consequences
+— invasion, immune exclusion, metastasis) require data this project does
+not have (spatial macrophage/TWEAK colocalization or perturbation data;
+functional/phenotypic assay data) — **user-confirmed 2026-08-16: Q5/Q6
+are explicitly out of scope for "100%," documented as a distinct future
+aim, not blocking project completion.** Phase J's remaining 3% weight is
+rescoped to a single deliverable: a cross-reference document mapping
+this project's existing frozen results explicitly onto Q1/Q2/Q4's
+language, plus a Q3 framing pass once the tertiary analysis closes.
 
 **Current total: ~38%** (delta +4 from ~34%: ran the actual distribution/threshold-audit compute the PR #8 reviewer asked for. Found — by directly checking the files, not assuming — that VentoTormo has no raw counts anywhere in `decidua-v3.h5ad` (irreversibly normalized, no `.raw`/layers/separate file), collapsing the approved "≥2 of 3 datasets" quorum to an interim **2-of-2** (Arutyunyan, Nature2026); documented in `raw_counts_availability_audit.md` and folded into `STEP4_STATISTICAL_DESIGN.md`. Built donor×trophoblast-status pseudobulk raw-count matrices for both usable datasets (verified byte-exact against Argos and against the known replicate-structure-audit donor counts), then ran the real edgeR QLF paired DE (`~donor+status`) for both on Argos. Results independently sanity-checked against 9 canonical trophoblast/immune/endothelial markers (ERVFRD-1, CGA, CSH1/2, PSG1/3, GATA3, KRT7, HLA-G, PTPRC, PECAM1) — all landed in the biologically expected direction with FDR≪0.05 in both datasets. Drafted (not yet reviewer-approved) a concrete effect-size/FDR cutoff proposal (`|logFC|≥1` & `FDR<0.05` per dataset, 2-of-2 quorum) in `trophoblast_edgeR_audit.md`. G now ~40% of its 20% weight: real primary-DE compute + validation + threshold proposal done; F-developmental within-organ percentiles, `adult_excluded` GTEx/HPA percentiles, and final D/F/P gene-list assembly still pending.)
 
