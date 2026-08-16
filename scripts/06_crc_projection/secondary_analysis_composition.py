@@ -114,6 +114,30 @@ def regional_refinement(pct_colon, pct_si, f_assigned_mask, margin=MARGIN):
     return out
 
 
+def step0_x_stepA_crosstab(status, argmax_labels, cohort_label):
+    """PR #29 round-1 fix (real blocker, confirmed by re-reading the
+    approved design): PR #28 explicitly requires the coarse argmax to be
+    'restricted to (or at minimum cross-tabulated against) axis-supported
+    status' -- the whole point of demoting argmax to descriptive-only is
+    to expose exactly how much of its apparent F share comes from cells
+    with NO supported axis at all. Reporting Step 0 and Step A as
+    separate marginals (the original implementation) does not do this.
+    Fixed: an explicit Step0 x StepA cross-tab, pooled counts + fractions
+    of the cohort."""
+    df = pd.DataFrame({"step0_status": status, "stepA_argmax": argmax_labels})
+    ct = pd.crosstab(df["step0_status"], df["stepA_argmax"])
+    rows = []
+    n_total = len(df)
+    for status_cat in ct.index:
+        for argmax_cat in ct.columns:
+            n = int(ct.loc[status_cat, argmax_cat])
+            rows.append({
+                "cohort": cohort_label, "step0_status": status_cat, "stepA_argmax": argmax_cat,
+                "n_cells": n, "frac_of_cohort": n / n_total,
+            })
+    return pd.DataFrame(rows)
+
+
 def categorical_donor_study_summary(labels, donor_key, study_id, label_name):
     """Pooled + unweighted-mean-across-donor + unweighted-mean-across-study
     proportion breakdown for one categorical result."""
@@ -177,7 +201,14 @@ def run_composition_for_cohort(sub_scores, sub_meta, cohort_label, out_dir):
     summary_df.to_csv(out_path, sep="\t", index=False)
     print(f"Wrote {out_path}", flush=True)
     print(summary_df.to_string(index=False), flush=True)
-    return summary_df
+
+    crosstab_df = step0_x_stepA_crosstab(status, argmax_labels, cohort_label)
+    crosstab_path = f"{out_dir}/composition_{cohort_label}__step0_x_stepA_crosstab.tsv"
+    crosstab_df.to_csv(crosstab_path, sep="\t", index=False)
+    print(f"Wrote {crosstab_path}", flush=True)
+    print(crosstab_df.to_string(index=False), flush=True)
+
+    return summary_df, crosstab_df
 
 
 def main():
@@ -212,22 +243,33 @@ def main():
 
     # ---- Section 2: composition, for every primary cutoff + the extended primary cutoff ----
     all_dfs = []
+    all_crosstabs = []
     for label, mask in primary_masks.items():
         cohort_name = f"primary27_minus_CLU_ASS1_{label}"
         sub_scores = scores.loc[mask]
         sub_meta = meta.loc[mask]
-        all_dfs.append(run_composition_for_cohort(sub_scores, sub_meta, cohort_name, out_dir))
+        summary_df, crosstab_df = run_composition_for_cohort(sub_scores, sub_meta, cohort_name, out_dir)
+        all_dfs.append(summary_df)
+        all_crosstabs.append(crosstab_df)
 
     # F-facing overlap-safety sensitivity: extended cohort at its primary (top10pct) cutoff only
     ext_mask = extended_masks["top10pct"]
-    all_dfs.append(run_composition_for_cohort(
+    summary_df, crosstab_df = run_composition_for_cohort(
         scores.loc[ext_mask], meta.loc[ext_mask],
-        "extended28_minus_CLU_ASS1_top10pct_SENSITIVITY", out_dir))
+        "extended28_minus_CLU_ASS1_top10pct_SENSITIVITY", out_dir)
+    all_dfs.append(summary_df)
+    all_crosstabs.append(crosstab_df)
 
     combined = pd.concat(all_dfs, ignore_index=True)
     combined_path = f"{out_dir}/composition_all_cohorts_combined.tsv"
     combined.to_csv(combined_path, sep="\t", index=False)
     print(f"\nWrote {combined_path}", flush=True)
+
+    combined_crosstab = pd.concat(all_crosstabs, ignore_index=True)
+    combined_crosstab_path = f"{out_dir}/composition_all_cohorts_step0_x_stepA_crosstab.tsv"
+    combined_crosstab.to_csv(combined_crosstab_path, sep="\t", index=False)
+    print(f"Wrote {combined_crosstab_path}", flush=True)
+
     print("\n=== DONE ===", flush=True)
 
 

@@ -148,34 +148,75 @@ def run_enrichment_for_cutoff(m11_high, revcsc_high, donor_key, study_id, cutoff
     n_estimable = int(donor_or_df.estimable.sum())
     print(f"  {len(donor_or_df)} donors, {n_estimable} estimable ({len(donor_or_df)-n_estimable} NOT_ESTIMABLE)", flush=True)
 
-    or_mh, ci_lo, ci_hi = mh_common_or(tables_by_donor)
+    # PR #29 round-1 fix (real blocker, confirmed by re-reading the locked
+    # design): docs/STEP6_SECONDARY_ANALYSIS_DESIGN.md sec 5 explicitly
+    # requires non-estimable (zero-cell) donors to be "excluded from the
+    # MH pooling with the exclusion count stated." The original
+    # implementation computed the estimable flag for per-donor reporting
+    # but then passed ALL donor tables (estimable or not) into
+    # mh_common_or/LODO/LOSO/bootstrap -- a real deviation from the
+    # approved design, confirmed by the reviewer directly re-reading both
+    # the design text and this code. Whether unconditionally retaining
+    # zero-cell strata would be more statistically standard is a genuinely
+    # separate question (checked directly: it is -- MH's formula handles
+    # them without bias, and 11-13 of the ~26/13/6 "non-estimable" donors
+    # per cutoff have b=0 XOR c=0, i.e. a real informative margin, not a
+    # fully degenerate one; excluding all of them shifts OR_MH by only
+    # ~0.3 at top5pct, ~0.08 at top10pct, ~0 at top20pct -- small, no
+    # qualitative change). But a compute PR explicitly claiming "no design
+    # changes" must execute the design AS APPROVED, not a different
+    # (even if arguably better) estimator -- so this is fixed to comply
+    # literally: only estimable donors' tables are used for the pooled OR,
+    # its CIs, and the leave-one-out/bootstrap sensitivities below. The
+    # full per-donor table (all donors, estimable flag included) is still
+    # written above for transparency, unchanged.
+    tables_estimable = {d: t for d, t in tables_by_donor.items()
+                         if donor_or_df.set_index("donor_key").loc[d, "estimable"]}
+    n_excluded = len(tables_by_donor) - len(tables_estimable)
+    print(f"  MH pooling restricted to {len(tables_estimable)} estimable donors "
+          f"({n_excluded} excluded per the locked design's zero-cell exclusion rule)", flush=True)
+
+    or_mh, ci_lo, ci_hi = mh_common_or(tables_estimable)
     print(f"  OR_MH={or_mh}, 95% CI=({ci_lo}, {ci_hi})", flush=True)
 
-    donor_key_to_donor = {d: d for d in tables_by_donor}
-    lodo_df, _ = leave_one_group_out_common_or(tables_by_donor, donor_key_to_donor)
+    donor_key_to_donor = {d: d for d in tables_estimable}
+    lodo_df, _ = leave_one_group_out_common_or(tables_estimable, donor_key_to_donor)
     lodo_path = f"{out_dir}/enrichment_{cutoff_label}_leave_one_donor_out.tsv"
     lodo_df.to_csv(lodo_path, sep="\t", index=False)
 
     donor_to_study = pd.DataFrame({"donor_key": donor_key, "study_id": study_id}).drop_duplicates().set_index("donor_key")["study_id"].to_dict()
-    donor_key_to_study = {d: donor_to_study.get(d) for d in tables_by_donor}
-    losout_df, _ = leave_one_group_out_common_or(tables_by_donor, donor_key_to_study)
+    donor_key_to_study = {d: donor_to_study.get(d) for d in tables_estimable}
+    losout_df, _ = leave_one_group_out_common_or(tables_estimable, donor_key_to_study)
     losout_path = f"{out_dir}/enrichment_{cutoff_label}_leave_one_study_out.tsv"
     losout_df.to_csv(losout_path, sep="\t", index=False)
 
-    boot_lo, boot_hi, n_valid_boot = donor_cluster_bootstrap_ci(tables_by_donor)
+    boot_lo, boot_hi, n_valid_boot = donor_cluster_bootstrap_ci(tables_estimable)
     print(f"  donor-cluster bootstrap 95% CI=({boot_lo}, {boot_hi}) from {n_valid_boot}/{BOOTSTRAP_N} valid resamples", flush=True)
 
-    max_shift_donor = lodo_df.delta_or_vs_full.abs().max() if lodo_df.delta_or_vs_full.notna().any() else None
-    max_shift_study = losout_df.delta_or_vs_full.abs().max() if losout_df.delta_or_vs_full.notna().any() else None
+    # PR #29 round-1 fix: the results doc mislabeled which single study
+    # produces the largest |delta| at each cutoff (assumed it was always
+    # the same study as the one giving the lowest or_mh_excl, which is a
+    # different quantity) -- fixed by explicitly identifying and reporting
+    # both the max-|delta| study/donor AND the min-or_mh_excl study/donor
+    # here, in the machine-generated overview, so the write-up step reads
+    # off the correct value instead of re-deriving it by hand.
+    max_shift_donor_row = lodo_df.loc[lodo_df.delta_or_vs_full.abs().idxmax()] if lodo_df.delta_or_vs_full.notna().any() else None
+    max_shift_study_row = losout_df.loc[losout_df.delta_or_vs_full.abs().idxmax()] if losout_df.delta_or_vs_full.notna().any() else None
+    min_or_study_row = losout_df.loc[losout_df.or_mh_excl.idxmin()] if losout_df.or_mh_excl.notna().any() else None
 
     return {
         "cutoff": cutoff_label, "n_m11_high": n_m11_high, "n_revcsc_high": n_revcsc_high,
         "n_both": both, "n_donors": len(tables_by_donor), "n_donors_estimable": n_estimable,
+        "n_donors_excluded_from_MH": n_excluded,
         "or_mh": or_mh, "or_mh_ci_lo_asymptotic": ci_lo, "or_mh_ci_hi_asymptotic": ci_hi,
         "or_mh_ci_lo_donor_cluster_bootstrap": boot_lo, "or_mh_ci_hi_donor_cluster_bootstrap": boot_hi,
         "n_valid_bootstrap_resamples": n_valid_boot,
-        "max_abs_delta_or_leave_one_donor_out": max_shift_donor,
-        "max_abs_delta_or_leave_one_study_out": max_shift_study,
+        "max_abs_delta_or_leave_one_donor_out": max_shift_donor_row.delta_or_vs_full if max_shift_donor_row is not None else None,
+        "max_abs_delta_or_leave_one_donor_out_which": max_shift_donor_row.left_out_group if max_shift_donor_row is not None else None,
+        "max_abs_delta_or_leave_one_study_out": max_shift_study_row.delta_or_vs_full if max_shift_study_row is not None else None,
+        "max_abs_delta_or_leave_one_study_out_which": max_shift_study_row.left_out_group if max_shift_study_row is not None else None,
+        "min_or_mh_excl_leave_one_study_out": min_or_study_row.or_mh_excl if min_or_study_row is not None else None,
+        "min_or_mh_excl_leave_one_study_out_which": min_or_study_row.left_out_group if min_or_study_row is not None else None,
     }
 
 
@@ -256,6 +297,33 @@ def main():
     corr_overview_df.to_csv(corr_overview_path, sep="\t", index=False)
     print(f"\nWrote {corr_overview_path}", flush=True)
     print(corr_overview_df.to_string(index=False), flush=True)
+
+    # ---- 1b. Same-population sensitivity: D/F/P<->revCSC correlations,
+    # restricted to the SAME 297,307-cell M11 subset (PR #29 round-1 fix,
+    # per review) -- PR #27's D/F/P<->revCSC correlations were computed
+    # on the full 665,473-cell atlas, so "M11's r=0.318 is stronger than
+    # any D/F/P pair's |r|<=0.19" was a cross-population comparison, not
+    # a clean same-population effect-size comparison. No new scoring
+    # needed (D/F/P panels already scored for all cells in PR #27) --
+    # just restricts the existing full-atlas D/F/P percentiles to the
+    # M11 subset and reuses the same correlation machinery.
+    print("\n=== Same-population sensitivity: D/F/P vs revCSC, M11 subset only ===", flush=True)
+    dfp_panels_for_sensitivity = ["D_Gut-shared", "F_Gut-specific", "F_Colon-specific", "F_SI-specific", "P_Gut-specific"]
+    dfp_sensitivity_rows = []
+    for dfp_panel in dfp_panels_for_sensitivity:
+        y_dfp = full_scores.loc[m11_scores.index, f"{dfp_panel}_percentile"].values
+        r_all, rho_all, reason_all = safe_corr(y, y_dfp)
+        print(f"  revCSC_primary27_minus_CLU_ASS1 vs {dfp_panel} (M11-subset only): "
+              f"r={r_all}, rho={rho_all}", flush=True)
+        dfp_sensitivity_rows.append({
+            "comparison": f"revCSC_primary27_minus_CLU_ASS1__vs__{dfp_panel}__M11_SUBSET_ONLY",
+            "n_cells": len(y), "pooled_pearson_r": r_all, "pooled_spearman_rho": rho_all,
+        })
+    dfp_sensitivity_df = pd.DataFrame(dfp_sensitivity_rows)
+    dfp_sensitivity_path = f"{out_dir}/concordance_dfp_vs_revcsc_M11_subset_sensitivity.tsv"
+    dfp_sensitivity_df.to_csv(dfp_sensitivity_path, sep="\t", index=False)
+    print(f"Wrote {dfp_sensitivity_path}", flush=True)
+    print(dfp_sensitivity_df.to_string(index=False), flush=True)
 
     # ---- 2. Enrichment test (matched cutoff pairs) ----
     print("\n=== Enrichment test: M11-high x revCSC-high (matched cutoff pairs) ===", flush=True)
