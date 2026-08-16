@@ -68,12 +68,25 @@ def build_2x2_tables(m11_high, revcsc_high, group):
 
 
 def per_donor_or_table(tables_by_donor):
+    """PR #29 round-2 fix (real blocker, confirmed directly): the locked
+    design (docs/STEP6_SECONDARY_ANALYSIS_DESIGN.md sec 5) says a donor's
+    2x2 table is non-estimable "(a zero cell)" -- literally any of a/b/c/d
+    == 0, not just b==0 or c==0 (the round-1 fix's definition, which only
+    guards against the individual OR being mathematically undefined via
+    division by zero). Confirmed real on real data: donor
+    Pelka_2021_Cell.C150 (a=0, b=2, c=2, d=1396) was marked estimable=True
+    and kept in MH pooling under the round-1 definition, despite having a
+    zero cell -- exactly the literal-noncompliance case the reviewer
+    found. There is a genuine statistical argument that a=0/d=0 strata
+    (well-defined boundary OR, not undefined) are fine to keep in MH
+    pooling -- but this PR explicitly claims "no design changes," so the
+    locked text's literal "a zero cell" wording is implemented as written:
+    any of a,b,c,d == 0 makes the donor non-estimable and excludes it from
+    MH pooling."""
     rows = []
     for donor, t in tables_by_donor.items():
         a, b, c, d = t[0, 0], t[0, 1], t[1, 0], t[1, 1]
-        row_ok = (a + b) > 0 and (c + d) > 0
-        col_ok = (a + c) > 0 and (b + d) > 0
-        estimable = row_ok and col_ok and b > 0 and c > 0
+        estimable = a > 0 and b > 0 and c > 0 and d > 0
         odds_ratio = (a * d) / (b * c) if (b > 0 and c > 0) else None
         rows.append({
             "donor_key": donor, "n_cells": int(t.sum()),
@@ -81,7 +94,7 @@ def per_donor_or_table(tables_by_donor):
             "c_m11lo_revcschi": int(c), "d_m11lo_revcsclo": int(d),
             "estimable": estimable,
             "odds_ratio": odds_ratio,
-            "not_estimable_reason": None if estimable else "zero margin or zero off-diagonal cell",
+            "not_estimable_reason": None if estimable else "at least one zero cell (a, b, c, or d == 0)",
         })
     return pd.DataFrame(rows)
 
@@ -211,10 +224,17 @@ def run_enrichment_for_cutoff(m11_high, revcsc_high, donor_key, study_id, cutoff
         "or_mh": or_mh, "or_mh_ci_lo_asymptotic": ci_lo, "or_mh_ci_hi_asymptotic": ci_hi,
         "or_mh_ci_lo_donor_cluster_bootstrap": boot_lo, "or_mh_ci_hi_donor_cluster_bootstrap": boot_hi,
         "n_valid_bootstrap_resamples": n_valid_boot,
-        "max_abs_delta_or_leave_one_donor_out": max_shift_donor_row.delta_or_vs_full if max_shift_donor_row is not None else None,
-        "max_abs_delta_or_leave_one_donor_out_which": max_shift_donor_row.left_out_group if max_shift_donor_row is not None else None,
-        "max_abs_delta_or_leave_one_study_out": max_shift_study_row.delta_or_vs_full if max_shift_study_row is not None else None,
-        "max_abs_delta_or_leave_one_study_out_which": max_shift_study_row.left_out_group if max_shift_study_row is not None else None,
+        # PR #29 round-2 fix (real bug, reappearance of the exact PR #27
+        # round-2 naming pattern): these columns are picked by MAXIMUM
+        # ABSOLUTE shift but store the SIGNED delta at that row (e.g. a
+        # real committed value of -1.762 under a "max_abs_delta_..." name
+        # at top10pct) -- contradicting the "abs" in the name, same bug
+        # class PR #27 already fixed once. Renamed to make clear the
+        # stored value is signed, selected by absolute magnitude.
+        "signed_delta_or_at_max_abs_shift_leave_one_donor_out": max_shift_donor_row.delta_or_vs_full if max_shift_donor_row is not None else None,
+        "signed_delta_or_at_max_abs_shift_leave_one_donor_out_which": max_shift_donor_row.left_out_group if max_shift_donor_row is not None else None,
+        "signed_delta_or_at_max_abs_shift_leave_one_study_out": max_shift_study_row.delta_or_vs_full if max_shift_study_row is not None else None,
+        "signed_delta_or_at_max_abs_shift_leave_one_study_out_which": max_shift_study_row.left_out_group if max_shift_study_row is not None else None,
         "min_or_mh_excl_leave_one_study_out": min_or_study_row.or_mh_excl if min_or_study_row is not None else None,
         "min_or_mh_excl_leave_one_study_out_which": min_or_study_row.left_out_group if min_or_study_row is not None else None,
     }

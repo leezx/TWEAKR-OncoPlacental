@@ -9,11 +9,13 @@ All numbers below are real qsub output, pulled back and verified
 byte-exact (md5) against the Argos-side files before being trusted or
 written up — same discipline as every prior step.
 
-**Round 1 review caught 2 real implementation deviations from the
-approved design plus 4 real write-up errors** (arithmetic, an
-unsupported causal claim, a mislabeled study, and an overstated
-cross-population comparison), all independently verified against real
-data before fixing — see "Review history."
+**2 review rounds caught 2 real implementation deviations from the
+approved design (round 1: missing Step0×StepA cross-tab; round 2: the
+non-estimable-donor exclusion wasn't literal) plus several real write-up
+errors** (arithmetic, an unsupported causal claim, a mislabeled study, an
+overstated cross-population comparison, a reappeared signed/max-abs
+naming bug), all independently verified against real data before fixing
+— see "Review history."
 
 ## Job provenance
 
@@ -21,8 +23,9 @@ data before fixing — see "Review history."
 |---|---|---|---|
 | M11 gene-set build + overlap audit | (PR #28 review) | 6 M11 panels, Ensembl-native | Clean; 50/45/39/34/62/56 genes per panel |
 | M11 N_PERM convergence probe | 3621108 | 20k-cell sample of the M11 subset | Certified `N_PERM=500` (Jaccard 0.94–0.98 vs. `N_PERM=1000`) |
-| M11 scoring + composition + concordance (round 1 draft) | 3621118 | 297,307 (M11)/665,473 (composition) cells | Completed cleanly, ~3 min; superseded by the rerun below (composition/enrichment logic fixed, M11 scores unchanged) |
-| **Composition + concordance rerun (this doc)** | **3621126** | 665,473/297,307 cells, M11 scores reused from job 3621118 (not rescored — round-1 review confirmed no re-score needed) | **Completed cleanly, <1 min; used for this doc** |
+| M11 scoring + composition + concordance (round 1 draft) | 3621118 | 297,307 (M11)/665,473 (composition) cells | Completed cleanly, ~3 min; superseded below (composition/enrichment logic fixed twice, M11 scores unchanged throughout) |
+| Composition + concordance rerun (round 1 fix) | 3621126 | 665,473/297,307 cells, M11 scores reused | Completed cleanly, <1 min; superseded below (round-2 review found the estimable-donor rule still wasn't literal) |
+| **Concordance rerun (round 2 fix, this doc)** | **3621127** | 297,307 cells, M11 scores + composition reused (round 2 confirmed composition correct as-is) | **Completed cleanly, <1 min; used for this doc** |
 
 Per-cell M11 score/composition/concordance detail files are kept on
 Argos only (`results/06_crc_projection/{m11_scoring_full,secondary_analysis_composition,secondary_analysis_concordance}/`),
@@ -207,64 +210,65 @@ ranked within the 297,307-cell M11 subset. revCSC-high: Section 1's
 global 665,473-cell ranking, restricted to the M11 subset (a fixed
 membership set, not re-ranked).
 
-**Round-1 fix — MH pooling now excludes non-estimable donors, per the
-locked design**: the round-1 draft computed each donor's "estimable"
-flag (zero-cell 2×2 table) for the per-donor reporting table but then
-passed *all* donor strata (estimable or not) into the pooled MH
-estimate, its CIs, and the leave-one-out/bootstrap sensitivities —
-directly contradicting `docs/STEP6_SECONDARY_ANALYSIS_DESIGN.md`'s
-explicit instruction that non-estimable donors be "excluded from the MH
-pooling." Confirmed as a real deviation by re-reading both the design
-text and the code. **Checked directly before fixing**: whether
-unconditionally retaining zero-cell strata would actually be more
-statistically standard is a genuinely separate question (it would — MH's
-formula handles zero-cell strata without bias, and roughly half of the
-"non-estimable" donors per cutoff have an informative, not fully
-degenerate, margin), but a PR explicitly executing an approved design
-must implement that design, not a different estimator — so this is fixed
-to comply literally: MH pooling, its CIs, and leave-one-out/bootstrap
-are now restricted to estimable donors only, with the exclusion count
-reported. The shift this causes is small (never changes which side of 1
-any CI falls on):
+**MH pooling excludes non-estimable donors, per the locked design —
+fixed twice to get the exclusion rule literally right**. Round 1 fixed
+the headline problem (the first draft passed *all* donor strata,
+estimable or not, into the pooled MH estimate, its CIs, and the
+leave-one-out/bootstrap sensitivities, contradicting the locked design's
+explicit "excluded from the MH pooling" instruction) but defined
+"non-estimable" as only `b=0` or `c=0` (the individual OR's own
+division-by-zero condition). Round 2 review caught that this still
+wasn't literal: the design says "a zero cell," and a real committed
+donor (`Pelka_2021_Cell.C150`, `a=0, b=2, c=2, d=1396`) had a genuine
+zero cell yet was marked estimable and kept in the pool. **Checked
+directly before either fix**: whether unconditionally retaining zero-cell
+strata (or retaining only the `a=0`/`d=0` ones, which give a
+well-defined boundary OR rather than a mathematically undefined one)
+would actually be more statistically standard is a genuinely separate
+question — it would, MH's formula handles zero-cell strata without bias
+— but a PR explicitly executing an approved design must implement that
+design as written, not a different estimator. **Fixed to the literal
+rule**: any of `a,b,c,d == 0` makes a donor non-estimable and excludes it
+from MH pooling, its CIs, and leave-one-out/bootstrap. This roughly
+doubled the exclusion count (26→48 at 5%, 13→17 at 10%, 6→12 at 20%) but
+barely moved any point estimate:
 
 | Cutoff | n M11-high | n revCSC-high | n both | Donors (estimable) | OR_MH | 95% CI (asymptotic) | 95% CI (donor-cluster bootstrap) |
 |---|---|---|---|---|---|---|---|
-| 5%×5% | 14,866 | 9,825 | 3,576 | 137 (111, 26 excluded) | **5.51** | (5.13, 5.91) | (4.25, 7.57) |
-| **10%×10% (primary)** | **29,731** | **20,418** | **9,322** | **137 (124, 13 excluded)** | **6.09** | **(5.82, 6.38)** | **(4.37, 8.27)** |
-| 20%×20% | 59,462 | 45,075 | 23,781 | 137 (131, 6 excluded) | **4.92** | (4.78, 5.06) | (3.78, 6.02) |
+| 5%×5% | 14,866 | 9,825 | 3,576 | 137 (89, 48 excluded) | **5.55** | (5.17, 5.96) | (4.24, 7.61) |
+| **10%×10% (primary)** | **29,731** | **20,418** | **9,322** | **137 (120, 17 excluded)** | **6.09** | **(5.82, 6.38)** | **(4.39, 8.05)** |
+| 20%×20% | 59,462 | 45,075 | 23,781 | 137 (125, 12 excluded) | **4.92** | (4.78, 5.07) | (3.89, 6.04) |
 
 **Real, robust, substantial enrichment** — every cutoff's CI (both the
 asymptotic MH CI and the donor-cluster bootstrap CI, which does not
 assume within-donor independence) clearly excludes 1. Per the round-2
-review correction, MH is **not** presented as having solved cell-level
-pseudoreplication by itself — the donor-cluster bootstrap CI is the
-inferential-uncertainty companion that does not make that assumption,
-and it agrees qualitatively with the asymptotic CI (wider, as expected,
-but still excluding 1 at every cutoff). **Note on scope**: leave-one-donor/study-out
-sensitivity below is checked on the point-estimate (OR) scale only — CIs
-were not recomputed at every excluded donor/study, so "excludes 1" is
-stated for the full-cohort CIs above, not claimed for every individual
-leave-one-out scenario.
+(design) review correction, MH is **not** presented as having solved
+cell-level pseudoreplication by itself — the donor-cluster bootstrap CI
+is the inferential-uncertainty companion that does not make that
+assumption, and it agrees qualitatively with the asymptotic CI (wider,
+as expected, but still excluding 1 at every cutoff). **Note on scope**:
+leave-one-donor/study-out sensitivity below is checked on the
+point-estimate (OR) scale only — CIs were not recomputed at every
+excluded donor/study, so "excludes 1" is stated for the full-cohort CIs
+above, not claimed for every individual leave-one-out scenario.
 
-**Round-1 fix — leave-one-study-out study attribution corrected**: the
-round-1 draft stated "excluding `Tian_2023_Nat_Med` produces the largest
-single-study shift at every cutoff," which is wrong at 2 of 3 cutoffs —
-confirmed directly against the committed per-study tables. The largest
-**absolute** shift is study-specific: `Joanito_2022_Nat_Genet` at 5%
-(OR 5.51→9.04 excluded, Δ≈+3.53), `Tian_2023_Nat_Med` at 10% (OR
-6.09→4.33, Δ≈−1.76), `Chen_2024_Cancer_Cell` at 20% (OR 4.92→6.58 excluded,
-Δ≈+1.66). What **is** true at every cutoff: `Tian_2023_Nat_Med` gives the
-largest *downward* shift (the lowest post-exclusion OR) at all three —
-4.26 (5%), 4.33 (10%), 3.72 (20%). **The common OR never drops below 3.7
-for any single study excluded, at any cutoff** — the enrichment finding
-is not driven by one study, under either framing. Leave-one-donor-out
-shifts are all small (max |Δ| 0.25–0.76 OR units across the 137
-estimable donors). Non-estimable donors (zero-margin 2×2 table) are
-26/137 (5% cutoff), 13/137 (10% cutoff), 6/137 (20% cutoff) — expected
-(fewer cells qualify as "high" at smaller cutoffs, so more donors have
-zero events in one cell of their own 2×2 table), reported transparently
-in the per-donor table, and now excluded from MH pooling per the locked
-design (see above).
+**Leave-one-study-out study attribution**: the largest **absolute**
+shift is study-specific: `Joanito_2022_Nat_Genet` at 5% (OR 5.55→9.24
+excluded, Δ≈+3.69), `Tian_2023_Nat_Med` at 10% (OR 6.09→4.33, Δ≈−1.76),
+`Chen_2024_Cancer_Cell` at 20% (OR 4.92→6.59 excluded, Δ≈+1.66). What
+**is** true at every cutoff: `Tian_2023_Nat_Med` gives the largest
+*downward* shift (the lowest post-exclusion OR) at all three — 4.29 (5%),
+4.33 (10%), 3.73 (20%). **The common OR never drops below 3.7 for any
+single study excluded, at any cutoff** — the enrichment finding is not
+driven by one study, under either framing. Leave-one-donor-out shifts
+are all small (max |Δ| 0.25–0.76 OR units, same influential donor —
+`Joanito_2022_Nat_Genet.CRC_JSC_S05` — at 5% and 10%; `Chen_2024_Cancer_Cell.P03`
+at 20%). Non-estimable donors (a real zero cell anywhere in the 2×2
+table, per the literal design rule) are 48/137 (5% cutoff), 17/137 (10%
+cutoff), 12/137 (20% cutoff) — expected (fewer cells qualify as "high"
+at smaller cutoffs, so more donors have a zero cell), reported
+transparently in the per-donor table, and excluded from MH pooling per
+the locked design.
 
 Full per-donor 2×2/OR tables (all 137 donors, estimable flag included),
 leave-one-donor/study-out tables (estimable donors only, per the fix
@@ -359,5 +363,29 @@ re-derive or re-score any frozen gut D/F/P, revCSC, or M11 gene set.
   was not rerun — round 1 review confirmed this was unaffected by any of
   the 6 issues; only composition/concordance (job 3621126) reran.
 
-Submitting for round-2 review before merge, same discipline as every
+- **Round 2 (REQUEST_CHANGES, "largely resolved" — the 6 round-1 items
+  confirmed fixed, 2 new real issues found, both independently verified
+  before fixing)**: (1) **Blocker**: the round-1 fix's "non-estimable"
+  definition (`b=0` or `c=0` only) was still not literal compliance with
+  the locked design's "a zero cell" wording — confirmed real on a
+  committed example (`Pelka_2021_Cell.C150`, `a=0`, wrongly marked
+  estimable, kept in the MH pool). Checked directly whether unconditional
+  retention would be more statistically standard (it would, for the
+  reasons already established in round 1) but fixed to the literal
+  `a,b,c,d==0` rule anyway, same "PR claims no design changes" reasoning
+  as round 1; exclusion counts roughly doubled (26→48/13→17/6→12 across
+  5/10/20%) but point estimates barely moved (5.51→5.55, 6.09→6.09,
+  4.92→4.92). (2) A reappearance of the exact PR #27 round-2 naming bug:
+  `max_abs_delta_or_leave_one_*_out` columns stored the *signed* delta
+  (e.g. a real committed `-1.762` under a `max_abs_...` name) — renamed
+  to `signed_delta_or_at_max_abs_shift_leave_one_*_out`. Two non-compute
+  wording fixes also applied: "137 estimable donors" corrected to the
+  actual per-cutoff estimable counts; "zero-margin" terminology corrected
+  to reflect the literal any-zero-cell rule. The GitHub PR description
+  itself (stale round-1 text) was also updated to match. Composition
+  (Step0×StepA cross-tab) and the same-population D/F/P sensitivity were
+  both confirmed correct as-is — not rerun; only concordance (job
+  3621127) reran.
+
+Submitting for round-3 review before merge, same discipline as every
 prior step.
