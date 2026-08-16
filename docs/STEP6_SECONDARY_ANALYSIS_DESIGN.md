@@ -427,5 +427,26 @@ Within the 297,307-cell subset only:
   committed as a script/artifact (`build_m11_gene_sets.py` +
   `m11_revcsc_overlap_audit.tsv`) rather than living only in design prose.
 
-Submitting for round-3 review before the 297,307-cell M11 job runs, same
+- **Round 3 (REQUEST_CHANGES, "no remaining statistical/design blocker"
+  after this fix — 1 real issue, confirmed directly before fixing)**: all 5
+  round-2 fixes confirmed substantively closed. One remaining blocker in
+  `build_m11_gene_sets.py`: the M11×revCSC overlap audit was **circular** —
+  it hardcoded the expected 5/6 overlap symbols, converted only those to
+  Ensembl IDs, and intersected M11 against that pre-specified set, so an
+  unexpected 7th overlap gene could never have been discovered and would
+  have silently remained in `*_minus_revCSC_overlap`. **Confirmed directly**
+  by reading the script — the reviewer's description was exactly right.
+  **Fixed**: `found_overlap` is now derived as
+  `genes_set & revcsc_ens_set` (the *full* 27-gene `revCSC_primary27`
+  Ensembl set), independently, for every M11 cutoff; the previously-found
+  5/6-gene list is retained only as an `assert` check against this
+  independently-derived result (fails loudly if a future M11 gene-list
+  revision introduces an unexpected overlap), never as the source of the
+  exclusion. Re-ran on Argos: the independently-derived overlap is
+  identical to the previously (circularly) reported one — 5 genes at
+  top50/top100, 6 at top200 — confirming the earlier numbers were correct,
+  just for the wrong (circular) reason; all output files byte-identical
+  (md5-verified) to the round-2 versions, only the script changed.
+
+Submitting for round-4 review before the 297,307-cell M11 job runs, same
 discipline as every prior step.

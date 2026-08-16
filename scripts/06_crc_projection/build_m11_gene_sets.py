@@ -79,26 +79,50 @@ def main():
     os.makedirs(args.audit_out, exist_ok=True)
 
     revcsc_map = load_revcsc_symbol_ensembl_map()  # ens -> symbol, primary27
+    revcsc_ens_set = set(revcsc_map.keys())
     revcsc_sym_to_ens = {s: e for e, s in revcsc_map.items()}
-    overlap_ens_top50_100 = {revcsc_sym_to_ens[s] for s in M11_REVCSC_OVERLAP_SYMBOLS}
-    overlap_ens_top200 = {revcsc_sym_to_ens[s] for s in M11_REVCSC_OVERLAP_SYMBOLS_TOP200}
-    print(f"revCSC primary27 overlap genes (top50/100 M11): "
-          f"{sorted(M11_REVCSC_OVERLAP_SYMBOLS)} -> {sorted(overlap_ens_top50_100)}")
-    print(f"revCSC primary27 overlap genes (top200 M11, adds PMEPA1): "
-          f"{sorted(M11_REVCSC_OVERLAP_SYMBOLS_TOP200)} -> {sorted(overlap_ens_top200)}")
+    # Hardcoded expected overlap (round-1/round-2 finding) kept ONLY as an
+    # assertion check against the independently-derived result below --
+    # round-3 review correctly flagged the previous version as circular
+    # (found_overlap was intersected against this pre-specified set, so an
+    # unexpected 7th overlap gene could never be discovered and would have
+    # silently remained in *_minus_revCSC_overlap). Fixed: overlap is now
+    # derived as genes_set & revcsc_ens_set -- the FULL revCSC_primary27
+    # gene set, independently, for every M11 cutoff -- with the hardcoded
+    # list only asserted against that real result, never used to compute it.
+    expected_overlap_ens_top50_100 = {revcsc_sym_to_ens[s] for s in M11_REVCSC_OVERLAP_SYMBOLS}
+    expected_overlap_ens_top200 = {revcsc_sym_to_ens[s] for s in M11_REVCSC_OVERLAP_SYMBOLS_TOP200}
+    print(f"revCSC_primary27_full: {len(revcsc_ens_set)} Ensembl IDs "
+          f"(full set used for independent overlap derivation below)")
+    print(f"Previously-found overlap, kept as an assertion target only: "
+          f"top50/100 -> {sorted(M11_REVCSC_OVERLAP_SYMBOLS)}, "
+          f"top200 -> {sorted(M11_REVCSC_OVERLAP_SYMBOLS_TOP200)}")
 
     cutoffs = {
-        "M11_top50": (load_m11_column(TOP50_SRC, n_top=50), overlap_ens_top50_100),
-        "M11_top100": (load_m11_column(TOP100_SRC), overlap_ens_top50_100),
-        "M11_top200": (load_m11_column(TOP200_SRC), overlap_ens_top200),
+        "M11_top50": load_m11_column(TOP50_SRC, n_top=50),
+        "M11_top100": load_m11_column(TOP100_SRC),
+        "M11_top200": load_m11_column(TOP200_SRC),
+    }
+    expected_by_cutoff = {
+        "M11_top50": expected_overlap_ens_top50_100,
+        "M11_top100": expected_overlap_ens_top50_100,
+        "M11_top200": expected_overlap_ens_top200,
     }
 
     audit_rows = []
-    for name, (genes, overlap_ens) in cutoffs.items():
+    for name, genes in cutoffs.items():
         genes_set = set(genes)
         assert len(genes_set) == len(genes), f"{name}: duplicate Ensembl IDs in source column"
-        found_overlap = genes_set & (overlap_ens_top50_100 | overlap_ens_top200)
-        excl_genes = genes_set - overlap_ens
+        # Independent derivation: intersect against the FULL revCSC_primary27
+        # gene set, not against any pre-specified expected subset.
+        found_overlap = genes_set & revcsc_ens_set
+        excl_genes = genes_set - found_overlap
+        assert found_overlap == expected_by_cutoff[name], (
+            f"{name}: independently-derived M11xrevCSC overlap {sorted(revcsc_map.get(e, e) for e in found_overlap)} "
+            f"does not match the previously-reported overlap "
+            f"{sorted(revcsc_map.get(e, e) for e in expected_by_cutoff[name])} -- "
+            f"a real, previously-unreported overlap gene may exist, investigate before trusting "
+            f"the *_minus_revCSC_overlap panel")
         full_path = f"{args.out_dir}/{name}_full.ensembl.txt"
         excl_path = f"{args.out_dir}/{name}_minus_revCSC_overlap.ensembl.txt"
         with open(full_path, "w") as fh:
