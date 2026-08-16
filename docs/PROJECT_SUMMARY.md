@@ -15,12 +15,15 @@ genuinely **shared** program between the two? Before that question can
 be asked of cancer data, a clean, adult-corrected reference for all
 three has to exist from normal tissue alone. That reference is what
 Steps 1–4 build. Applying it to real CRC Oncofetal cells (Step 6) is
-what actually answers the question — the primary analysis now has a
-real, honest answer (weak, largely donor/study-heterogeneous
-association, not a clean single-axis "= F" or "= P" result; see Step 6
-below and "What's next" for the secondary/tertiary analyses still
-needed before a stronger claim is defensible). The secondary analysis's
-design is now locked (PR #28) and its compute is the immediate next step.
+what actually answers the question — the primary analysis found a weak,
+largely donor/study-heterogeneous association (not a clean single-axis
+"= F" or "= P" result), but the secondary analysis (revCSC-high cells'
+developmental composition + M11 concordance) now closed, real, and
+honest: composition is bimodal (not F-dominant), and M11 — an
+independent NMF-derived module — shows real, robust concordance with
+revCSC substantially stronger than any single developmental axis. See
+Step 6 below and "What's next" for the tertiary analysis still needed
+before a fully conclusive answer.
 
 ## Step 1 — Data inventory
 
@@ -280,7 +283,7 @@ result** — the honest answer to Q1 at this primary-analysis resolution is
 a weak, largely donor/study-heterogeneous association, not a clean
 single-axis one.
 
-### Step 6 secondary analysis — design CLOSED (PR #28), compute not yet run
+### Step 6 secondary analysis — design + compute CLOSED (PR #28/#29)
 
 `docs/STEP6_SECONDARY_ANALYSIS_DESIGN.md` (4 review rounds) locks the
 design for the analysis explicitly deferred out of PR #27: whether
@@ -306,14 +309,35 @@ Pearson r=0.9997, byte-exact/md5-verified), and a later round caught that
 the overlap-audit script itself was circular (hardcoded the expected
 overlap genes instead of deriving them independently) — fixed and
 re-verified to produce identical output for the right reason. **PR #28
-merged**; the compute itself (M11 scoring on 297,307 cells, the
-composition/enrichment analysis) is the immediate next step.
+merged.**
+
+**PR #29 (the actual compute) then went through 3 more real review
+rounds**, catching real implementation deviations from the just-approved
+design that the design text alone hadn't guaranteed correct execution of:
+a missing Step0×StepA cross-tab (needed to show precisely how much of
+the unconditional argmax's apparent F share comes from cells with *no*
+supported axis — turned out to be 21.4 of 71.7 percentage points, ~30%),
+an MH zero-cell-donor exclusion rule implemented too loosely twice in a
+row (fixed to the design's literal wording only on the second pass), a
+reappeared signed/max-abs column-naming bug (same class PR #27 already
+fixed once), plus several write-up errors (an arithmetic mistake, an
+unsupported causal claim, a misattributed study, and a cross-population
+r-comparison overstatement that — once fixed by direct same-population
+recomputation — made the original claim stronger, not weaker). **PR #29
+merged** (`docs/STEP6_SECONDARY_ANALYSIS_RESULTS.md`).
+
+**Real, honest result**: revCSC-high cells' developmental composition is
+bimodal, not F-dominant (41.1% show no gut-developmental axis evidence at
+all, 42.6% show `F_Gut-specific` alone). **M11 shows real, robust
+concordance with revCSC that is substantially stronger than any single
+gut-developmental axis** — continuous r=0.318 (gene-disjoint,
+same-population comparison against all 5 D/F/P panels: |r|≤0.074),
+enrichment OR≈5–6 at every matched cutoff, every CI (asymptotic and
+donor-cluster bootstrap) excluding 1, robust to any single donor/study
+exclusion.
 
 ## What's next (not started)
 
-- **Step 6 secondary-analysis compute**: run the now-approved PR #28
-  design — M11 scoring (297,307 cells, `N_PERM=500`), revCSC-high cohort
-  composition, and the M11↔revCSC concordance tests.
 - **Tertiary Step 6 analysis**: full-atlas revCSC-independent D/F/P
   landscape — not yet designed.
 - **2 secondary/tertiary CRC datasets** (`HTAN_CRC_progressive_plasticity`,
