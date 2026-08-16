@@ -17,13 +17,18 @@ three has to exist from normal tissue alone. That reference is what
 Steps 1–4 build. Applying it to real CRC Oncofetal cells (Step 6) is
 what actually answers the question — the primary analysis found a weak,
 largely donor/study-heterogeneous association (not a clean single-axis
-"= F" or "= P" result), but the secondary analysis (revCSC-high cells'
-developmental composition + M11 concordance) now closed, real, and
+"= F" or "= P" result); the secondary analysis (revCSC-high cells'
+developmental composition + M11 concordance) is closed, real, and
 honest: composition is bimodal (not F-dominant), and M11 — an
 independent NMF-derived module — shows real, robust concordance with
-revCSC substantially stronger than any single developmental axis. See
-Step 6 below and "What's next" for the tertiary analysis still needed
-before a fully conclusive answer.
+revCSC substantially stronger than any single developmental axis; and
+the tertiary analysis (the same composition question asked of the
+*entire* 665,473-cell atlas, unconditional on revCSC status) is now also
+closed and confirms this pattern is not an artifact of subsetting to
+revCSC-high cells — it holds population-wide, with the SI-over-Colon
+regional skew getting *stronger*, not weaker, at full scale. See
+Step 6 below and "What's next" for the 2 additional CRC datasets and
+the Q1/Q2/Q4 cross-reference doc still needed to close out the project.
 
 ## Step 1 — Data inventory
 
@@ -336,14 +341,66 @@ enrichment OR≈5–6 at every matched cutoff, every CI (asymptotic and
 donor-cluster bootstrap) excluding 1, robust to any single donor/study
 exclusion.
 
+### Step 6 tertiary analysis — design + compute CLOSED (PR #30/#31)
+
+`docs/STEP6_TERTIARY_ANALYSIS_DESIGN.md` (PR #30, 4 review rounds) locks
+the last item in Step 6's original 3-analysis plan: apply the same
+axis-supported-status composition methodology from the secondary
+analysis (PR #28/#29) to **all 665,473 malignant cells**, unconditional
+on revCSC status, rather than only the revCSC-high cohort — directly
+answering the axis-composition component of Q3 of the original 6-question
+framework. Reuses PR #27's already-verified per-cell percentiles and
+PR #28/#29's already-reviewed composition machinery (imported, not
+reimplemented). Rounds 2–3 were narrow wording/internal-consistency
+cleanups (dominance-vs-support language, absence-of-evidence-vs-threshold
+language, a self-introduced inconsistency between two sections) — no new
+conceptual issues past round 1, which fixed a "formally separable states"
+overclaim and required splitting one conflated revCSC cross-tab into two
+correctly-labeled ones (operational cohort membership vs. matched-null
+support — the same distinction PR #28 round 1 first established).
+
+The real compute (PR #31, 2 review rounds; real qsub job 3621204, <1 min,
+byte-exact) needed no code fixes — round 1 caught 2 write-up-only issues,
+both independently verified against committed data before fixing: a
+semantic regression back to "natural threshold"/"biologically correct"
+language that PR #30's own design review had already removed, and a real
+factual sign error (a P-enrichment finding was claimed consistent with a
+"weak-but-positive" revCSC↔P correlation that is actually negative per
+PR #27's committed data). **PR #31 merged.**
+
+**Real, honest result** (`docs/STEP6_TERTIARY_ANALYSIS_RESULTS.md`): the
+same bimodal composition pattern from the secondary analysis holds across
+the *entire* atlas, not just the revCSC-high subset — confirming it is
+not an artifact of that subsetting. F-supported biology is, if anything,
+marginally *less* concentrated in revCSC-high cells (52.9%) than in the
+general population (56.7%); P-supported biology is only modestly more
+concentrated there (8.7% vs. 8.0%). The SI-over-Colon regional skew gets
+*stronger* population-wide (4.7× vs. 3× within the revCSC-high cohort).
+The two revCSC cross-tabs (operational top-10%-rank cohort vs.
+pre-specified percentile≥90 matched-null support) give genuinely
+different, both-real pictures of the same 53,415 P-supported cells (89%
+"outside" the fixed-size cohort vs. a near-even 49.5%/50.5% split at the
+matched-null threshold) — the concrete real-data payoff of PR #30's
+design fix. **This closes Step 6's full 3-analysis plan
+(primary/secondary/tertiary) on `CRC_single_cell_atlas_2025`.**
+
 ## What's next (not started)
 
-- **Tertiary Step 6 analysis**: full-atlas revCSC-independent D/F/P
-  landscape — not yet designed.
-- **2 secondary/tertiary CRC datasets** (`HTAN_CRC_progressive_plasticity`,
-  `CRLM_NMP_ATLAS`) — not yet scoped.
-- **Q2–Q6** of the original 6-question framework — entirely unscoped,
-  comes after the above.
+- **2 additional CRC datasets** (`HTAN_CRC_progressive_plasticity`,
+  `CRLM_NMP_ATLAS`) — extend the same primary/secondary/tertiary pipeline;
+  not yet scoped.
+- **Q1/Q2/Q4 cross-reference doc**: map this project's existing frozen
+  results explicitly onto the Q1/Q2/Q4 language of the original
+  6-question framework (Q3 is already answered above, by the tertiary
+  analysis's F×P quadrant table). Rescoped 2026-08-16 from the original
+  unscoped "Q2–Q6" item — see `Worklog.md` for the rescope rationale.
+- **Q5/Q6 of the original 6-question framework** (macrophage/TWEAK-driven
+  developmental program; independent functional consequences of the
+  placental component) — **explicitly out of scope for project
+  completion** (user-confirmed 2026-08-16): both require data this
+  project does not have (spatial macrophage/TWEAK perturbation data;
+  functional/invasion assay data). Documented here as a distinct future
+  aim, not a blocker.
 
 ## Standing practices (apply to every future step, not just Step 4)
 
