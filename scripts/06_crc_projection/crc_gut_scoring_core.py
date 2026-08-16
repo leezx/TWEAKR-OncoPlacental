@@ -209,10 +209,22 @@ SCORE_GENES_N_BINS = 25  # scanpy.tl.score_genes's own default -- NOT our
 
 
 def _nan_means_dense_or_sparse(x, axis):
+    """BUG FIX (found by reviewer, PR #27 round 2): X is float32 after
+    normalize_total+log1p (confirmed directly on Argos, not assumed), and
+    scanpy's own `_sparse_nanmean` explicitly sums in float64
+    (`y.sum(axis, dtype="float64")`) before dividing, while sparse
+    `.mean()`'s internal accumulation dtype is not guaranteed to match --
+    silently computing this in float32 would be a real, if usually small,
+    numerical divergence from the reference implementation, not just
+    harmless summation-order noise as originally (over)claimed. Fixed to
+    explicitly upcast to float64 for the sum, mirroring scanpy's own
+    `_sparse_nanmean` exactly."""
     from scipy import sparse
     if sparse.issparse(x):
-        return np.asarray(x.mean(axis=axis)).ravel()
-    return np.nanmean(x, axis=axis)
+        n = x.shape[axis]
+        s = np.asarray(x.sum(axis=axis, dtype="float64")).ravel()
+        return s / n
+    return np.nanmean(x, axis=axis, dtype="float64")
 
 
 def precompute_score_genes_bins(adata, gene_pool=None, n_bins=SCORE_GENES_N_BINS):

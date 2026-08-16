@@ -139,10 +139,34 @@ never in question):
    use** (`validate_score_genes_fast.py`): the selected control-gene
    *set* is byte-identical to real `scanpy.tl.score_genes`'s internal
    selection in every checked case (8/1442/2173-gene panels × real
-   signature + 3 null draws each), and resulting scores `allclose` to
-   1e-4 relative tolerance (the tiny residual is pure float64
-   summation-order noise from a different code path, not an algorithm
-   mismatch).
+   signature + 3 null draws each), and resulting scores originally
+   `allclose` to 1e-4 relative tolerance.
+
+   **Round 2 correction**: the first validation ran on the default
+   CSR-loaded object, not the CSC-converted object the real full-scale
+   run actually scores against, and `precompute_score_genes_bins` was
+   called *before* CSC conversion there — the reviewer correctly noted
+   this doesn't validate the exact production path or code order.
+   Separately, the original "pure float64 summation-order noise" claim
+   was an overclaim: `X` is confirmed float32 (checked directly, not
+   assumed) after `normalize_total`+`log1p`, and scanpy's own
+   `_sparse_nanmean` explicitly upcasts to float64 for the sum before
+   dividing, while `_nan_means_dense_or_sparse` was calling sparse
+   `.mean()` with an unspecified accumulation dtype. Both fixed:
+   `_nan_means_dense_or_sparse` now explicitly upcasts to float64
+   (`crc_gut_scoring_core.py`), and a new validation
+   (`validate_score_genes_fast_csc_production_path.py`) uses the exact
+   production call (`load_atlas(to_csc=True)`, bins precomputed on the
+   already-CSC object, in production's own call order) and adds an
+   end-to-end percentile/z-score check against a CSR-reference run.
+   Result: **exact agreement, `max_abs_diff=0.000e+00` in every checked
+   case** (stronger than the original 1e-4 `allclose` bar), plus
+   percentile/z-score Pearson r ≥0.9999 on the end-to-end check. Per the
+   reviewer's own stated bar ("if the CSC parity check passes... no
+   rerun is needed"), this closes the concern without requiring the
+   665,473-cell scoring job to be re-run — the fix was in a shared helper
+   function, and its numerical effect (now proven to be exactly zero) was
+   already negligible even before the fix.
 2. **CSR column-slicing is a second, independent bottleneck.** Even with
    `score_genes_fast`, the full run was observed running at ~10-14s/call
    *regardless of panel size* — far slower than a first (incomplete)
@@ -179,9 +203,19 @@ for the full run alone.
 | F_SI-specific | 1,437 | 100 |
 | P_Gut-specific | 76 | 100 |
 
-All 13 panels reach 100% Ensembl-ID resolution against the atlas
-(per `results/06_crc_projection/gut_scoring/gut_scoring_gene_id_mapping_summary.tsv`),
-consistent with PR #25's gene-ID contract.
+**Round 2 correction**: the previous version of this sentence said "100%
+Ensembl-ID resolution against the atlas," which conflated two different
+things. All 13 panels reach 100% *signature→Ensembl-ID mapping* — zero
+unmapped genes in
+`results/06_crc_projection/gut_scoring/gut_scoring_gene_id_mapping_summary.tsv`,
+consistent with PR #25's gene-ID contract. That is **not** the same as
+100% *presence in the atlas*: the `n_testable` column above shows several
+F panels are not fully present — `F_Gut-specific` 2,173/2,192,
+`F_Colon-specific` 1,442/1,451, `F_SI-specific` 1,437/1,452 (D_Gut-shared,
+P_Gut-specific, and all 8 revCSC panels are fully present). This is
+expected and unproblematic (not every mapped Ensembl ID needs to exist as
+a gene in this particular atlas's 28,476-gene panel), but the two
+denominators should not be described with the same "100%" claim.
 
 ## Primary analysis: results (real, honest — not gated on outcome)
 
@@ -235,14 +269,27 @@ holds under the corrected definition too.
   robust** to single-donor/study removal (|r| ≤ 0.030 throughout, no
   sign flip on leave-one-out). This is consistent with the negligible
   gene-overlap finding from PR #25's audit (D/P axes share zero genes
-  with revCSC) — a weak, stable, near-null association is the expected,
-  clean result here.
-- **F comparisons are directionally consistent (all positive) and
-  somewhat larger** (r = 0.005 to 0.19), strongest for
+  with revCSC) — **round 2 wording fix**: zero direct gene overlap and a
+  weak, stable, near-null correlation are two different claims. Zero
+  overlap only rules out the trivial mechanical explanation (shared
+  genes mechanically driving the score up together); it does not make a
+  near-zero *biological* correlation "expected" on its own — genes can
+  correlate at the expression level without any overlap in their gene
+  sets. The correct claim is narrower: this result is *consistent with*
+  there being no mechanical artifact behind the near-null D/P signal, not
+  that near-null was the a priori expected outcome.
+- **F comparisons' pooled Pearson r is positive in all 6** and
+  somewhat larger (r = 0.005 to 0.19) than the D/P pairs, strongest for
   `F_SI-specific`/`F_Gut-specific` with the extended revCSC variant
   (r = 0.17-0.19) and weakest for `F_Colon-specific` (r = 0.005-0.05)
   despite `F_Colon-specific` being the *primary* regional F axis per
   Step 4a's locked hierarchy — a real, not obviously expected, pattern.
+  **Round 2 wording fix**: this positive-direction consistency holds for
+  Pearson r specifically — Spearman ρ is negative for 2 of the 6 F pairs
+  (`revCSC_primary27_minus_CLU`↔`F_Colon-specific`: -0.029;
+  `revCSC_primary27_minus_CLU_ASS1`↔`F_Gut-specific`: -0.013), so "F
+  comparisons are directionally consistent" without the Pearson
+  qualifier would overstate the agreement between the two metrics.
 - **5 of the 6 F-comparison pairs are NOT robust** to
   leave-one-donor-or-study-out (Pearson-and-Spearman criterion, see round
   2 correction above): all 3 pairings using the primary (27-gene) revCSC
@@ -294,25 +341,65 @@ of any frozen gut D/F/P or revCSC gene set.
   both the convergence check and full run were discarded and re-run from
   scratch rather than patched. This document reflects the reproducible
   re-run throughout.
-- **Round 2 (fresh full review after round-1 fixes)**: reviewer re-fetched
-  the PR at head and, while independently re-deriving numbers from the
-  committed TSVs, caught two more real issues. (1) A prose/data
-  mismatch — the results text cited a -0.064 single-study Pearson-r
-  shift, but the committed overview table said -0.054; traced to a
-  column-indexing mistake made while manually re-deriving the number for
-  prose (read `pooled_spearman_rho_excl` instead of
-  `delta_pearson_r_vs_full`) — the committed table's -0.054 was correct
-  all along, only the prose was wrong; fixed, along with the resulting
-  "13×" ratio claim (corrected to ~11×). (2) A real methodological gap —
-  `robust_to_no_single_donor_or_study` was computed from Pearson sign
-  stability only; direct verification against the per-donor/per-study
-  leave-one-out files found `revCSC_extended28_minus_CLU_ASS1` ↔
-  `F_Gut-specific` is Pearson-stable but Spearman-sign-flips when
-  `Terekhanova_2023_Nature` is excluded. Fixed the robustness definition
-  to require both metrics; re-ran the primary-analysis step only (the
-  underlying per-cell scores were untouched, so no re-scoring needed) —
-  exactly 1 of 10 pairs' flag changed (that one, True→False), confirming
-  the fix was narrow and correctly scoped.
+- **Round 2 (fresh full review after round-1 fixes, REQUEST_CHANGES,
+  6 real issues)**: reviewer re-fetched the PR at head and reviewed it
+  independently against the merged PR #26 contract rather than the
+  earlier (truncated) review thread. Explicit qualification from the
+  reviewer: none of the 6 issues implied the reproducible full compute
+  was scientifically invalid or required a full 665,473-cell rerun.
+  1. **Prose/data mismatch** — the results text cited a -0.064
+     single-study Pearson-r shift, but the committed overview table said
+     -0.054; traced to a column-indexing mistake made while manually
+     re-deriving the number for prose (read `pooled_spearman_rho_excl`
+     instead of `delta_pearson_r_vs_full` — -0.06418 was actually that
+     row's *Spearman* ρ, not the Pearson delta). The committed table's
+     -0.054 was correct all along; only the prose was wrong. Fixed, along
+     with the resulting "13×" ratio claim (corrected to ~11×).
+  2. **Imprecise "100% Ensembl-ID resolution" claim** — conflated 100%
+     signature→Ensembl *mapping* (real, zero unmapped) with 100%
+     *presence in the atlas* (not true for 3 F panels). Fixed to state
+     both denominators explicitly.
+  3. **CSC production-path validation gap** — the original
+     `validate_score_genes_fast.py` validated on a CSR-loaded object with
+     bins precomputed *before* CSC conversion, not the exact production
+     call order (`load_atlas(to_csc=True)` then precompute-on-CSC).
+     Separately, the "pure float64 summation-order noise" claim was an
+     overclaim — `X` is float32 and `_nan_means_dense_or_sparse` didn't
+     match scanpy's explicit float64 upcasting. Both fixed: a new
+     production-path validation script plus the upcasting fix — result
+     is now **exact** agreement (`max_abs_diff=0.000e+00`), stronger than
+     the original 1e-4 bar. Per the reviewer's own stated criterion, this
+     closes the concern without a full rescore.
+  4. **Missing-gate-file silent fallback** — `crc_gut_scoring_full.py`
+     printed a warning and silently used `N_PERM=100` for every panel if
+     the convergence-check gate file was missing, contradicting the
+     locked "convergence check MUST run first" contract. Fixed to raise
+     instead (this run's actual gate file was present and correctly
+     applied throughout — a code-robustness fix for future runs, not a
+     correction to this run's results).
+  5. **Robustness label was Pearson-only** — `robust_to_no_single_donor_or_study`
+     was computed from Pearson sign stability only; direct verification
+     against the per-donor/per-study leave-one-out files found
+     `revCSC_extended28_minus_CLU_ASS1` ↔ `F_Gut-specific` is
+     Pearson-stable but Spearman-sign-flips when
+     `Terekhanova_2023_Nature` is excluded. Fixed the robustness
+     definition to require both metrics, and added explicit
+     `robust_pearson_sign_stable`/`robust_spearman_sign_stable` columns
+     alongside the combined flag for transparency (per the reviewer's
+     suggested alternative of reporting separate flags). Re-ran the
+     primary-analysis step only (per-cell scores untouched, no
+     re-scoring needed) — exactly 1 of 10 pairs' combined flag changed
+     (True→False), confirming the fix was narrow and correctly scoped.
+  6. **Schema naming bug** — `max_abs_delta_pearson_r_leave_one_*_out`
+     columns stored the *signed* delta at the row of largest absolute
+     shift, contradicting "abs" in the name. Renamed to
+     `signed_delta_pearson_r_at_max_abs_shift_leave_one_*_out`.
+
+  Also two interpretive wording fixes (round 2): "zero gene overlap"
+  and "near-zero correlation expected" are different claims — zero
+  overlap only rules out a mechanical explanation, corrected; and "F
+  comparisons directionally consistent" was qualified to Pearson r
+  specifically, since 2 of 6 pairs' Spearman ρ is negative.
 
 Submitting for compute review before merge, same discipline as every
 prior step.

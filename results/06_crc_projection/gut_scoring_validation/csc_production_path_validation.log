@@ -1,0 +1,42 @@
+Loading atlas via the EXACT production call: load_atlas(n_cells_subset=N_CELLS, to_csc=True)
+Loading /home/zz950/DATA/scRNAseq/meta_study/CRC_single_cell_atlas_2025/adata_nmf.h5ad ...
+Loaded 665473 cells x 28476 genes in 46.7s
+Stratified subset (by study_id, seed=20260815): 5004 cells (target 5000)
+Converted X to CSC (for fast repeated column-slicing) in 0.3s
+X dtype after production-path load: float32, format: csc
+Precomputed bins on the CSC object (production order) in 0.0s
+
+=== D_Gut-shared (n_testable=8) ===
+  real_signature: control_gene_sets_match=True (n_ref=250, n_fast=250), max_abs_diff=0.000e+00, allclose(rtol=1e-4)=True [OK]
+  null_draw_0: control_gene_sets_match=True (n_ref=250, n_fast=250), max_abs_diff=0.000e+00, allclose(rtol=1e-4)=True [OK]
+  null_draw_1: control_gene_sets_match=True (n_ref=350, n_fast=350), max_abs_diff=0.000e+00, allclose(rtol=1e-4)=True [OK]
+  null_draw_2: control_gene_sets_match=True (n_ref=300, n_fast=300), max_abs_diff=0.000e+00, allclose(rtol=1e-4)=True [OK]
+
+=== F_Colon-specific (n_testable=1442) ===
+  real_signature: control_gene_sets_match=True (n_ref=1034, n_fast=1034), max_abs_diff=0.000e+00, allclose(rtol=1e-4)=True [OK]
+  null_draw_0: control_gene_sets_match=True (n_ref=1048, n_fast=1048), max_abs_diff=0.000e+00, allclose(rtol=1e-4)=True [OK]
+  null_draw_1: control_gene_sets_match=True (n_ref=1092, n_fast=1092), max_abs_diff=0.000e+00, allclose(rtol=1e-4)=True [OK]
+  null_draw_2: control_gene_sets_match=True (n_ref=1085, n_fast=1085), max_abs_diff=0.000e+00, allclose(rtol=1e-4)=True [OK]
+
+=== F_Gut-specific (n_testable=2173) ===
+  real_signature: control_gene_sets_match=True (n_ref=1063, n_fast=1063), max_abs_diff=0.000e+00, allclose(rtol=1e-4)=True [OK]
+  null_draw_0: control_gene_sets_match=True (n_ref=1071, n_fast=1071), max_abs_diff=0.000e+00, allclose(rtol=1e-4)=True [OK]
+  null_draw_1: control_gene_sets_match=True (n_ref=1067, n_fast=1067), max_abs_diff=0.000e+00, allclose(rtol=1e-4)=True [OK]
+  null_draw_2: control_gene_sets_match=True (n_ref=1058, n_fast=1058), max_abs_diff=0.000e+00, allclose(rtol=1e-4)=True [OK]
+
+=== End-to-end percentile check: D_Gut-shared, N_PERM=20 (small, for speed) ===
+Loading /home/zz950/DATA/scRNAseq/meta_study/CRC_single_cell_atlas_2025/adata_nmf.h5ad ...
+Loaded 665473 cells x 28476 genes in 45.5s
+Stratified subset (by study_id, seed=20260815): 5004 cells (target 5000)
+    D_Gut-shared: real score computed in 0.3s (n_testable=8)
+    D_Gut-shared: 20/20 null draws done (5.4s, 0.27s/draw)
+    D_Gut-shared: all 20 null draws done in 5.4s
+    D_Gut-shared: real score computed in 0.0s (n_testable=8)
+    D_Gut-shared: 20/20 null draws done (0.1s, 0.01s/draw)
+    D_Gut-shared: all 20 null draws done in 0.1s
+  n_testable: ref=8, fast=8
+  percentile Pearson r (CSR-reference vs CSC-production-fast): 0.9999
+  z-score Pearson r (CSR-reference vs CSC-production-fast): 1.0000
+  End-to-end check: OK (threshold r>0.99, N_PERM=20 so exact agreement isn't expected -- this checks the same qualitative signal, not bit-identity)
+
+=== ALL CHECKS PASSED ===

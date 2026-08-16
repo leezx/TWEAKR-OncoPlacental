@@ -163,6 +163,7 @@ def main():
 
         if r_all is None:
             robust = None
+            robust_pearson_only = robust_spearman_only = None
             max_shift_donor = max_shift_study = None
         else:
             max_shift_donor_row = lodo_df.loc[lodo_df.delta_pearson_r_vs_full.abs().idxmax()] \
@@ -194,16 +195,31 @@ def main():
             same_sign_study_rho = all(
                 (rho_all >= 0) == (v >= 0) for v in losout_df.pooled_spearman_rho_excl.dropna()
             )
-            robust = bool(same_sign_donor_r and same_sign_study_r
-                          and same_sign_donor_rho and same_sign_study_rho)
+            robust_pearson_only = bool(same_sign_donor_r and same_sign_study_r)
+            robust_spearman_only = bool(same_sign_donor_rho and same_sign_study_rho)
+            robust = bool(robust_pearson_only and robust_spearman_only)
 
+        # SCHEMA FIX (found by reviewer, PR #27 round 2): these columns
+        # are named "max_abs_delta_..." but stored the SIGNED delta at
+        # the row of largest absolute shift (so values can be negative),
+        # contradicting the "abs" in the name. Renamed to make clear the
+        # value is signed, picked by absolute magnitude.
         overview_rows.append({
             "pair": pair_name, "revcsc_panel": revcsc_panel, "dfp_panel": dfp_panel,
             "n_cells_total": len(x), "n_donors": n_donors, "n_donors_estimable": n_estimable,
             "pooled_pearson_r_all_cells": r_all, "pooled_spearman_rho_all_cells": rho_all,
             "pooled_not_estimable_reason": reason_all,
-            "max_abs_delta_pearson_r_leave_one_donor_out": max_shift_donor,
-            "max_abs_delta_pearson_r_leave_one_study_out": max_shift_study,
+            "signed_delta_pearson_r_at_max_abs_shift_leave_one_donor_out": max_shift_donor,
+            "signed_delta_pearson_r_at_max_abs_shift_leave_one_study_out": max_shift_study,
+            # Round 2 fix: robust now requires Pearson AND Spearman
+            # sign-stability (both leave-one-donor-out and
+            # leave-one-study-out); the two component flags are also
+            # reported explicitly so a reader can see which metric (if
+            # either) drove a non-robust verdict, per the reviewer's
+            # suggestion to expose per-metric robustness rather than
+            # only a single combined boolean.
+            "robust_pearson_sign_stable": robust_pearson_only,
+            "robust_spearman_sign_stable": robust_spearman_only,
             "robust_to_no_single_donor_or_study": robust,
         })
         print(f"  pooled r={r_all}, rho={rho_all}, robust={robust}", flush=True)

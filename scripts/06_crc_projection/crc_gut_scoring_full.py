@@ -25,11 +25,14 @@ source directly), which extrapolates to ~18h+ for the full 13-panel job
 -- infeasible. score_genes_fast precomputes that binning once and reuses
 it, empirically ~12s/call for the largest panel at full scale (~4-5x
 faster for large panels, more for small ones), and is numerically
-validated against real scanpy.tl.score_genes before use here
-(validate_score_genes_fast.py: byte-identical control-gene-set selection
-plus allclose scores to 1e-4 relative tolerance -- the residual
-difference is pure float64 summation-order noise, not an algorithm
-mismatch). The convergence check (crc_gut_scoring_convergence_check.py)
+validated against real scanpy.tl.score_genes on the EXACT production
+code path -- CSC-converted object, bins precomputed in production's own
+call order -- before use here
+(validate_score_genes_fast_csc_production_path.py: byte-identical
+control-gene-set selection AND exact score agreement,
+max_abs_diff=0.000e+00, after also fixing _nan_means_dense_or_sparse to
+match scanpy's float64 summation exactly rather than relying on sparse
+.mean()'s unspecified accumulation dtype). The convergence check (crc_gut_scoring_convergence_check.py)
 deliberately uses the real, non-fast implementation throughout, since
 its whole purpose is validating the statistical design against the
 reference method.
@@ -48,13 +51,22 @@ GATED_N_PERM = 500
 
 
 def load_gate_panels(convergence_check_dir):
+    """BUG FIX (found by reviewer, PR #27 round 2): a missing gate file
+    previously only printed a WARNING and silently fell back to
+    N_PERM=100 for every panel -- exactly the failure mode the locked
+    contract ("crc_gut_scoring_convergence_check.py MUST be run first")
+    exists to prevent, and the warning could easily scroll past unnoticed
+    in a long qsub log. Fixed to raise instead: a missing gate file is
+    always a real problem (either the convergence check hasn't run, or a
+    path is wrong), never a legitimate reason to proceed ungated."""
     gate_path = f"{convergence_check_dir}/nperm500_required_panels.txt"
     if not os.path.exists(gate_path):
-        print(f"WARNING: no convergence-check gate file found at {gate_path} -- "
-              f"proceeding with N_PERM={DEFAULT_N_PERM} for ALL panels. The convergence "
-              f"check should be run first per the locked contract; this warning means "
-              f"that gate was not applied.", flush=True)
-        return []
+        raise FileNotFoundError(
+            f"Convergence-check gate file not found at {gate_path}. "
+            f"crc_gut_scoring_convergence_check.py MUST be run first, per the "
+            f"locked contract -- refusing to silently proceed with N_PERM={DEFAULT_N_PERM} "
+            f"for every panel ungated."
+        )
     with open(gate_path) as f:
         panels = [l.strip() for l in f if l.strip()]
     return panels
