@@ -182,10 +182,11 @@ the already-scored parquet already on Argos; run via qsub for consistency
 with standing discipline anyway, since it touches the full-atlas file):
 loads `crc_gut_scoring_all_panels.parquet` + `crc_gut_scoring_cell_metadata.parquet`
 (no new scoring), computes §2's 8-category status + Step0×StepA cross-tab,
-§3's Q3-quadrant table, §4a/§4b's two revCSC cross-tabs, §5's donor/study
-aggregation for every table (via composite joint-labels through
-`categorical_donor_study_summary`, not the pooled-only crosstab helper) —
-writes summary/overview tables only (no new per-cell files), same "small
+§3's Q3-quadrant table, §4a/§4b's two revCSC cross-tabs, and §5's
+donor/study aggregation for every table **except the intentionally
+pooled-only Step0×StepA cross-tab** (via composite joint-labels through
+`categorical_donor_study_summary` for the Q3/4a/4b tables) — writes
+summary/overview tables only (no new per-cell files), same "small
 deliverable" size norm as Step 6 secondary's composition output.
 
 ## Review history
@@ -230,5 +231,12 @@ deliverable" size norm as Step 6 secondary's composition output.
   precedent for that specific descriptive table) — fixed by explicitly
   exempting it rather than leaving an internal contradiction.
 
-Submitting for round-3 review before any qsub job runs, same discipline
+- **Round 3 (REQUEST_CHANGES, one residual internal-contradiction leftover
+  only)**: the "Compute plan" section still said §5 gives donor/study
+  aggregation "for every table ... not the pooled-only crosstab helper,"
+  contradicting §5's own just-fixed explicit exemption of the Step0×StepA
+  cross-tab — a one-line miss when applying round 2's fix, not a new
+  design issue. Fixed to state the exemption consistently in both places.
+
+Submitting for round-4 review before any qsub job runs, same discipline
 as every prior step.
