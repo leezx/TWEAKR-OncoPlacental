@@ -94,11 +94,28 @@ def main():
     cov_path = f"{out_dir}/coverage_check.tsv"
     cov_all.to_csv(cov_path, sep="\t", index=False)
     print(f"Wrote {cov_path}", flush=True)
-    low_coverage = cov_all[cov_all["n_testable"] < 0.5 * cov_all["n_panel_genes"]]
-    if len(low_coverage) > 0:
-        print(f"WARNING: {len(low_coverage)} panel/dataset pairs have <50% gene "
-              f"coverage -- see {cov_path}. Proceeding (not a hard block per "
-              f"design, but flagged loudly for review):\n{low_coverage}", flush=True)
+    # Round-1 review correction: a flat 50% floor missed the real case
+    # this project actually hit -- CRLM's P_Gut-specific at 40/76=52.6%
+    # is well above 50% but far below every other panel/dataset pair
+    # (next lowest: 87.5%), i.e. "unexpectedly low" relative to its
+    # peers per the design's actual wording, not relative to an
+    # arbitrary absolute floor. Flagged here as a per-dataset relative
+    # deviation instead (>15 points below that dataset's own median
+    # coverage). The design's contract is a REQUIRED INVESTIGATION gate,
+    # not an automatic compute-blocking gate or an automatically-waived
+    # one -- this script does not itself decide the panel remains usable;
+    # it only surfaces the deviation loudly so the investigation (done
+    # once, by hand, and reported in docs/STEP6_DATASET_EXTENSION_RESULTS.md)
+    # is not silently skipped.
+    cov_all["coverage_frac"] = cov_all["n_testable"] / cov_all["n_panel_genes"]
+    cov_all["dataset_median_coverage_frac"] = cov_all.groupby("dataset")["coverage_frac"].transform("median")
+    flagged = cov_all[cov_all["coverage_frac"] < cov_all["dataset_median_coverage_frac"] - 0.15]
+    if len(flagged) > 0:
+        print(f"REQUIRES INVESTIGATION (per design's pre-compute gate, not "
+              f"auto-waived): {len(flagged)} panel/dataset pairs have coverage "
+              f">15 points below their own dataset's median -- see {cov_path}. "
+              f"Investigation result MUST be documented in the results write-up "
+              f"before proceeding to claims based on that panel:\n{flagged}", flush=True)
 
     print("\n=== Canonical-marker sentinel check ===", flush=True)
     htan_group_col = "cell_type"

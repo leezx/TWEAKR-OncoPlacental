@@ -21,6 +21,7 @@ already normalized (non-integer, max ~8-9 consistent with log1p output)
 -- confirmed directly, not inferred from the inventory doc's shorthand.
 """
 import os
+import re
 import time
 import numpy as np
 import pandas as pd
@@ -96,10 +97,26 @@ def load_extension_dataset(path, dataset_name, to_csc=True):
     print(f"  raw.var_names byte-identical to var_names: {byte_identical}", flush=True)
 
     if byte_identical:
-        # Confirmed the common case for both extension datasets -- no
-        # suffix stripping needed, but the check itself is real (not a
-        # hardcoded skip): if a future re-run against updated source
-        # data breaks this, the branch below runs instead.
+        # Round-1 review correction: the byte-identical branch previously
+        # accepted the axes as "no suffix stripping needed" without ever
+        # actually checking they are bare Ensembl IDs -- byte-identical
+        # is not the same claim as bare-ID, and the code silently assumed
+        # the latter. Fixed to assert it directly (not inferred from
+        # coverage numbers looking reasonable): every ID must match the
+        # bare `ENSG` + 11-digit pattern, no version suffix, no other
+        # format. Confirmed to hold for both extension datasets before
+        # this fix was written (checked directly, not assumed), but the
+        # assertion itself is what makes that a proven fact of this run,
+        # not an inference from indirect evidence.
+        bare_ensembl_pattern = re.compile(r"^ENSG[0-9]{11}$")
+        non_bare = [v for v in work_var_names if not bare_ensembl_pattern.match(v)]
+        if non_bare:
+            raise ValueError(
+                f"{dataset_name}: var_names is byte-identical to raw.var_names, "
+                f"but {len(non_bare)} entries are not bare Ensembl IDs "
+                f"(e.g. {non_bare[:5]}) -- refusing to assume this is a "
+                f"simple no-suffix case without checking the ID format itself."
+            )
         canonical_var_names = work_var_names
     else:
         # (b) versioned-ID branch: canonicalize BOTH axes, assert no
@@ -288,3 +305,34 @@ def htan_provenance_overlap_audit():
         else "OVERLAP_FOUND_REVIEW_REQUIRED"
     )
     return summary, audit_conclusion, studies_with_htan_prefix_hits
+
+
+def htan_name_similarity_supplementary_check():
+    """Round-1 review correction: the results write-up asserted a
+    specific narrative (the meta-atlas's name-similar `HTAPP_HTAN` study
+    is actually a different HTAN sub-cohort, `HTA1_`-prefixed via Pelka
+    et al. 2021's Synapse project, vs. our dataset's `HTA8_`-prefixed
+    identifiers) that was checked interactively during development but
+    never committed as auditable script output -- an unsupported claim
+    by this project's own standing discipline. This function makes that
+    specific check a real, reproducible, committed artifact: for every
+    meta-atlas study whose name contains 'HTA' (a superset net of just
+    'HTAPP_HTAN', so it doesn't silently miss a differently-named
+    HTAN-affiliated study), reports its cell count and a sample of its
+    donor/patient/sample identifiers, so the specific narrative claim is
+    directly checkable against committed output rather than asserted."""
+    meta = ad.read_h5ad(META_ATLAS_H5AD, backed="r")
+    study_ids = meta.obs["study_id"].astype(str)
+    candidate_studies = sorted(study_ids[study_ids.str.contains("HTA", na=False, regex=False)].unique())
+    rows = []
+    for study in candidate_studies:
+        sub = meta.obs[study_ids == study]
+        for col in ["donor_id", "patient_id", "sample_id"]:
+            if col not in sub.columns:
+                continue
+            examples = sorted(sub[col].astype(str).unique().tolist())[:5]
+            rows.append({
+                "meta_atlas_study_id": study, "n_cells": len(sub),
+                "identifier_column": col, "example_identifiers": examples,
+            })
+    return pd.DataFrame(rows)
