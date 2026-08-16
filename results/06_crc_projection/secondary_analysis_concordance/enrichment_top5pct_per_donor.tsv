@@ -1,0 +1,138 @@
+donor_key	n_cells	a_m11hi_revcschi	b_m11hi_revcsclo	c_m11lo_revcschi	d_m11lo_revcsclo	estimable	odds_ratio	not_estimable_reason
+Chen_2024_Cancer_Cell||Chen_2024_Cancer_Cell.P01	5695	40	46	182	5427	True	25.929288103201145	
+Chen_2024_Cancer_Cell||Chen_2024_Cancer_Cell.P02	1549	1	3	68	1477	True	7.240196078431373	
+Chen_2024_Cancer_Cell||Chen_2024_Cancer_Cell.P03	7553	2	157	113	7281	True	0.8208105518290965	
+Chen_2024_Cancer_Cell||Chen_2024_Cancer_Cell.P04	1594	2	20	73	1499	True	2.0534246575342467	
+Chen_2024_Cancer_Cell||Chen_2024_Cancer_Cell.P05	3682	0	7	53	3622	False	0.0	at least one zero cell (a, b, c, or d == 0)
+Chen_2024_Cancer_Cell||Chen_2024_Cancer_Cell.P08	4141	3	63	125	3950	True	1.5047619047619047	
+Chen_2024_Cancer_Cell||Chen_2024_Cancer_Cell.P09	2055	3	29	60	1963	True	3.3844827586206896	
+Chen_2024_Cancer_Cell||Chen_2024_Cancer_Cell.P12	539	0	0	9	530	False		at least one zero cell (a, b, c, or d == 0)
+Chen_2024_Cancer_Cell||Chen_2024_Cancer_Cell.P14	4976	12	125	213	4626	True	2.084957746478873	
+Chen_2024_Cancer_Cell||Chen_2024_Cancer_Cell.P15	3191	8	85	170	2928	True	1.621038062283737	
+Chen_2024_Cancer_Cell||Chen_2024_Cancer_Cell.P16	1322	1	5	51	1265	True	4.96078431372549	
+Chen_2024_Cancer_Cell||Chen_2024_Cancer_Cell.P17	1870	2	4	52	1812	True	17.423076923076923	
+Chen_2024_Cancer_Cell||Chen_2024_Cancer_Cell.P18	4173	1	0	118	4054	False		at least one zero cell (a, b, c, or d == 0)
+Chen_2024_Cancer_Cell||Chen_2024_Cancer_Cell.P19	4250	21	221	160	3848	True	2.2852941176470587	
+Chen_2024_Cancer_Cell||Chen_2024_Cancer_Cell.P20	1454	0	35	41	1378	False	0.0	at least one zero cell (a, b, c, or d == 0)
+Chen_2024_Cancer_Cell||Chen_2024_Cancer_Cell.P21	1309	1	2	29	1277	True	22.017241379310345	
+Chen_2024_Cancer_Cell||Chen_2024_Cancer_Cell.P22	1819	2	30	106	1681	True	1.0572327044025158	
+Chen_2024_Cancer_Cell||Chen_2024_Cancer_Cell.P23	4690	2	35	240	4413	True	1.0507142857142857	
+Chen_2024_Cancer_Cell||Chen_2024_Cancer_Cell.P25	829	0	0	12	817	False		at least one zero cell (a, b, c, or d == 0)
+Chen_2024_Cancer_Cell||Chen_2024_Cancer_Cell.P26	1008	0	1	48	959	False	0.0	at least one zero cell (a, b, c, or d == 0)
+Joanito_2022_Nat_Genet||Joanito_2022_Nat_Genet.CRC2783	447	25	187	9	226	True	3.3571004159239455	
+Joanito_2022_Nat_Genet||Joanito_2022_Nat_Genet.CRC2787	411	48	317	5	41	True	1.2416403785488959	
+Joanito_2022_Nat_Genet||Joanito_2022_Nat_Genet.CRC2795	311	12	185	2	112	True	3.6324324324324326	
+Joanito_2022_Nat_Genet||Joanito_2022_Nat_Genet.CRC2801	695	61	199	46	389	True	2.592200131090234	
+Joanito_2022_Nat_Genet||Joanito_2022_Nat_Genet.CRC2803	1036	101	383	7	545	True	20.531518090264825	
+Joanito_2022_Nat_Genet||Joanito_2022_Nat_Genet.CRC2811	837	81	136	81	539	True	3.963235294117647	
+Joanito_2022_Nat_Genet||Joanito_2022_Nat_Genet.CRC2816	347	19	273	3	52	True	1.2063492063492063	
+Joanito_2022_Nat_Genet||Joanito_2022_Nat_Genet.CRC2817	450	147	269	0	34	False		at least one zero cell (a, b, c, or d == 0)
+Joanito_2022_Nat_Genet||Joanito_2022_Nat_Genet.CRC2821	1059	8	925	0	126	False		at least one zero cell (a, b, c, or d == 0)
+Joanito_2022_Nat_Genet||Joanito_2022_Nat_Genet.CRC2841	1077	84	653	16	324	True	2.6049004594180705	
+Joanito_2022_Nat_Genet||Joanito_2022_Nat_Genet.CRC2899	1114	53	307	32	722	True	3.895154723127036	
+Joanito_2022_Nat_Genet||Joanito_2022_Nat_Genet.CRC_JSC_S02	581	288	183	24	86	True	5.639344262295082	
+Joanito_2022_Nat_Genet||Joanito_2022_Nat_Genet.CRC_JSC_S05	2187	143	228	433	1383	True	2.0032514889996356	
+Joanito_2022_Nat_Genet||Joanito_2022_Nat_Genet.CRC_JSC_S06	812	192	345	44	231	True	2.9217391304347826	
+Joanito_2022_Nat_Genet||Joanito_2022_Nat_Genet.CRC_JSC_S07	765	246	234	55	230	True	4.396270396270396	
+Joanito_2022_Nat_Genet||Joanito_2022_Nat_Genet.CRC_JSC_S10	1806	706	257	310	533	True	4.7232082339651065	
+Joanito_2022_Nat_Genet||Joanito_2022_Nat_Genet.SC035	815	55	198	0	562	False		at least one zero cell (a, b, c, or d == 0)
+Joanito_2022_Nat_Genet||Joanito_2022_Nat_Genet.SC040	381	144	200	2	35	True	12.6	
+Joanito_2022_Nat_Genet||Joanito_2022_Nat_Genet.SC043	717	101	485	0	131	False		at least one zero cell (a, b, c, or d == 0)
+Joanito_2022_Nat_Genet||Joanito_2022_Nat_Genet.SC044	357	1	20	11	325	True	1.4772727272727273	
+Pelka_2021_Cell||Pelka_2021_Cell.C103	4339	3	101	5	4230	True	25.128712871287128	
+Pelka_2021_Cell||Pelka_2021_Cell.C104	1496	2	74	20	1400	True	1.8918918918918919	
+Pelka_2021_Cell||Pelka_2021_Cell.C105	1067	0	9	3	1055	False	0.0	at least one zero cell (a, b, c, or d == 0)
+Pelka_2021_Cell||Pelka_2021_Cell.C106	764	0	8	2	754	False	0.0	at least one zero cell (a, b, c, or d == 0)
+Pelka_2021_Cell||Pelka_2021_Cell.C107	1928	4	31	18	1875	True	13.440860215053764	
+Pelka_2021_Cell||Pelka_2021_Cell.C109	1383	0	11	0	1372	False		at least one zero cell (a, b, c, or d == 0)
+Pelka_2021_Cell||Pelka_2021_Cell.C110	772	49	124	19	580	True	12.062818336162987	
+Pelka_2021_Cell||Pelka_2021_Cell.C111	400	5	8	2	385	True	120.3125	
+Pelka_2021_Cell||Pelka_2021_Cell.C112	1467	1	11	0	1455	False		at least one zero cell (a, b, c, or d == 0)
+Pelka_2021_Cell||Pelka_2021_Cell.C113	2511	2	33	85	2391	True	1.704812834224599	
+Pelka_2021_Cell||Pelka_2021_Cell.C114	1282	1	27	4	1250	True	11.574074074074074	
+Pelka_2021_Cell||Pelka_2021_Cell.C115	505	2	5	5	493	True	39.44	
+Pelka_2021_Cell||Pelka_2021_Cell.C116	368	0	7	1	360	False	0.0	at least one zero cell (a, b, c, or d == 0)
+Pelka_2021_Cell||Pelka_2021_Cell.C118	1069	2	115	4	948	True	4.121739130434783	
+Pelka_2021_Cell||Pelka_2021_Cell.C119	1005	1	13	4	987	True	18.98076923076923	
+Pelka_2021_Cell||Pelka_2021_Cell.C122	1852	6	60	10	1776	True	17.76	
+Pelka_2021_Cell||Pelka_2021_Cell.C123	3677	8	230	17	3422	True	7.00153452685422	
+Pelka_2021_Cell||Pelka_2021_Cell.C124	768	4	38	2	724	True	38.10526315789474	
+Pelka_2021_Cell||Pelka_2021_Cell.C125	1962	1	60	2	1899	True	15.825	
+Pelka_2021_Cell||Pelka_2021_Cell.C126	588	3	21	7	557	True	11.36734693877551	
+Pelka_2021_Cell||Pelka_2021_Cell.C129	2979	9	248	33	2689	True	2.9571114369501466	
+Pelka_2021_Cell||Pelka_2021_Cell.C130	2972	9	92	42	2829	True	6.589285714285714	
+Pelka_2021_Cell||Pelka_2021_Cell.C132	1146	0	10	4	1132	False	0.0	at least one zero cell (a, b, c, or d == 0)
+Pelka_2021_Cell||Pelka_2021_Cell.C133	946	16	32	87	811	True	4.660919540229885	
+Pelka_2021_Cell||Pelka_2021_Cell.C134	1128	0	2	0	1126	False		at least one zero cell (a, b, c, or d == 0)
+Pelka_2021_Cell||Pelka_2021_Cell.C135	646	0	3	1	642	False	0.0	at least one zero cell (a, b, c, or d == 0)
+Pelka_2021_Cell||Pelka_2021_Cell.C136	1131	0	8	1	1122	False	0.0	at least one zero cell (a, b, c, or d == 0)
+Pelka_2021_Cell||Pelka_2021_Cell.C137	510	0	6	2	502	False	0.0	at least one zero cell (a, b, c, or d == 0)
+Pelka_2021_Cell||Pelka_2021_Cell.C138	383	0	2	3	378	False	0.0	at least one zero cell (a, b, c, or d == 0)
+Pelka_2021_Cell||Pelka_2021_Cell.C139	2467	4	25	20	2418	True	19.344	
+Pelka_2021_Cell||Pelka_2021_Cell.C140	2305	0	12	1	2292	False	0.0	at least one zero cell (a, b, c, or d == 0)
+Pelka_2021_Cell||Pelka_2021_Cell.C142	1100	1	75	16	1008	True	0.84	
+Pelka_2021_Cell||Pelka_2021_Cell.C143	988	1	15	7	965	True	9.19047619047619	
+Pelka_2021_Cell||Pelka_2021_Cell.C144	720	1	52	2	665	True	6.394230769230769	
+Pelka_2021_Cell||Pelka_2021_Cell.C145	2073	0	8	10	2055	False	0.0	at least one zero cell (a, b, c, or d == 0)
+Pelka_2021_Cell||Pelka_2021_Cell.C146	1819	4	67	0	1748	False		at least one zero cell (a, b, c, or d == 0)
+Pelka_2021_Cell||Pelka_2021_Cell.C147	1990	5	16	24	1945	True	25.325520833333332	
+Pelka_2021_Cell||Pelka_2021_Cell.C149	893	1	14	0	878	False		at least one zero cell (a, b, c, or d == 0)
+Pelka_2021_Cell||Pelka_2021_Cell.C150	1400	0	1	0	1399	False		at least one zero cell (a, b, c, or d == 0)
+Pelka_2021_Cell||Pelka_2021_Cell.C151	321	7	8	6	300	True	43.75	
+Pelka_2021_Cell||Pelka_2021_Cell.C152	945	0	48	5	892	False	0.0	at least one zero cell (a, b, c, or d == 0)
+Pelka_2021_Cell||Pelka_2021_Cell.C153	2581	1	45	5	2530	True	11.244444444444444	
+Pelka_2021_Cell||Pelka_2021_Cell.C154	1694	1	19	15	1659	True	5.821052631578947	
+Pelka_2021_Cell||Pelka_2021_Cell.C155	1096	0	11	22	1063	False	0.0	at least one zero cell (a, b, c, or d == 0)
+Pelka_2021_Cell||Pelka_2021_Cell.C156	431	4	29	2	396	True	27.310344827586206	
+Pelka_2021_Cell||Pelka_2021_Cell.C157	1811	1	45	7	1758	True	5.580952380952381	
+Pelka_2021_Cell||Pelka_2021_Cell.C158	575	2	0	8	565	False		at least one zero cell (a, b, c, or d == 0)
+Pelka_2021_Cell||Pelka_2021_Cell.C159	697	6	2	10	679	True	203.7	
+Pelka_2021_Cell||Pelka_2021_Cell.C160	1975	0	6	8	1961	False	0.0	at least one zero cell (a, b, c, or d == 0)
+Pelka_2021_Cell||Pelka_2021_Cell.C161	2131	1	16	1	2113	True	132.0625	
+Pelka_2021_Cell||Pelka_2021_Cell.C162	6891	2	78	39	6772	True	4.4523339907955295	
+Pelka_2021_Cell||Pelka_2021_Cell.C163	1797	3	85	18	1691	True	3.315686274509804	
+Pelka_2021_Cell||Pelka_2021_Cell.C164	1419	0	44	9	1366	False	0.0	at least one zero cell (a, b, c, or d == 0)
+Pelka_2021_Cell||Pelka_2021_Cell.C165	790	0	0	0	790	False		at least one zero cell (a, b, c, or d == 0)
+Pelka_2021_Cell||Pelka_2021_Cell.C166	4425	5	1	7	4412	True	3151.4285714285716	
+Pelka_2021_Cell||Pelka_2021_Cell.C168	686	11	5	14	656	True	103.08571428571429	
+Pelka_2021_Cell||Pelka_2021_Cell.C169	546	4	0	92	450	False		at least one zero cell (a, b, c, or d == 0)
+Pelka_2021_Cell||Pelka_2021_Cell.C170	3178	1	6	28	3143	True	18.708333333333332	
+Pelka_2021_Cell||Pelka_2021_Cell.C171	3671	11	17	96	3547	True	23.907475490196077	
+Pelka_2021_Cell||Pelka_2021_Cell.C172	328	0	1	1	326	False	0.0	at least one zero cell (a, b, c, or d == 0)
+Pelka_2021_Cell||Pelka_2021_Cell.C173	747	0	0	22	725	False		at least one zero cell (a, b, c, or d == 0)
+Qi_2022_Nat_Commun||Qi_2022_Nat_Commun.P1	432	1	24	14	393	True	1.1696428571428572	
+Qi_2022_Nat_Commun||Qi_2022_Nat_Commun.P2	1045	8	48	16	973	True	10.135416666666666	
+Qi_2022_Nat_Commun||Qi_2022_Nat_Commun.P3	2910	5	4	16	2885	True	225.390625	
+Qi_2022_Nat_Commun||Qi_2022_Nat_Commun.P4	1534	7	25	75	1427	True	5.327466666666667	
+Qian_2020_Cell_Res||Qian_2020_Cell_Res.P31	2748	35	515	16	2182	True	9.268203883495145	
+Qian_2020_Cell_Res||Qian_2020_Cell_Res.P32	2364	0	10	2	2352	False	0.0	at least one zero cell (a, b, c, or d == 0)
+Qian_2020_Cell_Res||Qian_2020_Cell_Res.P33	2194	7	28	43	2116	True	12.30232558139535	
+Qian_2020_Cell_Res||Qian_2020_Cell_Res.P35	1609	5	6	9	1589	True	147.12962962962962	
+Qian_2020_Cell_Res||Qian_2020_Cell_Res.P38	355	0	0	1	354	False		at least one zero cell (a, b, c, or d == 0)
+Sathe_2023_Clin_Cancer_Res||Sathe_2023_Clin_Cancer_Res.P5915	1138	0	0	0	1138	False		at least one zero cell (a, b, c, or d == 0)
+Sathe_2023_Clin_Cancer_Res||Sathe_2023_Clin_Cancer_Res.P6198	5333	0	0	126	5207	False		at least one zero cell (a, b, c, or d == 0)
+Terekhanova_2023_Nature||Terekhanova_2023_Nature.HTA12_101	2931	1	22	3	2905	True	44.015151515151516	
+Terekhanova_2023_Nature||Terekhanova_2023_Nature.HTA12_102	2261	0	4	3	2254	False	0.0	at least one zero cell (a, b, c, or d == 0)
+Terekhanova_2023_Nature||Terekhanova_2023_Nature.HTA12_107	1507	0	0	0	1507	False		at least one zero cell (a, b, c, or d == 0)
+Tian_2023_Nat_Med||Tian_2023_Nat_Med.P02	823	0	6	2	815	False	0.0	at least one zero cell (a, b, c, or d == 0)
+Tian_2023_Nat_Med||Tian_2023_Nat_Med.P07	502	0	89	0	413	False		at least one zero cell (a, b, c, or d == 0)
+Tian_2023_Nat_Med||Tian_2023_Nat_Med.P10	3144	11	12	18	3103	True	158.02314814814815	
+Tian_2023_Nat_Med||Tian_2023_Nat_Med.P11	5234	51	307	17	4859	True	47.48208469055375	
+Tian_2023_Nat_Med||Tian_2023_Nat_Med.P12	2625	60	90	101	2374	True	15.669966996699669	
+Tian_2023_Nat_Med||Tian_2023_Nat_Med.P13	1461	79	24	182	1176	True	21.26923076923077	
+Tian_2023_Nat_Med||Tian_2023_Nat_Med.P18	1431	119	234	50	1028	True	10.455726495726497	
+Tian_2023_Nat_Med||Tian_2023_Nat_Med.P19	729	0	0	0	729	False		at least one zero cell (a, b, c, or d == 0)
+Tian_2023_Nat_Med||Tian_2023_Nat_Med.P20	5439	15	83	13	5328	True	74.06858202038924	
+Tian_2023_Nat_Med||Tian_2023_Nat_Med.P21	5400	139	215	225	4821	True	13.852589147286821	
+Tian_2023_Nat_Med||Tian_2023_Nat_Med.P23	431	3	5	12	411	True	20.55	
+Tian_2023_Nat_Med||Tian_2023_Nat_Med.P24	16864	87	209	406	16162	True	16.570745044429255	
+Tian_2023_Nat_Med||Tian_2023_Nat_Med.P27	8019	4	103	1	7911	True	307.22330097087377	
+Tian_2023_Nat_Med||Tian_2023_Nat_Med.P28	7689	3	20	10	7656	True	114.84	
+Tian_2023_Nat_Med||Tian_2023_Nat_Med.P29	1264	7	11	183	1063	True	3.696472925981123	
+Tian_2023_Nat_Med||Tian_2023_Nat_Med.P33	10479	0	99	0	10380	False		at least one zero cell (a, b, c, or d == 0)
+Tian_2023_Nat_Med||Tian_2023_Nat_Med.P34	3817	2	2	30	3783	True	126.1	
+Tian_2023_Nat_Med||Tian_2023_Nat_Med.P36	1498	0	1	0	1497	False		at least one zero cell (a, b, c, or d == 0)
+Wang_2023_Sci_Adv||Wang_2023_Sci_Adv.P0107	1394	69	22	388	915	True	7.396321462043112	
+Wang_2023_Sci_Adv||Wang_2023_Sci_Adv.P0813	4675	35	71	312	4257	True	6.726029252437703	
+Wang_2023_Sci_Adv||Wang_2023_Sci_Adv.P0920	16221	0	9	74	16138	False	0.0	at least one zero cell (a, b, c, or d == 0)
+Wang_2023_Sci_Adv||Wang_2023_Sci_Adv.P1231	369	2	0	20	347	False		at least one zero cell (a, b, c, or d == 0)

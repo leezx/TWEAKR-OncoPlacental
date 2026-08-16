@@ -1,0 +1,7 @@
+panel	n_testable	n_perm_used
+M11_top50_full	50	500
+M11_top50_minus_revCSC_overlap	45	500
+M11_top100_full	39	500
+M11_top100_minus_revCSC_overlap	34	500
+M11_top200_full	62	500
+M11_top200_minus_revCSC_overlap	56	500
