@@ -23,16 +23,30 @@ honest: composition is bimodal (not F-dominant), and M11 — an
 independent NMF-derived module — shows real, robust concordance with
 revCSC substantially stronger than any single developmental axis; and
 the tertiary analysis (the same composition question asked of the
-*entire* 665,473-cell atlas, unconditional on revCSC status) is now also
-closed and confirms this pattern is not an artifact of subsetting to
-revCSC-high cells — it holds population-wide, with the SI-over-Colon
-regional skew getting *stronger*, not weaker, at full scale. A
-cross-reference against the project's original external 6-question
-framework (Q1/Q2/Q3/Q4) confirms Q1/Q2/Q4 are already substantively
-answered by this work and Q3 by the tertiary analysis's F×P quadrant
-table — see "Step 6 Q1/Q2/Q4 cross-reference" below. See "What's next"
-for the one remaining item that closes out the project: extending this
-same pipeline to the 2 additional CRC datasets.
+*entire* 665,473-cell atlas, unconditional on revCSC status) closed and
+confirmed this pattern is not an artifact of subsetting to revCSC-high
+cells — it holds population-wide, with the SI-over-Colon regional skew
+getting *stronger*, not weaker, at full scale. A cross-reference against
+the project's original external 6-question framework (Q1/Q2/Q3/Q4)
+confirmed Q1/Q2/Q4 are already substantively answered by this work and
+Q3 by the tertiary analysis's F×P quadrant table. Finally, extending the
+same pipeline to the project's 2 additional CRC datasets
+(`HTAN_CRC_progressive_plasticity`, `CRLM_NMP_ATLAS`) produced this
+project's **single most direct answer**: a within-patient, paired
+malignant-vs-matched-normal-epithelial contrast in `HTAN_CRC_
+progressive_plasticity` shows a massive, highly significant shift on all
+3 F-developmental axes (median +72 to +82 percentile points, p<10⁻⁴,
+26/29 patients) but **no detectable shift on D-shared or P-specific**.
+**The answer to this project's founding question**: CRC's "Oncofetal"
+state looks, by every analysis this project ran, F-selective — closer to
+a fetal-somatic developmental program than a placental/trophoblast one
+or a generically shared developmental one — though the underlying
+mechanism (what drives it) remains untested and out of this project's
+scope (Q5/Q6). See "Step 6 Q1/Q2/Q4 cross reference" and "Step 6 dataset
+extension" below for the full detail. **This project is complete** per
+the user-confirmed "100% = close what's reachable with current data"
+scope (2026-08-16) — see "Project completion" at the end of this
+document.
 
 ## Step 1 — Data inventory
 
@@ -425,19 +439,70 @@ to the framework — reported honestly as gaps, with `revCSC`+`M11`
 noted as an existing reviewed alternative for the former, not a
 substitute deliverable.
 
-## What's next (not started)
+### Step 6 dataset extension — design + compute CLOSED (PR #33/#34)
 
-- **2 additional CRC datasets** (`HTAN_CRC_progressive_plasticity`,
-  `CRLM_NMP_ATLAS`) — extend the same primary/secondary/tertiary pipeline;
-  not yet scoped. **This is the last substantive item for project
-  completion.**
-- **Q5/Q6 of the original 6-question framework** (macrophage/TWEAK-driven
-  developmental program; independent functional consequences of the
-  placental component) — **explicitly out of scope for project
-  completion** (user-confirmed 2026-08-16): both require data this
-  project does not have (spatial macrophage/TWEAK perturbation data;
-  functional/invasion assay data). Documented here as a distinct future
-  aim, not a blocker.
+Extends the primary/secondary/tertiary pipeline to the last 2 CRC
+datasets from the original 3-dataset plan: `HTAN_CRC_progressive_plasticity`
+(47,107 cells, 26,551 malignant, 29 patients) and `CRLM_NMP_ATLAS`
+(75,104 cells, 4,051 malignant, 6 donors, TME-focused).
+
+**Design** (`docs/STEP6_DATASET_EXTENSION_DESIGN.md`, PR #33, 3 review
+rounds): reuses all already-reviewed Step 6 scoring machinery unchanged;
+locks a real raw-counts-location loader fix (these datasets carry raw
+counts in `.raw.X`, not `layers['counts']` like the primary atlas), a
+gene-ID axis-canonicalization contract, two separate HTAN scoring passes
+(malignant-only for the primary-equivalent correlation; joint
+malignant+normal for a new within-patient contrast — kept distinct
+because they use different null-calibration populations), a required
+HTAN study-provenance overlap audit before any "replication" language,
+and a corrected `N_PERM=500` requirement (round 1 caught that PR #27's
+own convergence gate had NOT certified `N_PERM=100` for every panel).
+
+**Compute** (`docs/STEP6_DATASET_EXTENSION_RESULTS.md`, PR #34, 3 review
+rounds; qsub jobs 3621230/3621236, byte-exact, 63 files committed):
+round 1 caught a genuine pre-compute contract violation — CRLM's
+`P_Gut-specific` coverage gate (40/76 genes) was waived instead of
+investigated; the real investigation confirmed all 36 missing genes are
+present in the primary atlas and 34/36 in HTAN despite CRLM having the
+most total genes of the three datasets — a genuine CRLM-specific
+reference/annotation gap, existing score kept as-is. Round 2 caught that
+round 1's own gate fix still didn't restore the design's actual
+"blocks compute" semantics, plus a self-introduced factual contradiction
+between two sections of the same document — both fixed and
+independently re-verified before round 3's clean APPROVE.
+
+**Real, honest result — the single most direct finding this project has
+produced**: HTAN's within-patient malignant-vs-matched-normal-epithelial
+paired contrast (joint-calibrated scores, one summary per patient per
+group, patients as the statistical unit) shows a massive, highly
+significant shift on all 3 F-developmental axes (median Δ+72 to +82
+percentile points, p<10⁻⁴ both Wilcoxon and paired-t, 26/29 patients
+paired) but **no detectable shift on `D_Gut-shared` or `P_Gut-specific`**
+(p=0.45, 0.65). The HTAN provenance-overlap audit programmatically
+confirms zero overlap with the primary meta-atlas's 36 constituent
+studies — including ruling out the superficially-similar-named
+`HTAPP_HTAN`, which turned out to be a different HTAN sub-cohort
+entirely (`HTA1_`-prefixed Pelka 2021 Synapse IDs vs. this dataset's
+`HTA8_`-prefixed IDs). Primary-extension correlation on HTAN generalizes
+PR #27's core weak, not-single-axis finding to this provenance-confirmed
+non-overlapping population, though correlation *signs* for the F/P pairs
+are not stable between datasets — reported honestly, not smoothed over.
+
+## Project completion
+
+**This project is complete** per the user-confirmed "100% = close what's
+reachable with current data" scope (2026-08-16,
+`docs/Q1_Q2_Q4_CROSS_REFERENCE.md`). Every phase of the progress tracker
+(`Worklog.md`) is closed. Q5/Q6 of the original 6-question framework
+(does SPP1+ TAM/TWEAK/Fn14/YAP macrophage signaling causally drive a
+specific developmental program; does the placental component have
+independent functional consequences) remain **explicitly out of scope**
+(user-confirmed 2026-08-16): both require data this project does not
+have (spatial macrophage/TWEAK perturbation data; functional/invasion
+assay data). Documented here as a distinct future aim, not a blocker —
+any future work on Q5/Q6 can reuse this project's frozen
+`D_Gut-shared`/`F_Gut-specific`/`P_Gut-specific`/`revCSC`/`M11` scores
+directly, no new signature construction needed to start.
 
 ## Standing practices (apply to every future step, not just Step 4)
 
