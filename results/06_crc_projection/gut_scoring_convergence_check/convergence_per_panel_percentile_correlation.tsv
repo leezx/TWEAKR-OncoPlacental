@@ -1,0 +1,14 @@
+panel	n_testable_100perm	n_testable_500perm	percentile_pearson_r_100_vs_500	percentile_spearman_rho_100_vs_500
+revCSC_primary27_full	27	27	0.9916	0.9888
+revCSC_primary27_minus_CLU	26	26	0.9941	0.9879
+revCSC_primary27_minus_ASS1	26	26	0.9935	0.9804
+revCSC_primary27_minus_CLU_ASS1	25	25	0.9929	0.9867
+revCSC_extended28_full	28	28	0.9929	0.9875
+revCSC_extended28_minus_CLU	27	27	0.9923	0.9766
+revCSC_extended28_minus_ASS1	27	27	0.9941	0.9847
+revCSC_extended28_minus_CLU_ASS1	26	26	0.9932	0.9831
+D_Gut-shared	8	8	0.9891	0.9872
+F_Gut-specific	2173	2173	0.9985	0.9809
+F_Colon-specific	1442	1442	0.9976	0.9876
+F_SI-specific	1437	1437	0.9981	0.9888
+P_Gut-specific	76	76	0.9939	0.9916
