@@ -19,7 +19,8 @@ what actually answers the question — the primary analysis now has a
 real, honest answer (weak, largely donor/study-heterogeneous
 association, not a clean single-axis "= F" or "= P" result; see Step 6
 below and "What's next" for the secondary/tertiary analyses still
-needed before a stronger claim is defensible).
+needed before a stronger claim is defensible). The secondary analysis's
+design is now locked (PR #28) and its compute is the immediate next step.
 
 ## Step 1 — Data inventory
 
@@ -279,14 +280,44 @@ result** — the honest answer to Q1 at this primary-analysis resolution is
 a weak, largely donor/study-heterogeneous association, not a clean
 single-axis one.
 
+### Step 6 secondary analysis — design CLOSED (PR #28), compute not yet run
+
+`docs/STEP6_SECONDARY_ANALYSIS_DESIGN.md` (4 review rounds) locks the
+design for the analysis explicitly deferred out of PR #27: whether
+revCSC-high cells show a distinguishable developmental composition
+(D/F/P axis-supported status, not a forced single-label argmax), and
+whether M11 (an independent NMF-derived Oncofetal-annotated module)
+concords with revCSC. Key locks: revCSC-high defined by cross-cell rank
+of the null-calibrated z-score (10% primary, 5%/20% sensitivities, using
+`revCSC_primary27_minus_CLU_ASS1` uniformly to stay overlap-safe against
+every gut F axis); composition reported as axis-supported status
+(none/D/F/P/D+F/D+P/F+P/D+F+P at a pre-specified per-axis threshold) with
+argmax kept only as a disclaimed descriptive summary; M11 scored using
+`M11_minus_revCSC_overlap` (M11 shares 5 of its top50 genes with revCSC
+itself — the same genes that originally identified M11 as revCSC-like);
+concordance tested both as a continuous correlation and as a
+donor-stratified (Mantel-Haenszel) enrichment test with the same
+per-donor/leave-one-out robustness discipline PR #27 established.
+
+Two rounds required real new compute to close, not just wording fixes: a
+qsub job (3621108) independently certified `N_PERM=500` is adequate for
+the actual 45-gene M11 panel (500-vs-1000 z-rank Jaccard 0.94–0.98,
+Pearson r=0.9997, byte-exact/md5-verified), and a later round caught that
+the overlap-audit script itself was circular (hardcoded the expected
+overlap genes instead of deriving them independently) — fixed and
+re-verified to produce identical output for the right reason. **PR #28
+merged**; the compute itself (M11 scoring on 297,307 cells, the
+composition/enrichment analysis) is the immediate next step.
+
 ## What's next (not started)
 
-- **Secondary/tertiary Step 6 analyses**: revCSC-high cells' developmental
-  composition + M11 concordance (secondary); full-atlas revCSC-independent
-  D/F/P landscape (tertiary); the 2 secondary/tertiary CRC datasets
-  (`HTAN_CRC_progressive_plasticity`, `CRLM_NMP_ATLAS`) — all explicitly
-  out of scope for PR #27, needed before a stronger claim than "weak,
-  heterogeneous association" is defensible.
+- **Step 6 secondary-analysis compute**: run the now-approved PR #28
+  design — M11 scoring (297,307 cells, `N_PERM=500`), revCSC-high cohort
+  composition, and the M11↔revCSC concordance tests.
+- **Tertiary Step 6 analysis**: full-atlas revCSC-independent D/F/P
+  landscape — not yet designed.
+- **2 secondary/tertiary CRC datasets** (`HTAN_CRC_progressive_plasticity`,
+  `CRLM_NMP_ATLAS`) — not yet scoped.
 - **Q2–Q6** of the original 6-question framework — entirely unscoped,
   comes after the above.
 
