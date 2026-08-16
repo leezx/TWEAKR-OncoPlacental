@@ -14,8 +14,12 @@ separate **placental/trophoblast** program — plus a possible third,
 genuinely **shared** program between the two? Before that question can
 be asked of cancer data, a clean, adult-corrected reference for all
 three has to exist from normal tissue alone. That reference is what
-Steps 1–4 build. Applying it to real CRC Oncofetal cells (Step 5+) is
-what actually answers the question — not done yet, see "What's next."
+Steps 1–4 build. Applying it to real CRC Oncofetal cells (Step 6) is
+what actually answers the question — the primary analysis now has a
+real, honest answer (weak, largely donor/study-heterogeneous
+association, not a clean single-axis "= F" or "= P" result; see Step 6
+below and "What's next" for the secondary/tertiary analyses still
+needed before a stronger claim is defensible).
 
 ## Step 1 — Data inventory
 
@@ -244,31 +248,45 @@ global P = `P_Gut-specific` (76 genes). Gene-overlap audit against
 revCSC done — negligible overlap (`CLU`/`ASS1` only), matching the
 original pan-organ finding. See `docs/STEP6_GUT_REANCHOR_DELTA.md`.
 
-### Step 6 primary scoring compute — design locked (PR #26), running
+### Step 6 primary scoring compute — CLOSED (PR #27, real result, answers Q1)
 
-`docs/STEP6_GUT_SCORING_COMPUTE_DESIGN.md` (2 review rounds) locks the
-concrete implementation for the compute above: 13 scored gene sets (8
-revCSC panels — 27-primary + 28-extended/sensitivity, each up to 4
-overlap-exclusion forms — + 5 D/F/P panels), null-calibrated empirical
-percentile as the primary common-scale metric (z-score secondary),
-`N_PERM=100` gated by a 100-vs-500 convergence check, and a concrete
-donor/study-aware validation (composite `donor_key=(study_id,patient_id)`
-— round 2 caught bare `patient_id` isn't documented globally-unique
-across this 36-study meta-atlas). Implementation
-(`scripts/06_crc_projection/crc_gut_scoring_*.py`) is running on Argos.
-A real feasibility problem was found and fixed mid-run: naive
-`scanpy.tl.score_genes` costs ~18h+ at 665,473-cell scale (it recomputes
-a full-genome average-expression binning every call); replaced with
-`score_genes_fast`, a numerically-validated faster reimplementation
-(byte-identical control-gene selection, `allclose` scores) cutting the
-estimated full run to ~1.75h.
+`docs/STEP6_GUT_SCORING_COMPUTE_DESIGN.md` (PR #26, 2 review rounds)
+locked the implementation contract: 13 scored gene sets (8 revCSC panels
+— 27-primary + 28-extended/sensitivity, each up to 4 overlap-exclusion
+forms — + 5 D/F/P panels), null-calibrated empirical percentile as the
+primary common-scale metric (null-calibrated z-score secondary),
+`N_PERM=100` gated by a 100-vs-500 convergence check, and donor/study-aware
+validation (composite `donor_key=(study_id,patient_id)`).
+
+The real compute (PR #27, 2 review rounds) ran on all 665,473
+`CRC_single_cell_atlas_2025` malignant cells. Two real compute-feasibility
+problems were found and fixed mid-run (naive `scanpy.tl.score_genes`'s
+~18h+ full-genome-recomputation-per-call cost, replaced with a
+numerically-**exactly**-validated `score_genes_fast` + CSR→CSC
+conversion, cutting the run to ~50 min), and one real reproducibility bug
+(per-panel RNG seeds used Python's process-randomized `hash()`, not
+actually reproducible from the nominal fixed seed — fixed with
+`hashlib.sha256`-based seeding, both prior runs discarded and re-run from
+scratch to confirm).
+
+**Real, honest result** (`docs/STEP6_GUT_SCORING_COMPUTE_RESULTS.md`):
+all 10 revCSC↔D/F/P pooled correlations are weak (|r| ≤ 0.19). The 4 D/P
+pairs are weakest and the only ones robust to leave-one-donor/study-out;
+5 of 6 F pairs are not robust (for one, a single study's exclusion shifts
+the pooled r by >11× its own magnitude). **This does not find a strong
+single-axis "Oncofetal = fetal-gut program" or "= placental program"
+result** — the honest answer to Q1 at this primary-analysis resolution is
+a weak, largely donor/study-heterogeneous association, not a clean
+single-axis one.
 
 ## What's next (not started)
 
-- **Finish the primary scoring compute**: convergence-check completion
-  → full 665,473-cell run → donor/study-aware primary analysis → results
-  write-up → compute review → merge. This is what actually answers the
-  project's original Q1 with the anatomically-correct reference.
+- **Secondary/tertiary Step 6 analyses**: revCSC-high cells' developmental
+  composition + M11 concordance (secondary); full-atlas revCSC-independent
+  D/F/P landscape (tertiary); the 2 secondary/tertiary CRC datasets
+  (`HTAN_CRC_progressive_plasticity`, `CRLM_NMP_ATLAS`) — all explicitly
+  out of scope for PR #27, needed before a stronger claim than "weak,
+  heterogeneous association" is defensible.
 - **Q2–Q6** of the original 6-question framework — entirely unscoped,
   comes after the above.
 
