@@ -128,15 +128,27 @@ full atlas. Both use the same null-calibrated empirical-percentile
 machinery (`score_genes_fast`, `crc_gut_scoring_core.py`) throughout.
 
 **Primary analysis** (PR #27, `docs/STEP6_GUT_SCORING_COMPUTE_RESULTS.md`):
-all 10 revCSC↔D/F/P pooled correlations are weak, |r|≤0.19. The 4 D/P
-pairs are weakest and the only ones robust to leave-one-donor/study-out;
-5 of 6 F pairs are not robust (one pair's entire pooled signal is driven
-by a single study). **No clean single-axis "Oncofetal = F" or "= P"
-result at this resolution.**
+all 10 revCSC↔D/F/P pooled correlations are weak, |r|≤0.19. **Round-3
+review correction**: the first draft said the 4 D/P pairs are "the only
+ones robust" to leave-one-donor/study-out — false; the committed table
+shows all 4 D/P pairs are robust, and 1 of the 6 F pairs
+(`extended28↔F_SI-specific`) is also robust. Corrected: the 4 D/P pairs
+are the weakest and are all robust; 5 of 6 F pairs are not robust, with
+only `extended28↔F_SI-specific` robust among the F comparisons (one
+non-robust pair's entire pooled signal is driven by a single study).
+**No clean single-axis "Oncofetal = F" or "= P" result at this
+resolution.**
 
-**Secondary analysis** (PR #28/#29, `docs/STEP6_SECONDARY_ANALYSIS_RESULTS.md`,
-revCSC-high cohort only): developmental composition of revCSC-high cells
-is **bimodal, not F-dominant** — 41.1% show no gut-developmental axis
+**Secondary analysis** (PR #28/#29, `docs/STEP6_SECONDARY_ANALYSIS_RESULTS.md`):
+**round-3 review correction** — the first draft scoped this whole
+paragraph as "revCSC-high cohort only," but that qualifier applies only
+to the developmental-composition portion (Section 2 of the source doc);
+the M11↔revCSC concordance discussed below is computed within the
+297,307-cell M11 subset, not the revCSC-high cohort specifically. Scoped
+correctly: revCSC-high developmental composition, plus M11 concordance
+within the 297,307-cell M11 subset. Developmental composition of
+revCSC-high cells is **bimodal, not F-dominant** — 41.1% show no
+gut-developmental axis
 evidence at all, 42.6% show `F_Gut-specific` alone, and only small
 minorities show `P_Gut-specific` or multi-axis support. **M11 shows real,
 robust concordance with revCSC substantially stronger than any single
@@ -322,5 +334,19 @@ assays) layered against the existing per-cell scores.
   from Q2's main text — fixed to match round 1's restraint ("what
   explains the concordance beyond the tested single-axis comparisons").
 
-Submitting for round-3 review before merge, same discipline as every
+- **Round 3 (REQUEST_CHANGES, 2 small residual documentation issues,
+  both independently verified against `docs/STEP6_GUT_SCORING_COMPUTE_RESULTS.md`
+  before fixing)**: (1) Q1's primary-analysis summary claimed the 4 D/P
+  pairs are "the only ones robust" to leave-one-donor/study-out — false;
+  the committed table shows `extended28↔F_SI-specific` is also robust
+  (confirmed directly against the results doc's robustness table); fixed
+  to state all 4 D/P pairs are robust and only that one F pair is robust
+  among the 6 F comparisons. (2) Q2's secondary-analysis paragraph was
+  scoped as "revCSC-high cohort only," but that qualifier is only
+  accurate for the developmental-composition portion — the M11↔revCSC
+  concordance discussed in the same paragraph is computed within the
+  297,307-cell M11 subset, not the revCSC-high cohort; fixed to scope
+  each result correctly.
+
+Submitting for round-4 review before merge, same discipline as every
 prior step this session.
