@@ -117,10 +117,15 @@ actually in scope here: the published mouse **`revCSC`** signature
 ortholog-mapped to 27 human genes, `docs/STEP6_CRC_PROJECTION_DESIGN.md`)
 and **M11**, an independently-discovered NMF meta-program from this
 project's own CRC atlas decomposition that is *annotated* (not defined)
-as revCSC-like via a Jaccard best-match. Both are scored against gut
-D/F/P on the same 665,473-cell `CRC_single_cell_atlas_2025` population,
-using the same null-calibrated empirical-percentile machinery
-(`score_genes_fast`, `crc_gut_scoring_core.py`) throughout.
+as revCSC-like via a Jaccard best-match. **Round-2 review correction**:
+the first draft said both are scored against gut D/F/P "on the same
+665,473-cell population" — inaccurate for M11. `revCSC` and D/F/P are
+scored across all 665,473 `CRC_single_cell_atlas_2025` malignant cells;
+`M11` is scored only on its own 297,307-cell subset (the cells with a
+precomputed M11 score), and the M11↔revCSC same-population concordance
+comparison below is performed within that 297,307-cell subset, not the
+full atlas. Both use the same null-calibrated empirical-percentile
+machinery (`score_genes_fast`, `crc_gut_scoring_core.py`) throughout.
 
 **Primary analysis** (PR #27, `docs/STEP6_GUT_SCORING_COMPUTE_RESULTS.md`):
 all 10 revCSC↔D/F/P pooled correlations are weak, |r|≤0.19. The 4 D/P
@@ -242,8 +247,12 @@ frozen P-developmental work currently does.
   `revCSC`+`M11` is an existing reviewed alternative, not the same
   deliverable (see Q4 above for why this is a gap, not a substitution
   made in response to the framework).
-- Does not investigate *what* the non-developmental structure shared
-  between `revCSC` and `M11` actually is (flagged under Q2, not tested).
+- Does not investigate what explains the `revCSC`↔`M11` concordance
+  beyond the tested single-axis D/F/P marginal comparisons (flagged
+  under Q2, not tested — **round-2 review correction**: the first draft
+  of this bullet said "non-developmental structure," reintroducing the
+  exact untested inference round 1 had already removed from Q2's main
+  text; this bullet must match that same restraint).
 - Does not extend any of the above to the 2 additional CRC datasets
   (`HTAN_CRC_progressive_plasticity`, `CRLM_NMP_ATLAS`) — separate,
   already-scoped future work.
@@ -300,5 +309,18 @@ assays) layered against the existing per-cell scores.
   Colon/partially in SI), 1 is a clean null, and 2 show a discordant
   adult-skewed GSEA signal.
 
-Submitting for round-2 review before merge, same discipline as every
+- **Round 2 (REQUEST_CHANGES, 2 small residual documentation issues,
+  both independently verified against `docs/STEP6_SECONDARY_ANALYSIS_RESULTS.md`
+  before fixing)**: (1) Q2's setup said `revCSC` and `M11` are "scored
+  against gut D/F/P on the same 665,473-cell population" — inaccurate for
+  M11, which is scored only on its own 297,307-cell subset (confirmed
+  against the secondary-results doc's job-provenance table); fixed to
+  state the two population scopes separately. (2) The "What this
+  document does not answer" section's Q2-related bullet still said
+  "non-developmental structure shared between revCSC and M11," silently
+  reintroducing the exact untested inference round 1 had already removed
+  from Q2's main text — fixed to match round 1's restraint ("what
+  explains the concordance beyond the tested single-axis comparisons").
+
+Submitting for round-3 review before merge, same discipline as every
 prior step this session.
