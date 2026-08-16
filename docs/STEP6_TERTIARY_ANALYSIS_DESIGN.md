@@ -4,20 +4,34 @@ Implements the **tertiary analysis** item from the already-approved Step 6
 design (`docs/STEP6_CRC_PROJECTION_DESIGN.md`, "Revised analysis structure",
 item 3): *"Score D/F/P across the full-atlas cohort without reference to
 revCSC at all. This can surface a state the 'Oncofetal' framework itself
-might miss — e.g. a P-high/revCSC-low malignant population that exists
-outside what revCSC captures."*
+might miss — e.g. a P-high population that exists outside the operational
+revCSC-high cohort used in PR #28/#29."*
 
-**Also directly answers Q3 of the project's original 6-question framework**
+**Also directly answers the axis-composition component of Q3 of the
+project's original 6-question framework**
 (`2026-GPT-TWEAKR-Oncofetal.md#定义清楚Placenta的问题`, read in full for the
 first time this session, user-confirmed 2026-08-16 scope): *does the
-malignant cell population — not just the revCSC-defined subset — split into
-separable Fetal(F) × Placental(P) [× Shared(D)] developmental quadrant
-states, rather than being one program?* Step 6 secondary (PR #28/#29)
-already answered this question **within the revCSC-high subset**; this
-analysis extends it to **every malignant cell in the atlas, independent of
-revCSC status**, which is the genuinely new, non-circular check — a
-population could show a real F/P/D quadrant structure that revCSC's own
-27-gene definition never captures at all.
+malignant cell population — not just the revCSC-defined subset — show
+axis-defined F(Fetal) × P(Placental) [× D(Shared)] developmental
+composition/substructure, rather than being one uniform program?* Step 6
+secondary (PR #28/#29) already answered this **within the revCSC-high
+subset**; this analysis extends it to **every malignant cell in the atlas,
+independent of revCSC status**, which is the genuinely new, non-circular
+check — a population could show real F/P/D quadrant occupancy that
+revCSC's own 27-gene definition never selects for at all.
+
+**Round-1 review correction (applied from the start, not discovered after
+compute)**: this design does **not** claim to establish that these
+quadrants are *separable states* in the formal statistical sense (distinct
+modes/clusters). Per PR #28's own locked boundary — restated here rather
+than re-litigated — axis-supported status and a threshold-based quadrant
+table can show *axis-defined composition/substructure* (coactivation vs.
+discrete dominance vs. no program), but **cannot by themselves distinguish
+that from a smooth continuous F×P gradient** thresholded at the same
+90th-percentile bar; a genuine separability claim would require an
+additional pre-specified clustering/mixture criterion, out of scope here.
+Every result in this design is described as "quadrant occupancy" /
+"axis-defined composition" throughout, never as "separable states."
 
 **No new scoring required.** All D/F/P and revCSC per-cell percentiles for
 all 665,473 `CRC_single_cell_atlas_2025` malignant cells already exist,
@@ -79,21 +93,40 @@ so the quadrant table is reported **both ways**, not by silently dropping D:
   **derived, secondary view of the same primary data**, not an
   independent analysis with its own threshold-picking risk.
 
-## 4. Cross-tabulation against revCSC status (connects back to Q1/Q2, does not gate)
+## 4. Cross-tabulation against revCSC status (connects back to Q1/Q2, does not gate) — two distinct tables, not one
 
-For every cell already classified in §2/§3, additionally report its
-`revCSC_primary27_minus_CLU_ASS1` cross-cell-rank status (same construction
-as Step 6 secondary §1: top 10%/5%/20% by cross-cell z-score rank, computed
-identically here since the same score column and same full-atlas population
-are being used). This produces a joint table: axis-supported category ×
-revCSC-high/not-revCSC-high — directly testable for the design's stated
-target finding: **does a P-high (or F+P, D+F+P) population exist that is
-NOT revCSC-high?** (I.e., a "P-high/revCSC-low" cell state existing outside
-what revCSC's own 27-gene signature captures — the design's explicit
-motivating question, checked directly rather than assumed.)
+**Round-1 review correction**: the first draft conflated two different
+quantities — "not in the top-10% cross-cell-rank cohort" and "revCSC does
+not have evidence for this cell" — which PR #28 already established are
+not equivalent (the null-calibrated percentile's own distribution is
+heavily right-skewed, median ≈90.2 across this atlas, so a cell can fail
+the cross-cell top-decile cut while still showing strong revCSC evidence
+versus its own matched null). Fixed by reporting **two separate,
+correctly-labeled tables**, using the same matched-null support semantics
+(percentile≥90) already used for D/F/P in §2, applied identically to
+revCSC:
 
-This cross-tab is reported, not used to define any cohort — revCSC status
-never gates which cells are included in §2/§3's population-level results.
+- **Table 4a — axis-supported category × operational revCSC-high cohort**
+  (`revCSC_primary27_minus_CLU_ASS1_zscore`, cross-cell rank, top
+  10%/5%/20%, identical construction to Step 6 secondary §1). Interpreted
+  strictly as: *"does a P-supported (or F+P, D+F+P) population exist
+  outside the operational revCSC-high cohort PR #28/#29 used for the
+  secondary analysis?"* — a statement about a specific, already-defined
+  cohort, not about revCSC evidence in general.
+- **Table 4b — axis-supported category × revCSC matched-null support**
+  (`revCSC_primary27_minus_CLU_ASS1_percentile` ≥90, the same
+  null-calibrated-evidence semantics as every D/F/P axis in §2, not a
+  cross-cell rank). Interpreted as: *"does P-supported biology exist in
+  cells that also lack matched-null evidence for revCSC itself?"* — the
+  correct construction for the design's actual motivating question (a
+  developmental program existing without revCSC evidence), requiring no
+  new scoring since `revCSC_primary27_minus_CLU_ASS1_percentile` is
+  already computed for all 665,473 cells.
+
+Neither table gates which cells are included in §2/§3's population-level
+results — both are reported cross-tabs computed after the fact, exactly
+as in the first draft; only the labeling and the addition of Table 4b are
+new.
 
 ## 5. Donor/study-aware aggregation
 
@@ -102,6 +135,18 @@ Every table in §2–§4 reported pooled, plus unweighted mean across donors
 `secondary_analysis_composition.py`'s `categorical_donor_study_summary`,
 reused directly (not reimplemented) on the full 665,473-cell population
 instead of the revCSC-high subset.
+
+**Implementation note (flagged in review, applied here rather than left
+implicit)**: `step0_x_stepA_crosstab()` (PR #29) is pooled-only by
+construction — it does not by itself give donor/study aggregation. The
+Q3 quadrant table (§3) and both revCSC joint tables (§4a/§4b) are **not**
+implemented via that pooled-only crosstab helper; instead, each joint
+category (e.g. `"P_only|revCSC_high_top10pct"`) is built as a single
+composite string label and passed through `categorical_donor_study_summary`
+directly, so every joint table gets the same pooled + donor-unweighted +
+study-unweighted treatment as §2's tables — no new statistical procedure
+invented, just consistent reuse of the one function that already does
+donor/study aggregation correctly.
 
 ## 6. Scope boundary (explicit)
 
@@ -125,10 +170,38 @@ the already-scored parquet already on Argos; run via qsub for consistency
 with standing discipline anyway, since it touches the full-atlas file):
 loads `crc_gut_scoring_all_panels.parquet` + `crc_gut_scoring_cell_metadata.parquet`
 (no new scoring), computes §2's 8-category status + Step0×StepA cross-tab,
-§3's Q3-quadrant table, §4's revCSC cross-tab, §5's donor/study
-aggregation for each — writes summary/overview tables only (no new
-per-cell files), same "small deliverable" size norm as Step 6 secondary's
-composition output.
+§3's Q3-quadrant table, §4a/§4b's two revCSC cross-tabs, §5's donor/study
+aggregation for every table (via composite joint-labels through
+`categorical_donor_study_summary`, not the pooled-only crosstab helper) —
+writes summary/overview tables only (no new per-cell files), same "small
+deliverable" size norm as Step 6 secondary's composition output.
 
-Submitting for review before any qsub job runs, same discipline as every
-prior step.
+## Review history
+
+- **Round 1 (REQUEST_CHANGES, 2 real conceptual blockers, 1 implementation
+  watch item — all confirmed directly against the design doc's own
+  wording before fixing)**: (1) the first draft's Q3 framing ("split into
+  separable Fetal×Placental quadrant states") overclaimed formal
+  statistical separability that a threshold-based quadrant table cannot
+  establish on its own (a smooth continuous F×P gradient thresholded at
+  the same bar produces the identical table) — fixed by reframing every
+  claim in this design as "axis-defined composition/substructure" /
+  "quadrant occupancy," explicitly stating the separability boundary
+  rather than re-discovering it after compute, matching PR #28's already
+  locked precedent. (2) §4's revCSC cross-tab conflated "not in the
+  top-10% cross-cell-rank cohort" with "revCSC has no evidence for this
+  cell" — two different quantities per PR #28's own established
+  right-skew finding (median revCSC percentile ≈90.2) — fixed by
+  splitting into two correctly-labeled tables: 4a (operational
+  revCSC-high cohort membership, PR #28/#29's exact construction) and 4b
+  (revCSC's own matched-null percentile≥90 support, the same semantics
+  already used for D/F/P), the latter being the construction that
+  actually answers the design's motivating question. (3) Implementation
+  watch: the new Q3/revCSC joint tables must use
+  `categorical_donor_study_summary` (donor/study-aware) via composite
+  joint-category labels, not the pooled-only `step0_x_stepA_crosstab`
+  helper — made explicit in §5 rather than left to be caught in a later
+  compute review.
+
+Submitting for round-2 review before any qsub job runs, same discipline
+as every prior step.
