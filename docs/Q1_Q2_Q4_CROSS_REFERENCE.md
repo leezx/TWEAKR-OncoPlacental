@@ -22,31 +22,47 @@ underlying frozen files before being written here.
 
 *("In normal human development, what does the placental trophoblast
 program share with the fetal somatic program, and what does each hold
-independently?" — answered as three orthogonal modules: D-shared,
-F-specific, P-specific.)*
+independently?" — answered as three modules: D-shared, F-specific,
+P-specific.)*
 
 This is exactly what Steps 4/4a build, frozen at two successive
-resolutions:
+resolutions. **Round-1 review correction**: the first draft called these
+"three orthogonal modules" — D/F/P are a mutually exclusive gene-set
+*partition* by construction (each gene is assigned to at most one set by
+the pipeline's own logic), not three axes whose statistical independence
+was tested or demonstrated. Restated below as "three mutually exclusive
+gene-set components."
 
 **Resolution 1 — pan-organ (Step 4, `results/04_dfp_signature/dfp_gene_sets/`,
 frozen)**: built from HDMA (7 fetal organs: Adrenal, Thyroid, Spleen,
 Thymus, Liver, Skin, StomachEsophagus) vs. Arutyunyan/VentoTormo/Nature2026
-placental trophoblast data, with a real DE + HPA/GTEx adult-exclusion
-pipeline (10 PRs, `#5`–`#15`). Frozen counts (verified against the
-committed files): `D_shared_FINAL.txt` = **6 genes**, `F_specific_FINAL.txt`
-= **2,504 genes**, `P_specific_FINAL.txt` = **78 genes**. Validated
-Tier-2 against Tabula Sapiens (PR #15): 69/84 whole-body D/P genes clean,
-11/82 organ-matched F-specific cell types survive matched-null+BH-FDR
-correction.
+placental trophoblast data. **Round-1 review correction**: the two arms
+do not use the same evidence type. The placental (P-developmental) arm
+does use real DE — trophoblast-vs-other-placental-cell edgeR, per donor
+— against HPA/GTEx adult-exclusion calibration. The fetal-somatic
+(F-developmental) arm does **not** use internal fetal-vs-adult DE on the
+HDMA side (HDMA has no matched adult comparator built in) — it uses a
+threshold-based construction instead: within-organ expression percentile
+among detected genes (calibrated at `elevated_pct=75`), combined with
+organ-matched `adult_excluded` calibration against GTEx/HPA (`adult_excl_pct=25`),
+per `docs/STEP4_STATISTICAL_DESIGN.md`. Frozen counts (verified against
+the committed files): `D_shared_FINAL.txt` = **6 genes**,
+`F_specific_FINAL.txt` = **2,504 genes**, `P_specific_FINAL.txt` = **78
+genes**. Validated Tier-2 against Tabula Sapiens (PR #15): 69/84
+whole-body D/P genes clean, 11/82 organ-matched F-specific cell types
+survive matched-null+BH-FDR correction.
 
 **Resolution 2 — gut-re-anchored (Step 4a, `results/04a_dfp_gut/dfp_gut_gene_sets/`
 + `results/06_crc_projection/revcsc_gut_overlap_audit/`, frozen)**: the
 pan-organ reference has zero gut/colon organ representation — a real
 mismatch for a CRC project, surfaced by an honest null result against 5
-independent published fetal-mouse signatures. Rebuilt F-developmental
-from real human fetal gut data (Gut Cell Atlas, Elmentaite et al. *Nature*
-2021) via same-atlas fetal-vs-adult epithelial edgeR DE, in two regions.
-Frozen per-region counts: `F_Colon-specific` = 1,451, `F_SI-specific`
+independent published fetal-mouse signatures (see below). Here
+F-developmental genuinely is DE-based: rebuilt from real human fetal gut
+data (Gut Cell Atlas, Elmentaite et al. *Nature* 2021) via same-atlas
+donor-pseudobulk fetal-vs-adult epithelial edgeR DE, in two regions — a
+different, and for this project's CRC application more directly
+relevant, evidence type than Resolution 1's threshold-based F. Frozen
+per-region counts: `F_Colon-specific` = 1,451, `F_SI-specific`
 = 1,452, `D_Colon-shared` = 5, `D_SI-shared` = 4. Combined into the
 global gut-coordinate D/F/P actually used for CRC scoring (Step 6's Layer
 2 substitution, PR #25): `D_Gut-shared` = **8 genes** (union of regional
@@ -58,20 +74,35 @@ system** — the one used in every Step 6 primary/secondary/tertiary
 scoring result below.
 
 Both resolutions are externally validated, not just internally
-consistent: Step 4a's gut F-developmental triangulates against 5
-independent `mike_verzi` mouse fetal-intestine signatures
-(`docs/STEP4A_GUT_MIKE_VERZI_VALIDATION.md`, PR #22); a separate
-adult-expression audit against GTEx (68 tissues) + Tabula Sapiens (PR
-#23/#24) found no statistically-supported adult-expression anomaly in
-the 2 epithelial cell types with real donor replication.
+consistent, though the validation outcome for gut F-developmental is
+mixed, not uniformly positive — see `docs/STEP4A_GUT_MIKE_VERZI_VALIDATION.md`
+(PR #22) for the full picture: benchmarked against 5 independent
+`mike_verzi` mouse fetal-intestine signatures across three FDR-corrected
+evidence layers (hypergeometric, permutation, GSEA), `FETAL_INTESTINE_GENES`
+fully triangulates (all three layers, both regions) and `REGENERATIVE_EPITHELIUM`
+fully triangulates in Colon with weaker, partial (2-of-3-layers) support
+in SI — genuine positive external validation for these two. The other
+three are not positive validations: `REVIVAL_STEM_CELL_GENES` is a clean
+null throughout; `YAP_SIGNALING_GENES` and `FETAL_SPHEROID_EPITHELIUM_GENES`
+both show a significant *adult*-skewed signal on GSEA (the primary
+evidence layer) in both regions, with no FDR-robust positive support on
+the overlap-based layers — a real, reported-as-is discordance, not
+smoothed over. Separately, an adult-expression audit against GTEx (68
+tissues) + Tabula Sapiens (PR #23/#24) found no statistically-supported
+adult-expression anomaly in the 2 epithelial cell types with real donor
+replication (other coverage limitations explicitly retained, not
+resolved).
 
-**Answer to Q1**: this project delivers exactly the three-module
-decomposition the question asks for, at two resolutions (general
-whole-body, and gut-specific for the CRC application), each with real DE
-against real normal-tissue data, real adult-exclusion calibration, and
-real external triangulation — not a single "fetal" and a single
-"placenta" list, which the framework document explicitly warns against
-building.
+**Answer to Q1**: this project delivers the three-component decomposition
+the question asks for, at two resolutions (general whole-body, and
+gut-specific for the CRC application) — not a single "fetal" and a
+single "placenta" list, which the framework document explicitly warns
+against building. The two resolutions differ in evidence type per
+component (Resolution 1's F is threshold-based, its P and Resolution 2's
+F are DE-based), and external validation of gut F is genuinely mixed
+(2 of 5 benchmark signatures positively triangulate, 1 is null, 2 show a
+discordant adult-skewed signal) — reported honestly above rather than
+summarized as uniform success.
 
 ## Q2 — 目前所谓的 Oncofetal 到底是什么？
 
@@ -123,19 +154,28 @@ contradictory but not sharing the same direction either).
 **Answer to Q2**: `revCSC` does not decompose cleanly into a single
 D/F/P axis — it is weakly and heterogeneously related to the normal
 gut-developmental reference, with `F_Gut-specific` showing the strongest
-(if still modest) association and `P_Gut-specific` showing a small,
-real, but not dominant independent signal. This is itself the kind of
-finding the framework document anticipated: an existing "Oncofetal" proxy
-turns out not to be well-explained by any single normal-developmental
-module in this reference. It is also **not just an unexplained residual**:
-`M11`, discovered completely independently (unsupervised NMF on this
-project's own atlas, not derived from or fit to D/F/P), concords with
-`revCSC` far more strongly than the developmental reference does — meaning
-whatever `revCSC` and `M11` share in common is substantially *not*
-developmental-axis structure as this project's D/F/P reference defines
-it. What that shared non-developmental structure actually is remains
-open (flagged, not investigated further — see "What this does not
-answer" below).
+(if still modest) association and `P_Gut-specific` showing a small
+P-supported component. This is itself the kind of finding the framework
+document anticipated: an existing "Oncofetal" proxy turns out not to be
+well-explained by any single normal-developmental module in this
+reference. **Round-1 review correction**: the first draft went further
+and stated that `revCSC`/`M11`'s shared structure is therefore
+"substantially non-developmental-axis structure" — that inference was
+not actually tested. No multivariate D+F+P variance decomposition,
+residualization, or nonlinear/multi-axis model was run; only marginal
+(single-axis) correlations were computed. `M11`, discovered completely
+independently (unsupervised NMF on this project's own atlas, not derived
+from or fit to D/F/P), does concord with `revCSC` far more strongly
+(r=0.318) than any single D/F/P axis does against the same revCSC score
+in the same population (every D/F/P marginal correlation |r|≤0.074) —
+but the correct, supported statement is narrower: **this concordance is
+not captured by any single D/F/P axis in the tested marginal
+comparisons; what explains the remaining concordance is open.** The
+secondary-results document itself is explicit on this point (`docs/STEP6_SECONDARY_ANALYSIS_RESULTS.md`,
+"What this shows, honestly"): it "does not establish that M11 *is* the
+'Oncofetal' fetal-gut program." This document follows that same
+restraint rather than the stronger, untested framing (see "What this
+does not answer" below).
 
 ## Q3 — pointer only (already answered elsewhere)
 
@@ -164,34 +204,44 @@ onto what this project has actually frozen:
 | Signature 1 — Developmental Shared | `D_Gut-shared` (8 genes) | **Frozen**, reviewed (PR #25) |
 | Signature 2 — Fetal Somatic | `F_Gut-specific` (2,192, coarse) + `F_Colon-specific`/`F_SI-specific` (regional, primary/secondary) | **Frozen**, reviewed (PR #25), externally validated (PR #22) |
 | Signature 3 — Placental/Trophoblast | `P_Gut-specific` (76 genes) | **Frozen**, reviewed (PR #25) |
-| Signature 4 — Consensus Oncofetal | Not built as a literature-consensus list. This project instead uses the published `revCSC` 27-gene ortholog-mapped signature directly as the empirical Oncofetal comparator, plus the independently-discovered `M11` NMF module — see Q2. | **Substituted, not built as specified** |
+| Signature 4 — Consensus Oncofetal | Not built as a literature-consensus list. This project instead has a reviewed alternative: the published `revCSC` 27-gene ortholog-mapped signature as the primary empirical Oncofetal comparator, plus the independently-discovered `M11` NMF module as a secondary concordance anchor — see Q2. | **Gap relative to framework; existing reviewed alternative in place** |
 | Secondary — Early Placenta (1st trimester > term) | Not built. | **Gap** |
 | Secondary — Term/Late Placenta (term > 1st trimester) | Not built. | **Gap** |
 
 All frozen gene sets are directly usable on new scRNA/spatial data as-is
 (`scanpy.tl.score_genes`/`score_genes_fast` + null calibration is the
 project's own scoring recipe, already applied at atlas scale) — this
-part of Q4 is satisfied. The one substitution (Signature 4) is a
-deliberate, reviewed design decision from Step 6's design PRs (`#16/#17`),
-not an oversight: building a genuine literature-consensus Oncofetal
-signature from multiple published sources was judged out of scope
-relative to using `revCSC` (a specific, well-characterized published
-signature) directly as the comparator, with `M11` providing an
-independent, atlas-derived second anchor. The two secondary modules
-(early- vs. term-placenta) were never in scope for any Step 4/4a/6 design
-document — a genuine gap relative to the framework's full ask, not
-previously flagged. Closing it would require re-analyzing the placental
-reference data (Arutyunyan/VentoTormo/Nature2026) with an explicit
-gestational-age split, which none of this project's frozen P-developmental
-work currently does.
+part of Q4 is satisfied. **Round-1 review correction**: the first draft
+described Signature 4's gap as a "deliberate, reviewed design decision"
+made "relative to" this framework's ask — that overstates what PR
+#16/#17 actually decided. Those PRs chose `revCSC` as the primary
+Layer-1 Oncofetal anchor (explicitly *not* asserted as "a field-consensus
+'the' Oncofetal definition," per `docs/STEP6_CRC_PROJECTION_DESIGN.md`)
+and `M11` as a secondary check — but that choice was made before this
+external 6-question framework had ever been read in this project (it was
+only located and read in full 2026-08-16, this session). It cannot have
+been a decision made *in light of* Q4's specific "Consensus Oncofetal"
+ask, because that ask wasn't known yet. The accurate framing: Signature 4
+is a genuine gap relative to the framework, for which this project
+already has a reviewed alternative analysis strategy (`revCSC` primary
+comparator + `M11` secondary anchor) that happens to serve a similar
+purpose, not a substitution chosen in response to the framework itself.
+The two secondary modules (early- vs. term-placenta) were never in scope
+for any Step 4/4a/6 design document — a genuine gap relative to the
+framework's full ask, not previously flagged. Closing it would require
+re-analyzing the placental reference data (Arutyunyan/VentoTormo/Nature2026)
+with an explicit gestational-age split, which none of this project's
+frozen P-developmental work currently does.
 
 ## What this document does not answer
 
 - Does not build the two missing early/term-placenta secondary modules
   (flagged above as a genuine gap, not attempted here).
 - Does not build a new literature-consensus Oncofetal signature (Q4's
-  Signature 4 as literally specified) — the `revCSC`+`M11` substitution
-  is deliberate, but is a substitution, not the same deliverable.
+  Signature 4 as literally specified) — a genuine gap, for which
+  `revCSC`+`M11` is an existing reviewed alternative, not the same
+  deliverable (see Q4 above for why this is a gap, not a substitution
+  made in response to the framework).
 - Does not investigate *what* the non-developmental structure shared
   between `revCSC` and `M11` actually is (flagged under Q2, not tested).
 - Does not extend any of the above to the 2 additional CRC datasets
@@ -218,3 +268,37 @@ should reuse this project's frozen `D_Gut-shared`/`F_Gut-specific`/
 axis — no new signature construction should be needed to start that
 work, only new data (macrophage colocalization/perturbation, functional
 assays) layered against the existing per-cell scores.
+
+## Review history
+
+- **Round 1 (REQUEST_CHANGES, documentation-only — no compute,
+  frozen-gene-set, or numerical provenance problem found; 4 wording/
+  provenance issues, all independently verified against the real
+  committed docs before fixing)**: (1) Q1 called D/F/P "three orthogonal
+  modules" (not demonstrated statistically independent — they are a
+  mutually exclusive gene-set partition by construction) and glossed over
+  the fact that pan-organ F-developmental is threshold-based, not
+  DE-based like pan-organ P-developmental and gut-re-anchored F — fixed
+  to "three mutually exclusive gene-set components" with the evidence
+  types distinguished per resolution. (2) Q2 claimed the revCSC/M11
+  shared structure is "substantially non-developmental-axis structure" —
+  an inference not actually tested (no multivariate/residualization
+  analysis was run) — fixed to the narrower, supported statement: not
+  captured by any single D/F/P axis in the tested marginal comparisons,
+  with what explains the rest left open; also softened "independent
+  signal" to "P-supported component" for the small P-enrichment finding.
+  (3) Q4's Signature 4 gap was framed as a "deliberate, reviewed design
+  decision" made "relative to" this framework — but PR #16/#17's
+  `revCSC`+`M11` choice predates this project ever reading the external
+  framework, so it cannot have been a decision made in response to Q4's
+  specific ask — fixed to "gap relative to framework; existing reviewed
+  alternative in place." (4) The mike_verzi triangulation summary
+  ("triangulates against 5 independent signatures") compressed a
+  genuinely mixed result into an apparent uniform success — fixed to
+  spell out that only 2 of 5 signatures positively triangulate
+  (`FETAL_INTESTINE_GENES` fully, `REGENERATIVE_EPITHELIUM` fully in
+  Colon/partially in SI), 1 is a clean null, and 2 show a discordant
+  adult-skewed GSEA signal.
+
+Submitting for round-2 review before merge, same discipline as every
+prior step this session.
