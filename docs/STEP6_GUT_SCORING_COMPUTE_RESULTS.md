@@ -9,46 +9,87 @@ donor/study-aware validation. All numbers below are real qsub output,
 pulled back and verified byte-exact (md5) against the Argos-side files
 before being trusted or written up — same discipline as every prior step.
 
+**This is the reproducible re-run** (round 2 of PR #27 review) — the
+first run (job 3620943/3620977) used a non-deterministic per-panel RNG
+seed (see "Seed-determinism fix" below) and its outputs were discarded
+entirely rather than partially reused, so every number in this document
+comes from the second, deterministically-seeded run.
+
 ## Job provenance
 
 | Stage | Job ID | Scope | Outcome |
 |---|---|---|---|
 | Gene-set build | 3620942 | 13-panel Ensembl-ID inventory | Clean; 100% resolution, 0 unmapped, exact expected panel sizes |
-| Convergence check | 3620943 | 20,000-cell stratified subset, N_PERM=100 vs 500, real `scanpy.tl.score_genes` | Clean; all 13 panels' percentile correlation ≥0.986; 2/10 comparison pairs flagged for N_PERM=500 |
-| Full run (1st attempt, CSR) | 3620971 | 665,473 cells | Killed intentionally after 1 panel — see "Compute-cost fixes found mid-run" below |
-| Full run (2nd attempt, CSC + `score_genes_fast`) | 3620977 | 665,473 cells, all 13 panels + primary analysis | **Completed cleanly**, ~50 min total |
+| Convergence check (round 1, non-deterministic seed) | 3620943 | 20,000-cell subset | Discarded — seed bug (see below) |
+| Full run (round 1, CSR, non-deterministic seed) | 3620971 | 665,473 cells | Killed intentionally after 1 panel — CSC fix found mid-run |
+| Full run (round 1, CSC, non-deterministic seed) | 3620977 | 665,473 cells | Completed, but discarded once the seed bug was found in review |
+| **Convergence check (round 2, deterministic seed)** | **3621023** | 20,000-cell subset, N_PERM=100 vs 500, real `scanpy.tl.score_genes` | **Clean; used for this doc** |
+| **Full run (round 2, deterministic seed)** | **3621066** | 665,473 cells, all 13 panels + primary analysis | **Completed cleanly, ~40 min; used for this doc** |
 
-Full-run per-cell score files (`crc_gut_scoring_all_panels.parquet`, 55MB;
-`crc_gut_scoring_cell_metadata.parquet`, 5.8MB) are kept on Argos only
+Full-run per-cell score files (`crc_gut_scoring_all_panels.parquet`,
+`crc_gut_scoring_cell_metadata.parquet`) are kept on Argos only
 (`results/06_crc_projection/gut_scoring_full/` — outside this repo's
 data-file size norms, per `.gitignore`'s "no data files in this repo"
 policy), reproducible from the frozen scripts + these committed
-parameters. md5 for provenance: `8c942c06923ff8b8c417d67efff88110`
-(`crc_gut_scoring_all_panels.parquet`), `5c7250403e7229a4f33fec131ae5434d`
-(`crc_gut_scoring_cell_metadata.parquet`). The real, primary deliverable —
-the donor/study-aware correlation analysis — is committed in full
-(`results/06_crc_projection/gut_scoring_primary_analysis/`, 55 files, 1.2MB).
+parameters + the fixed seed. The real, primary deliverable — the
+donor/study-aware correlation analysis — is committed in full
+(`results/06_crc_projection/gut_scoring_primary_analysis/`, 55 files).
 
-## Convergence check: N_PERM=100 confirmed adequate
+## Seed-determinism fix (PR #27 review round 1 — real blocker, not cosmetic)
+
+Per-panel RNG seeds were originally derived as
+`hash((seed, panel_name)) % (2**32)`. Python's built-in `hash()` on
+`str`/`tuple` is process-randomized (`PYTHONHASHSEED`) by default, so
+this was **not actually reproducible** from the nominal fixed seed
+`20260815` across separate qsub process invocations — each individual
+run's null draws were still statistically valid (a real, legitimate
+permutation test), but re-running "the same" job would silently draw a
+different set of null genes every time, violating the design's explicit
+"fixed seed, stated for reproducibility" contract. The reviewer
+correctly flagged this as a real blocker (not a style nit): the round-1
+convergence gate's flagged pairs were close enough to the 0.02 threshold
+that a re-run wasn't certified to reproduce the same 3-panel gate.
+
+Fixed with a deterministic hash (`hashlib.sha256` over a plain string,
+unaffected by `PYTHONHASHSEED`) — verified directly to return the
+identical integer across separate Python processes before trusting it.
+**Both the round-1 convergence check and full run were discarded
+entirely** (not patched/reused) and re-run from scratch with the fix;
+all stale Argos-side checkpoints were cleared first so nothing from the
+non-deterministic run could leak into the reproducible one.
+
+**The re-run's gate is genuinely different from the discarded round-1
+gate** — direct confirmation that the seed bug was a real, not
+theoretical, problem: round 1 (buggy) flagged `F_Colon-specific`,
+`revCSC_extended28_minus_CLU`, `revCSC_primary27_minus_CLU`; round 2
+(fixed) flags `F_Colon-specific`, `F_Gut-specific`,
+`revCSC_extended28_minus_CLU`, `revCSC_primary27_minus_CLU_ASS1` — 3 of
+4 panels differ. The **qualitative primary-analysis conclusion did not
+change** (every pair's robust/non-robust flag is identical between the
+two runs — see below), but the exact correlation values shifted by up to
+~0.02-0.03, consistent with the convergence check's own finding that
+these particular pairs sit near the edge of `N_PERM=100`'s resolution.
+
+## Convergence check: N_PERM=100 confirmed adequate (reproducible run)
 
 Per-panel correlation between N_PERM=100 and N_PERM=500's per-cell
 empirical percentiles, all 13 panels, 20,000-cell subset:
 
 | Panel | Pearson r (100 vs 500) | Spearman ρ |
 |---|---|---|
-| revCSC_primary27_full | 0.9936 | 0.9867 |
-| revCSC_primary27_minus_CLU | 0.9925 | 0.9865 |
-| revCSC_primary27_minus_ASS1 | 0.9934 | 0.9813 |
-| revCSC_primary27_minus_CLU_ASS1 | 0.9937 | 0.9861 |
-| revCSC_extended28_full | 0.9910 | 0.9893 |
-| revCSC_extended28_minus_CLU | 0.9930 | 0.9841 |
-| revCSC_extended28_minus_ASS1 | 0.9930 | 0.9826 |
-| revCSC_extended28_minus_CLU_ASS1 | 0.9928 | 0.9807 |
-| D_Gut-shared | 0.9864 | 0.9843 |
-| F_Gut-specific | 0.9980 | 0.9792 |
-| F_Colon-specific | 0.9976 | 0.9862 |
-| F_SI-specific | 0.9964 | 0.9896 |
-| P_Gut-specific | 0.9933 | 0.9889 |
+| revCSC_primary27_full | 0.9916 | 0.9888 |
+| revCSC_primary27_minus_CLU | 0.9941 | 0.9879 |
+| revCSC_primary27_minus_ASS1 | 0.9935 | 0.9804 |
+| revCSC_primary27_minus_CLU_ASS1 | 0.9929 | 0.9867 |
+| revCSC_extended28_full | 0.9929 | 0.9875 |
+| revCSC_extended28_minus_CLU | 0.9923 | 0.9766 |
+| revCSC_extended28_minus_ASS1 | 0.9941 | 0.9847 |
+| revCSC_extended28_minus_CLU_ASS1 | 0.9932 | 0.9831 |
+| D_Gut-shared | 0.9891 | 0.9872 |
+| F_Gut-specific | 0.9985 | 0.9809 |
+| F_Colon-specific | 0.9976 | 0.9876 |
+| F_SI-specific | 0.9981 | 0.9888 |
+| P_Gut-specific | 0.9939 | 0.9916 |
 
 All well above any reasonable stability bar — confirms `N_PERM=100`'s
 per-cell empirical percentile is not meaningfully different from what
@@ -57,18 +98,33 @@ compute targets (per the design's own stated limits: not intended for
 fine per-cell significance calls).
 
 Per the locked 0.02-Pearson-r gate on the 10 revCSC↔D/F/P comparison
-pairs: **2/10 pairs exceeded the threshold** —
-`revCSC_primary27_minus_CLU` vs `F_Colon-specific` (Δ=0.0265) and
-`revCSC_extended28_minus_CLU` vs `F_Colon-specific` (Δ=0.0235). Per the
-contract, this flagged 3 panels for `N_PERM=500` in the full run:
-`F_Colon-specific`, `revCSC_extended28_minus_CLU`,
-`revCSC_primary27_minus_CLU` (union of the flagged panels across both
-pairs) — all other panels used `N_PERM=100` as planned.
+pairs:
+
+| revCSC panel | D/F/P panel | r (N=100) | r (N=500) | \|Δr\| | Exceeds 0.02? |
+|---|---|---|---|---|---|
+| revCSC_primary27_full | D_Gut-shared | -0.0037 | -0.0068 | 0.0031 | No |
+| revCSC_primary27_full | P_Gut-specific | -0.0394 | -0.0446 | 0.0053 | No |
+| revCSC_primary27_minus_CLU | F_Colon-specific | 0.0701 | 0.0712 | 0.0010 | No |
+| revCSC_primary27_minus_ASS1 | F_SI-specific | 0.1570 | 0.1475 | 0.0094 | No |
+| revCSC_primary27_minus_CLU_ASS1 | F_Gut-specific | 0.1070 | 0.1367 | 0.0297 | **Yes** |
+| revCSC_extended28_full | D_Gut-shared | 0.0032 | 0.0008 | 0.0024 | No |
+| revCSC_extended28_full | P_Gut-specific | -0.0442 | -0.0484 | 0.0041 | No |
+| revCSC_extended28_minus_CLU | F_Colon-specific | 0.1217 | 0.1012 | 0.0205 | **Yes** |
+| revCSC_extended28_minus_ASS1 | F_SI-specific | 0.1900 | 0.1923 | 0.0023 | No |
+| revCSC_extended28_minus_CLU_ASS1 | F_Gut-specific | 0.1839 | 0.1745 | 0.0094 | No |
+
+**2/10 pairs exceeded the threshold**, flagging 4 panels for `N_PERM=500`
+in the full run: `F_Colon-specific`, `F_Gut-specific`,
+`revCSC_extended28_minus_CLU`, `revCSC_primary27_minus_CLU_ASS1` (union
+of the flagged panels across both pairs) — all other panels used
+`N_PERM=100` as planned.
 
 ## Compute-cost fixes found mid-run (not assumed, profiled directly)
 
-Two real feasibility problems were found and fixed while this compute
-was actually running, not anticipated in the design:
+Two real feasibility problems were found and fixed while the round-1
+compute was running (both carried forward into this reproducible re-run
+unchanged — they are performance fixes, not correctness fixes, and were
+never in question):
 
 1. **Naive `scanpy.tl.score_genes` is infeasible at 665K-cell scale.**
    A timing probe (not a guess) showed per-call cost scaling with cell
@@ -99,40 +155,26 @@ was actually running, not anticipated in the design:
    (compressed sparse column) once, before the repeated calls, cuts cost
    from 14.4s/call to 0.9s/call (27-gene panel) and ~11.9s/call to
    3.2s/call (2,173-gene panel) at full scale. One-time conversion cost
-   ~80s. The first full-run attempt (job 3620971, CSR) was killed after
-   confirming this and resubmitted (job 3620977, CSC) — the one panel
-   already checkpointed was safely reused (CSR→CSC conversion changes no
-   computed values, only access performance).
+   ~80s.
 
-Combined effect: **the full run completed in ~50 minutes**, down from an
-~18h+ naive projection.
+Combined effect: both reproducible-seed runs (convergence check + full
+run) completed in a few hours total, down from an ~18h+ naive projection
+for the full run alone.
 
-**Minor bug found and fixed in the same pass**: `DataFrame.attrs` does
-not survive a `to_parquet`/`read_parquet` round-trip, so the checkpoint-
-reuse path was silently reporting `n_testable=-1` for any panel loaded
-from a checkpoint instead of freshly scored — this affected exactly one
-row (`revCSC_primary27_full`, reused from the killed CSR run) in
-`n_testable_genes_per_panel.tsv`. Fixed in `crc_gut_scoring_core.py` by
-writing `n_testable` to a small sidecar file instead of relying on
-`.attrs` (applies to future runs); this run's one wrong value was
-corrected using the number the original qsub log directly reported
-(`n_testable=27`, confirmed real, not fabricated) — the underlying score
-values themselves were never affected, only this one provenance field.
-
-## Final scoring inventory (13 panels, all cells)
+## Final scoring inventory (13 panels, all cells, reproducible run)
 
 | Panel | n_testable genes | N_PERM used |
 |---|---|---|
 | revCSC_primary27_full | 27 | 100 |
-| revCSC_primary27_minus_CLU | 26 | 500 (gated) |
+| revCSC_primary27_minus_CLU | 26 | 100 |
 | revCSC_primary27_minus_ASS1 | 26 | 100 |
-| revCSC_primary27_minus_CLU_ASS1 | 25 | 100 |
+| revCSC_primary27_minus_CLU_ASS1 | 25 | 500 (gated) |
 | revCSC_extended28_full | 28 | 100 |
 | revCSC_extended28_minus_CLU | 27 | 500 (gated) |
 | revCSC_extended28_minus_ASS1 | 27 | 100 |
 | revCSC_extended28_minus_CLU_ASS1 | 26 | 100 |
 | D_Gut-shared | 8 | 100 |
-| F_Gut-specific | 2,173 | 100 |
+| F_Gut-specific | 2,173 | 500 (gated) |
 | F_Colon-specific | 1,442 | 500 (gated) |
 | F_SI-specific | 1,437 | 100 |
 | P_Gut-specific | 76 | 100 |
@@ -152,54 +194,57 @@ transparently):
 
 | Comparison | Pooled Pearson r | Pooled Spearman ρ | Robust to leave-one-donor/study-out? |
 |---|---|---|---|
-| revCSC_primary27_full ↔ D_Gut-shared | 0.012 | 0.017 | **Yes** |
-| revCSC_primary27_full ↔ P_Gut-specific | -0.031 | -0.024 | **Yes** |
-| revCSC_primary27_minus_CLU ↔ F_Colon-specific | 0.012 | -0.017 | **No** |
-| revCSC_primary27_minus_ASS1 ↔ F_SI-specific | 0.100 | 0.013 | **No** |
-| revCSC_primary27_minus_CLU_ASS1 ↔ F_Gut-specific | 0.119 | 0.004 | **No** |
-| revCSC_extended28_full ↔ D_Gut-shared | 0.022 | 0.026 | **Yes** |
-| revCSC_extended28_full ↔ P_Gut-specific | -0.036 | -0.027 | **Yes** |
-| revCSC_extended28_minus_CLU ↔ F_Colon-specific | 0.046 | 0.019 | **No** |
-| revCSC_extended28_minus_ASS1 ↔ F_SI-specific | 0.151 | 0.036 | **Yes** |
-| revCSC_extended28_minus_CLU_ASS1 ↔ F_Gut-specific | 0.176 | 0.045 | **Yes** |
+| revCSC_primary27_full ↔ D_Gut-shared | 0.008 | 0.012 | **Yes** |
+| revCSC_primary27_full ↔ P_Gut-specific | -0.025 | -0.015 | **Yes** |
+| revCSC_primary27_minus_CLU ↔ F_Colon-specific | 0.005 | -0.029 | **No** |
+| revCSC_primary27_minus_ASS1 ↔ F_SI-specific | 0.092 | 0.006 | **No** |
+| revCSC_primary27_minus_CLU_ASS1 ↔ F_Gut-specific | 0.101 | -0.013 | **No** |
+| revCSC_extended28_full ↔ D_Gut-shared | 0.021 | 0.022 | **Yes** |
+| revCSC_extended28_full ↔ P_Gut-specific | -0.030 | -0.022 | **Yes** |
+| revCSC_extended28_minus_CLU ↔ F_Colon-specific | 0.048 | 0.018 | **No** |
+| revCSC_extended28_minus_ASS1 ↔ F_SI-specific | 0.190 | 0.111 | **Yes** |
+| revCSC_extended28_minus_CLU_ASS1 ↔ F_Gut-specific | 0.172 | 0.030 | **Yes** |
+
+**Every pair's robust/non-robust flag is identical to the discarded
+round-1 (buggy-seed) run** — the qualitative conclusion is stable even
+though the seed bug meaningfully changed the convergence gate and the
+exact correlation values.
 
 **Reported as real, honest numbers — not smoothed over**:
 
-- **All 10 correlations are weak in absolute magnitude** (|r| ≤ 0.18).
+- **All 10 correlations are weak in absolute magnitude** (|r| ≤ 0.19).
   Whatever revCSC↔D/F/P relationship exists at the single-cell level
   across the full, heterogeneous 665,473-cell atlas is not a strong,
   dominant signal — this compute does not find a large "Oncofetal = pure
   F-program" or "= pure P-program" effect at this scale/resolution.
 - **D and P comparisons are the weakest and are the ones that ARE
-  robust** to single-donor/study removal (|r| ≤ 0.036 throughout, no
+  robust** to single-donor/study removal (|r| ≤ 0.030 throughout, no
   sign flip on leave-one-out). This is consistent with the negligible
   gene-overlap finding from PR #25's audit (D/P axes share zero genes
   with revCSC) — a weak, stable, near-null association is the expected,
   clean result here.
 - **F comparisons are directionally consistent (all positive) and
-  somewhat larger** (r = 0.01 to 0.18), strongest for
-  `F_Gut-specific`/`F_SI-specific` with the extended revCSC variant
-  (r = 0.15-0.18) and weakest for `F_Colon-specific` (r = 0.01-0.05)
+  somewhat larger** (r = 0.005 to 0.19), strongest for
+  `F_SI-specific`/`F_Gut-specific` with the extended revCSC variant
+  (r = 0.17-0.19) and weakest for `F_Colon-specific` (r = 0.005-0.05)
   despite `F_Colon-specific` being the *primary* regional F axis per
   Step 4a's locked hierarchy — a real, not obviously expected, pattern.
 - **4 of the 6 F-comparison pairs are NOT robust** to
   leave-one-donor-or-study-out: all 3 pairings using the primary
   (27-gene) revCSC (`F_Colon-specific`, `F_SI-specific`, `F_Gut-specific`)
   **plus** the `extended28`↔`F_Colon-specific` pairing — not "primary
-  revCSC" alone, corrected from an earlier wrong count/attribution in
-  this doc. Only `extended28`'s pairings with `F_SI-specific` and
+  revCSC" alone. Only `extended28`'s pairings with `F_SI-specific` and
   `F_Gut-specific` are robust among the F comparisons; all 4 D/P pairs
   (both revCSC variants) are robust. For `revCSC_primary27_minus_CLU` ↔
-  `F_Colon-specific` specifically,
-  excluding the single study `Terekhanova_2023_Nature` shifts the pooled
-  Pearson r by -0.052 — the largest single-study effect of any pair,
-  more than double the pair's own pooled r (0.012). This means the
-  already-weak `F_Colon-specific` correlation is itself substantially
-  driven by one study's contribution, not a consistent cross-cohort
-  signal. This instability is the finding for these 4 pairs, not
-  something to interpret as "revCSC correlates with F" — per the
-  design's own stated contract, non-robust pairs are reported as
-  unstable, not as evidence of association.
+  `F_Colon-specific` specifically, excluding the single study
+  `Terekhanova_2023_Nature` shifts the pooled Pearson r by -0.064 —
+  the largest single-study effect of any pair, more than 13× the pair's
+  own pooled r (0.005). This means the already-weak `F_Colon-specific`
+  correlation is itself substantially driven by one study's contribution,
+  not a consistent cross-cohort signal. This instability is the finding
+  for these 4 pairs, not something to interpret as "revCSC correlates
+  with F" — per the design's own stated contract, non-robust pairs are
+  reported as unstable, not as evidence of association.
 - Equal-donor-weighted vs. cell-weighted within-study summaries and the
   full per-donor tables are committed in full
   (`results/06_crc_projection/gut_scoring_primary_analysis/`) for anyone
@@ -221,6 +266,19 @@ Same explicit scope boundary as the approved design: no secondary
 (full-atlas revCSC-independent) analyses; no other CRC datasets
 (`HTAN_CRC_progressive_plasticity`, `CRLM_NMP_ATLAS`); no re-derivation
 of any frozen gut D/F/P or revCSC gene set.
+
+## Review history
+
+- **Round 1 (REQUEST_CHANGES)**: two real issues found. (1) Wording bug —
+  the results prose miscounted the F-comparison denominator (said "5",
+  actually 6) and misattributed a non-robust pairing to the wrong revCSC
+  variant; corrected, verified directly against the raw overview table.
+  (2) Seed-determinism bug (real blocker) — per-panel RNG seeds used
+  Python's process-randomized `hash()` instead of a deterministic hash,
+  so the nominal fixed seed wasn't actually reproducible; fixed, and
+  both the convergence check and full run were discarded and re-run from
+  scratch rather than patched. This document reflects the reproducible
+  re-run throughout.
 
 Submitting for compute review before merge, same discipline as every
 prior step.

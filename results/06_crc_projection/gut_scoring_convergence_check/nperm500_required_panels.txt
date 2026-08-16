@@ -1,3 +1,4 @@
 F_Colon-specific
+F_Gut-specific
 revCSC_extended28_minus_CLU
-revCSC_primary27_minus_CLU
+revCSC_primary27_minus_CLU_ASS1
