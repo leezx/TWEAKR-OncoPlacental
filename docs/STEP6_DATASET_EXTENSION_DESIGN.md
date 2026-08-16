@@ -90,26 +90,44 @@ necessarily `adata.var_names` (these are not guaranteed identical; if
 they differ, checking the wrong one silently validates the wrong gene
 axis). **Required first compute step, before any scoring**: confirm
 `raw.var_names` format directly (not assumed from the inventory doc's
-shorthand) — either assert byte-exact equality between `raw.var_names`
-and `var_names` (simplest, if true), or, if versioned, strip suffixes
-with the same logic already used elsewhere in this project *and assert
-the stripped IDs contain no duplicate collisions* (two versioned IDs
-stripping to the same bare Ensembl ID would silently corrupt the
-gene-to-column mapping). Report per-panel `n_testable = |panel ∩
-raw.var_names|` for all 13 panels on both datasets before proceeding —
-if coverage is unexpectedly low for any panel, that blocks compute until
-understood, not silently accepted.
+shorthand).
 
-### 3. HTAN's malignant-vs-matched-normal-epithelial contrast — a genuinely new analysis this dataset uniquely enables
+**Round-2 review correction**: the round-1 fix checked `raw.var_names`
+but left unresolved what happens to `adata.var_names` — the *working*
+axis that `compute_detectability()`, `testable_genes()`, and
+`score_genes_fast()` actually index against once `layers["counts"]` is
+populated from `raw.X`. Checking only the raw axis without also fixing
+the working axis leaves a real gap: if `raw.var_names` is versioned and
+only *it* gets stripped for the coverage check, `adata.var_names` itself
+could still be versioned (or otherwise non-identical to `raw.var_names`)
+when the scoring functions actually run. **Corrected, fully-specified
+contract**: (a) establish a one-to-one correspondence between
+`raw.var_names` and the working `adata.var_names` (assert this
+explicitly — do not assume it from equal lengths); (b) if either axis is
+versioned, canonicalize **both** to stripped bare-Ensembl IDs — the
+working `adata.var_names` gets the same stripping the raw axis gets, not
+just the raw axis in isolation — asserting no duplicate collisions on
+either axis; (c) only after (a)/(b) are proven, assign the (correctly
+axis-aligned) `raw.X` into `layers["counts"]`; (d) all `n_testable`
+coverage checks thereafter run against this canonicalized working axis
+(`adata.var_names`), not `raw.var_names` in isolation — report per-panel
+`n_testable = |panel ∩ adata.var_names|` for all 13 panels on both
+datasets before proceeding. If `raw.var_names` and `var_names` are
+already byte-identical bare IDs (the likely case, but verified not
+assumed), steps (a)/(b) reduce to a single equality assertion and a
+no-op. If coverage is unexpectedly low for any panel, that blocks
+compute until understood, not silently accepted.
+
+### 3. HTAN's malignant-vs-patient-matched-normal-epithelial contrast — a genuinely new analysis this dataset uniquely enables
 
 Unlike `CRC_single_cell_atlas_2025` (malignant cells only,
 `atlas_cell_type_middle`), `HTAN_CRC_progressive_plasticity` carries
 **named, specific normal epithelial subtypes** (early colonocyte,
 secretory, ISC, goblet, BEST4+, tuft, enteroendocrine) from the *same
 patients* as the malignant cells, per the original inventory. This is
-the direct within-patient malignant-vs-own-normal-epithelial contrast
-flagged as an open item in the original design doc (item 4, never
-executed).
+the direct within-patient malignant-vs-patient-matched-normal-epithelial
+contrast flagged as an open item in the original design doc (item 4,
+never executed).
 
 **Round-1 review correction**: the first draft's "compare each patient's
 malignant cells' percentile distribution against that same patient's
@@ -143,8 +161,38 @@ This remains the most direct oncofetal-reactivation test in this
 project, but it is a strong test, not a confound-free one — stated
 honestly rather than oversold. It only exists for `HTAN_CRC_
 progressive_plasticity` — `CRC_single_cell_atlas_2025` has no matched
-normal population, and `CRLM_NMP_ATLAS` is TME-focused with too few
-malignant cells for a similar contrast (see below).
+normal population, and `CRLM_NMP_ATLAS` has no comparable normal
+population and, per §5, its real limiting factor is its 6-donor n, not
+its malignant cell count (a similar contrast is not attempted there for
+that reason, not a cell-count reason).
+
+**Round-2 review correction — HTAN needs two distinct scoring passes,
+not one**: the round-1 fix locked joint malignant+normal null
+calibration for the paired contrast above (correct — malignant and
+normal cells must share one calibration basis to be directly compared),
+but the compute plan then also called HTAN's malignant-only
+revCSC↔D/F/P correlation a "primary-analysis-equivalent" without
+noticing these are two different populations. PR #27's actual primary
+analysis calibrated its null strata on the malignant-cell population
+being scored; a malignant cell's null-calibrated percentile when scored
+jointly with normal epithelium is not formally the same quantity as that
+same cell's percentile when scored in a malignant-only population,
+because the expression-detectability null bins and `score_genes` control
+bins both depend on the population being scored. **Locked, corrected
+contract — two separate scoring contexts on HTAN, not one**:
+
+- **Primary-extension scoring** (true PR #27-equivalent): HTAN malignant
+  cells only, all 13 panels, revCSC↔D/F/P correlation — the direct
+  analog of the primary analysis run on `CRC_single_cell_atlas_2025`.
+- **Patient-matched contrast scoring** (this section's analysis): all
+  HTAN malignant + normal-epithelial cells scored jointly, the 6
+  relevant panels (5 D/F/P + primary revCSC), feeding the patient-level
+  paired comparison above.
+
+This means scoring HTAN's ~47,107 cells twice (once malignant-only, once
+jointly) — inexpensive relative to the 665,473-cell primary atlas, and
+it removes a genuine calibration-population ambiguity rather than
+reusing one score set for two questions it doesn't equally answer.
 
 ### 4. Study-provenance overlap audit for HTAN (required before "replication" language — flagged since the original design, never run)
 
@@ -233,7 +281,11 @@ per this project's standing efficiency discipline.
 3. **Study-provenance overlap audit** (§4): run before any HTAN write-up
    uses "replication" or "external validation" language.
 4. **Primary-analysis-equivalent scoring**: null-calibrated percentile +
-   z-score, all 13 panels, both datasets. **Round-1 review correction**:
+   z-score, all 13 panels, both datasets — for HTAN, this is the
+   **malignant-cells-only** scoring pass (§3's round-2 correction: kept
+   distinct from the joint malignant+normal pass used only for the
+   patient-matched contrast in step 5 below). **Round-1 review
+   correction**:
    the first draft claimed `N_PERM=100` was already certified for "this
    panel set" and needed no new convergence probe — false on two counts,
    confirmed directly against `docs/STEP6_GUT_SCORING_COMPUTE_RESULTS.md`:
@@ -253,11 +305,14 @@ per this project's standing efficiency discipline.
    pooled + leave-one-donor-out correlation (HTAN: 29 patients, real
    robustness checks feasible; CRLM: 6 donors, reported as a descriptive
    sensitivity diagnostic only per §5, not a robustness classification).
-5. **HTAN malignant-vs-normal contrast** (§3): joint null-calibrated
-   scoring of the full epithelial dataset, then one malignant summary and
-   one normal-epithelial summary per patient per panel, paired
-   (within-patient) test across those per-patient summaries — patients,
-   not cells, are the statistical unit (§3's corrected contract).
+5. **HTAN malignant-vs-normal contrast** (§3): a **second, separate**
+   scoring pass — joint null-calibrated scoring of the full malignant +
+   normal-epithelial dataset together (the 6 relevant panels), then one
+   malignant summary and one normal-epithelial summary per patient per
+   panel, paired (within-patient) test across those per-patient
+   summaries — patients, not cells, are the statistical unit (§3's
+   corrected contract). Not reused from step 4's malignant-only scores —
+   the two passes have different calibration populations by design.
 6. **Write-up**: two dataset-specific results sections (mirroring
    `STEP6_GUT_SCORING_COMPUTE_RESULTS.md`'s structure), each explicitly
    stating its own robustness/coverage caveats — not a single combined
@@ -309,4 +364,29 @@ scope per the 2026-08-16 user confirmation, `docs/Q1_Q2_Q4_CROSS_REFERENCE.md`).
   status for CRLM specifically.
 
 Submitting for round-2 review before compute, same discipline as every
+prior step this session.
+
+- **Round 2 (REQUEST_CHANGES, narrowly — 2 real correctness-level gaps
+  plus 2 non-blocking stale phrases, all confirmed by re-reading this
+  document's own current state before fixing)**: (1) the round-1
+  version-suffix fix checked `raw.var_names` but left `adata.var_names`
+  (the axis the scoring functions actually index against once
+  `layers["counts"]` is populated) unaddressed — fixed to explicitly
+  canonicalize *both* axes and assert 1:1 correspondence before assigning
+  `raw.X` into `layers["counts"]` (§2). (2) A genuine oversight in the
+  round-1 fix itself: locking joint malignant+normal null calibration for
+  the patient-matched contrast, while still calling HTAN's malignant-only
+  correlation "primary-analysis-equivalent," silently conflated two
+  different calibration populations — fixed to two explicit, separate
+  scoring passes on HTAN (malignant-only for the primary-equivalent
+  correlation; joint malignant+normal for the patient-matched contrast
+  only) (§3, compute plan). (3)/(4) two stale leftover phrases from
+  incomplete find-and-replace in round 1 — §3's heading/opening still
+  said "matched-normal"/"own-normal" after the body text had already been
+  corrected to "patient-matched"; §3's closing sentence still said CRLM
+  has "too few malignant cells" for a similar contrast, contradicting
+  §5's own already-corrected rationale (6 donors, not cell count) — both
+  fixed to match their already-corrected sections exactly.
+
+Submitting for round-3 review before compute, same discipline as every
 prior step this session.
