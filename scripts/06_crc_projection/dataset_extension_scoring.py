@@ -40,6 +40,7 @@ from crc_gut_scoring_core import (
 from dataset_extension_core import (
     EXTENSION_DATASETS, load_extension_dataset, coverage_check,
     canonical_marker_sentinel_check, htan_provenance_overlap_audit,
+    htan_name_similarity_supplementary_check,
 )
 
 N_PERM = 500  # locked for ALL panels on both extension datasets, round-1 fix
@@ -99,23 +100,45 @@ def main():
     # is well above 50% but far below every other panel/dataset pair
     # (next lowest: 87.5%), i.e. "unexpectedly low" relative to its
     # peers per the design's actual wording, not relative to an
-    # arbitrary absolute floor. Flagged here as a per-dataset relative
-    # deviation instead (>15 points below that dataset's own median
-    # coverage). The design's contract is a REQUIRED INVESTIGATION gate,
-    # not an automatic compute-blocking gate or an automatically-waived
-    # one -- this script does not itself decide the panel remains usable;
-    # it only surfaces the deviation loudly so the investigation (done
-    # once, by hand, and reported in docs/STEP6_DATASET_EXTENSION_RESULTS.md)
-    # is not silently skipped.
+    # arbitrary absolute floor. Flagged as a per-dataset relative
+    # deviation instead (>15 points below that dataset's own median).
+    #
+    # Round-2 review correction: round 1's fix printed the deviation but
+    # still fell through to scoring regardless -- that still isn't the
+    # design's actual "blocks compute until understood" contract, just a
+    # louder version of the same waiver. The one case this project has
+    # actually hit and investigated (CRLM_NMP_ATLAS/P_Gut-specific,
+    # 40/76 genes -- confirmed via a real investigation, see
+    # docs/STEP6_DATASET_EXTENSION_RESULTS.md, to be a genuine
+    # CRLM-specific reference/annotation gap, not a data-quality problem,
+    # with all 36 missing genes present in the primary atlas and 34/36
+    # present in HTAN) is now an explicit, named, investigated exception.
+    # Any OTHER newly-flagged deviation this script has not already been
+    # told about is a genuine blocking gate -- raises, does not proceed.
+    INVESTIGATED_COVERAGE_EXCEPTIONS = {
+        ("CRLM_NMP_ATLAS", "P_Gut-specific"): (40, 76),
+    }
     cov_all["coverage_frac"] = cov_all["n_testable"] / cov_all["n_panel_genes"]
     cov_all["dataset_median_coverage_frac"] = cov_all.groupby("dataset")["coverage_frac"].transform("median")
     flagged = cov_all[cov_all["coverage_frac"] < cov_all["dataset_median_coverage_frac"] - 0.15]
-    if len(flagged) > 0:
-        print(f"REQUIRES INVESTIGATION (per design's pre-compute gate, not "
-              f"auto-waived): {len(flagged)} panel/dataset pairs have coverage "
-              f">15 points below their own dataset's median -- see {cov_path}. "
-              f"Investigation result MUST be documented in the results write-up "
-              f"before proceeding to claims based on that panel:\n{flagged}", flush=True)
+    unexplained = []
+    for _, row in flagged.iterrows():
+        key = (row["dataset"], row["panel"])
+        expected = INVESTIGATED_COVERAGE_EXCEPTIONS.get(key)
+        if expected == (row["n_testable"], row["n_panel_genes"]):
+            print(f"Coverage deviation for {key}: {row['n_testable']}/{row['n_panel_genes']} "
+                  f"-- matches the investigated, documented exception "
+                  f"(docs/STEP6_DATASET_EXTENSION_RESULTS.md), proceeding.", flush=True)
+        else:
+            unexplained.append(row)
+    if unexplained:
+        raise ValueError(
+            f"Unexplained coverage deviation(s) found, not matching any "
+            f"previously-investigated exception -- per the design's "
+            f"'blocks compute until understood' contract, this compute "
+            f"MUST stop here for manual investigation before proceeding:\n"
+            f"{pd.DataFrame(unexplained)}"
+        )
 
     print("\n=== Canonical-marker sentinel check ===", flush=True)
     htan_group_col = "cell_type"
@@ -135,6 +158,16 @@ def main():
         f.write(f"conclusion: {prov_conclusion}\n")
         f.write(f"studies_with_id_prefix_hits: {prov_studies}\n")
     print(f"Wrote {prov_path}; conclusion={prov_conclusion}, studies={prov_studies}", flush=True)
+
+    # Round-2 review correction: this supplementary check (which supports
+    # the specific "HTAPP_HTAN is actually Pelka 2021's HTA1_ Synapse
+    # cohort" narrative in the results write-up) was defined but never
+    # wired into this driver -- the advertised scoring workflow could not
+    # actually regenerate its own committed output. Fixed: called here.
+    name_sim_df = htan_name_similarity_supplementary_check()
+    name_sim_path = f"{out_dir}/htan_name_similarity_supplementary_check.tsv"
+    name_sim_df.to_csv(name_sim_path, sep="\t", index=False)
+    print(f"Wrote {name_sim_path}", flush=True)
 
     # ---- HTAN pass 1: malignant-only, all 13 panels (primary-extension) ----
     print("\n=== HTAN pass 1: malignant-only, all 13 panels ===", flush=True)
