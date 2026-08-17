@@ -13,14 +13,75 @@
       "tar_tf_ok": true,
       "n_members": 78,
       "n_gz_members": 78,
-      "gz_spotcheck_n": 20,
-      "gz_spotcheck_failures": []
+      "gz_exhaustive_check_n": 78,
+      "gz_exhaustive_check_failures": [],
+      "extract_dir": "/home/zz950/DATA/scRNAseq/GSE231559/raw/extracted"
     }
   },
   {
     "dataset": "GSE225857",
     "n_scrna_gsms": 2,
-    "per_patient_reconstruction_possible": true,
+    "organ_prefix_unique_patients": {
+      "CCL": [
+        "s0107",
+        "s0115",
+        "s0813",
+        "s0920",
+        "s1125",
+        "s1231"
+      ],
+      "CNL": [
+        "s0107",
+        "s0115",
+        "s0813",
+        "s1125",
+        "s1231"
+      ],
+      "LCL": [
+        "s0107",
+        "s0115",
+        "s0813",
+        "s0816",
+        "s0920",
+        "s1125",
+        "s1231"
+      ],
+      "LNL": [
+        "s0107",
+        "s0115",
+        "s0813",
+        "s0816",
+        "s0920",
+        "s1125",
+        "s1231"
+      ],
+      "PBL": [
+        "s0107",
+        "s0115",
+        "s0813",
+        "s0816",
+        "s0920"
+      ],
+      "CCT": [
+        "s0107",
+        "s0115",
+        "s0813",
+        "s0920",
+        "s1231"
+      ],
+      "LCT": [
+        "s0107",
+        "s0115",
+        "s0813",
+        "s0920",
+        "s1231"
+      ]
+    },
+    "n_unique_liver_cancer_patients": 7,
+    "n_unique_colon_cancer_patients": 6,
+    "paper_cited_clim": 4,
+    "paper_cited_primary": 4,
+    "cohort_reconstruction_status": "PARTIAL/UNRESOLVED -- real per-patient values now parsed (round-1 review fix): 7 unique patients have liver-cancer (CLiM) tissue data, 6 unique patients have colon-cancer (primary CRC) tissue data. Neither matches the paper's cited 4+4 exactly -- these are pooled dissociated-cell fractions (immune/non-immune) across all profiled patients, not the paper's discrete per-tumor-block sample structure, so a clean 4+4 subset is not recoverable by tissue-prefix counting alone. Reported honestly as unresolved, not forced to match.",
     "note": "Only GSM7058754/GSM7058755 downloaded (exact-GSM selection, per design); the other 6 GSMs in this series are spatial and explicitly out of scope, not downloaded."
   },
   {
@@ -56,16 +117,41 @@
       "consortium": 56
     },
     "n_liver_metastasis_pre_treatment_only": 53,
+    "clinical_xls_files_inspected": {
+      "recurrence_meta": {
+        "n_rows": 134,
+        "n_columns": 68,
+        "cohort_tag_counts": {
+          "mcc": 134
+        },
+        "metastasis_primary_tag_counts": {
+          "prim": 134
+        },
+        "contains_any_metastasis_sample": false
+      },
+      "stage4_meta": {
+        "n_rows": 40,
+        "n_columns": 67,
+        "cohort_tag_counts": {
+          "mcc": 40
+        },
+        "metastasis_primary_tag_counts": {
+          "prim": 40
+        },
+        "contains_any_metastasis_sample": false
+      }
+    },
     "paper_cited_n": 170,
-    "cohort_reconstruction_status": "PARTIAL/UNRESOLVED -- none of the GEO-metadata-based groupings checked this round (total liver-met=197; per-cohort 141 MCC/56 Consortium; PRE-treatment-only=53) reproduce the paper's cited 170 exactly. Likely requires the paper's own supplementary sample list, not reconstructable from GEO's public per-sample characteristics alone. Reported honestly as unresolved, not forced to match.",
+    "cohort_reconstruction_status": "UNRESOLVED, now with a directly-verified reason (round-1 review fix -- both clinical XLS files download_geo.sh downloads were actually opened this round, not just declared unhelpful): both files are exclusively 'mcc.prim.*' samples (Recurrence file: 134/134 primary; Stage4/survival file: 40/40 primary) -- neither file contains a single metastasis sample (contains_any_metastasis_sample=False), so they are primary-tumor clinical-outcome/survival annotation files, not annotations of the liver-metastasis samples themselves, and structurally cannot resolve which subset of the 197 GEO-identified liver-met samples matches the paper's cited 170. None of the GEO series-matrix-based groupings checked (total liver-met=197; per-cohort 141 MCC/56 Consortium; PRE-treatment-only=53) reproduce 170 exactly either. Likely requires the paper's own supplementary sample list.",
     "archive_integrity": {
       "path": "/home/zz950/DATA/bulkRNAseq/GSE131418/raw/GSE131418_RAW.tar",
       "exists": true,
       "tar_tf_ok": true,
       "n_members": 1138,
       "n_gz_members": 1138,
-      "gz_spotcheck_n": 20,
-      "gz_spotcheck_failures": []
+      "gz_exhaustive_check_n": 1138,
+      "gz_exhaustive_check_failures": [],
+      "extract_dir": "/home/zz950/DATA/bulkRNAseq/GSE131418/raw/extracted"
     }
   },
   {
@@ -73,14 +159,17 @@
     "n_cel_files": 177,
     "expected_n_from_geo_filelist": 177,
     "matches_geo_declared_count": true,
+    "array_type_confirmed_from_cel_header": "HG-U133_Plus_2.1sq",
+    "raw_vs_processed_status": "raw (Affymetrix CEL = probe-level raw intensity data, not summarized/normalized expression values)",
     "archive_integrity": {
       "path": "/home/zz950/DATA/bulkRNAseq/GSE17536/raw/GSE17536_RAW.tar",
       "exists": true,
       "tar_tf_ok": true,
       "n_members": 177,
       "n_gz_members": 177,
-      "gz_spotcheck_n": 20,
-      "gz_spotcheck_failures": []
+      "gz_exhaustive_check_n": 177,
+      "gz_exhaustive_check_failures": [],
+      "extract_dir": "/home/zz950/DATA/bulkRNAseq/GSE17536/raw/extracted"
     }
   },
   {
@@ -88,14 +177,17 @@
     "n_cel_files": 55,
     "expected_n_from_geo_filelist": 55,
     "matches_geo_declared_count": true,
+    "array_type_confirmed_from_cel_header": "HG-U133_Plus_2.1sq",
+    "raw_vs_processed_status": "raw (Affymetrix CEL = probe-level raw intensity data, not summarized/normalized expression values)",
     "archive_integrity": {
       "path": "/home/zz950/DATA/bulkRNAseq/GSE17537/raw/GSE17537_RAW.tar",
       "exists": true,
       "tar_tf_ok": true,
       "n_members": 55,
       "n_gz_members": 55,
-      "gz_spotcheck_n": 20,
-      "gz_spotcheck_failures": []
+      "gz_exhaustive_check_n": 55,
+      "gz_exhaustive_check_failures": [],
+      "extract_dir": "/home/zz950/DATA/bulkRNAseq/GSE17537/raw/extracted"
     }
   },
   {
@@ -116,15 +208,37 @@
       "tar_tf_ok": true,
       "n_members": 148,
       "n_gz_members": 148,
-      "gz_spotcheck_n": 20,
-      "gz_spotcheck_failures": []
+      "gz_exhaustive_check_n": 148,
+      "gz_exhaustive_check_failures": [],
+      "extract_dir": "/home/zz950/DATA/bulkRNAseq/GSE21510/raw/extracted"
     }
   },
   {
     "dataset": "TCGA-CRC",
     "access_method": "GDC API (distinct from every GEO cohort in this table -- not a GEO _RAW.tar)",
     "n_files_total_manifest": 701,
-    "n_files_size_verified_on_disk": 701,
+    "n_files_size_and_md5_verified": 701,
+    "n_files_missing": 0,
+    "n_files_size_mismatch": 0,
+    "n_files_md5_mismatch": 0,
+    "structural_characterization_sample_file": {
+      "columns": [
+        "gene_id",
+        "gene_name",
+        "gene_type",
+        "unstranded",
+        "stranded_first",
+        "stranded_second",
+        "tpm_unstranded",
+        "fpkm_unstranded",
+        "fpkm_uq_unstranded"
+      ],
+      "n_data_rows_total": 60664,
+      "n_star_summary_rows": 4,
+      "n_gene_rows": 60660,
+      "frac_ensembl_gene_ids": 0.9992,
+      "raw_vs_processed": "BOTH present in one file: 'unstranded' column is raw STAR gene counts (integer), 'tpm_unstranded'/'fpkm_unstranded'/'fpkm_uq_unstranded' are processed/normalized -- confirmed directly from column names, not assumed from the GDC data-type label alone."
+    },
     "by_project": {
       "TCGA-COAD": 524,
       "TCGA-READ": 177

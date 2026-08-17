@@ -17,6 +17,11 @@ integer `Content-Length` (GEO) or GDC manifest `file_size`+`md5sum`
 (TCGA) — never GEO's rounded MB/GB webpage display, never piped through
 `tail`/`head` (standing `curl_pipe_swallows_exit_code` lesson).
 
+**Went through 1 review round** (`PR #36`) — 4 blockers plus 1
+completeness gap, all independently re-verified against real committed
+data/live sources before fixing, none disputed. See "Round-1 review
+fixes" below.
+
 ## Scripts
 
 - `scripts/07_clim_external_data/download_geo.sh` — downloads all 6 GEO
@@ -40,53 +45,97 @@ integer `Content-Length` (GEO) or GDC manifest `file_size`+`md5sum`
 | GSE17536 | 1,600,727,040 (RAW.tar) | Exact `Content-Length` match |
 | GSE17537 | 295,290,880 (RAW.tar) | Exact `Content-Length` match |
 | GSE21510 | 771,153,920 (RAW.tar) | Exact `Content-Length` match |
-| TCGA-CRC | 701 files via GDC | Exact `file_size` + `md5sum` match, each |
+| TCGA-CRC | 701 files via GDC | Exact `file_size` + `md5sum` match, each — **independently re-verified exhaustively, round-1 review fix, see below** |
 
 Archive integrity (`tar -tf` on the outer plain-tar archive + `gzip -t`
-spot-check on 20 extracted `.gz` members per archive, per the design's
-corrected mechanics): **all clean**, 0 failures, for every `_RAW.tar`
-(GSE231559: 78/78 members; GSE131418: 1,138/1,138; GSE17536: 177/177;
-GSE17537: 55/55; GSE21510: 148/148).
+on **every** extracted `.gz` member — exhaustive, round-1 review fix,
+see below): **all clean**, 0 failures, for every `_RAW.tar` (GSE231559:
+78/78 members; GSE131418: 1,138/1,138; GSE17536: 177/177; GSE17537:
+55/55; GSE21510: 148/148).
 
-## Real bugs found and fixed during this compute (reported honestly, not
-just the clean final numbers)
+## Round-1 review fixes (`PR #36`, all independently re-verified before
+fixing)
 
-**Bug 1 — GSE231559 cohort classification joined on the wrong key.**
-First draft of `inventory_clim_data.py` parsed the paper-facing L#N/L#T/
-C#N/C#T label directly from the RAW.tar's extracted filenames (e.g.
-`GSM7290760_SC10_21N_barcodes.tsv.gz`) — but those filenames embed an
-internal sequencing-library ID (`SC10_21N`), not the GEO series matrix's
-`Sample_title` field (`L1N`), which is what actually carries the L/C
-labeling. First run reported **0/9 CLiM and 0/6 primary** — a real bug,
-not a genuine reconstruction failure (confirmed by directly fetching the
-series matrix and joining on GSM accession: `GSM7290760` = `L1N`).
-Fixed by adding `fetch_series_matrix_gsm_title_map()`, which fetches the
-series matrix and classifies by GSM-accession join instead of filename
-parsing. Re-run confirmed the correct result (see below).
+**Blocker 1 — GSE225857's locked per-patient reconstruction acceptance
+criterion was never actually executed.** PR #35 explicitly left the 4
+CLiM + 4 primary reconstruction, from the two pooled scRNA metadata
+files, as required work for this inventory pass. The first draft of
+`inventory_gse225857()` only read metadata column headers, regex-matched
+for `patient|sample|donor|origin`, and reported
+`per_patient_reconstruction_possible=true` without ever reading a single
+value — the results doc even said reconstruction was "not attempted."
+Confirmed real by re-reading the committed function directly. **Fixed**:
+now parses the actual `patients`/`patients_organ` values from both
+GSMs' metadata files. **Real, honest result**: 7 unique patients have
+liver-cancer (CLiM) tissue data (`LCL`/`LCT` prefixes), 6 unique
+patients have colon-cancer (primary CRC) tissue data (`CCL`/`CCT`
+prefixes) — **neither matches the paper's cited 4+4 exactly**. These are
+pooled dissociated-cell fractions (immune vs. non-immune) across all
+profiled patients, not the paper's discrete per-tumor-block sample
+structure, so a clean 4+4 subset isn't recoverable by tissue-prefix
+counting alone. Reported as PARTIAL/UNRESOLVED, not forced to match.
 
-**Bug 2 — GSE285990 GSM-ID string-concatenation rollover.** GSM IDs were
-generated as `f"GSM87145{95+i}"` for `i in range(10)`, intending
-`GSM8714595`-`GSM8714604`. This works for `i=0..4` (`95+i` stays 2-digit:
-95-99), but at `i=5`, `95+i=100` (3-digit), so the f-string produced
-`"GSM87145"+"100"` = `GSM87145100` — a malformed 11-character ID, not
-`GSM8714600`. This silently broke 5 of 10 samples (P06-P10), reported as
-`"error": "missing file(s)"` in the first run. Fixed to
-`f"GSM8714{595+i}"` (fixed 4-digit prefix, full 3-digit variable suffix).
-Re-run confirmed all 10 samples load correctly (see below).
+**Blocker 2 — GSE131418 declared unresolved without opening the clinical
+metadata files the PR itself downloads.** `download_geo.sh` downloads
+`GSE131418_GEO_submission_Recurrence_meta_data_V2_Updated.xls.gz` and
+`...stage4_meta_data_V2_Updated.xls.gz`, specifically for cohort
+reconstruction — but `inventory_gse131418()` never opened either file,
+only the series matrix. Confirmed real by re-reading the committed
+function. **Fixed**: both legacy-binary `.xls` files (OLE2/Composite
+Document Format, read via `xlrd`) are now actually opened. **Real,
+honest result**: both files are exclusively `mcc.prim.*` samples
+(Recurrence file: 134/134 primary; Stage4/survival file: 40/40 primary)
+— **neither contains a single metastasis sample**. They are primary-
+tumor clinical-outcome/survival annotation files, not annotations of the
+liver-metastasis samples themselves, so they structurally cannot resolve
+which subset of the 197 GEO-identified liver-met samples matches the
+paper's cited 170. The 170-sample reconstruction **remains UNRESOLVED**
+— but now for a directly-verified reason, not a premature dismissal.
 
-**Bug 3 — a real GDC API quirk, not a data problem** (found and fixed
-before the write-up, during the TCGA download itself): the GDC `/data`
-bulk endpoint returns a `tar.gz` bundle (`MANIFEST.txt` + one
-subdirectory per file) when given multiple file IDs, but returns the raw
-file's bytes directly, unwrapped, when given exactly **one** ID. With
-701 total files and `BATCH_SIZE=50`, the final batch (`701 % 50 = 1`)
-hit this case and failed with `tarfile`'s "not a gzip file" error.
-Confirmed via a direct single-ID request: identical byte size and md5 to
-the manifest, just not tar-wrapped — a real, reproducible GDC API
-behavior, not a corrupted download. Fixed `download_batch()` in
-`download_tcga.py` to detect `len(file_ids)==1` and write the raw
-response directly instead of assuming `tarfile.open()` always applies.
-All 701/701 files verified (size+md5) after the fix.
+**Blocker 3 — archive integrity was weaker than the locked design.**
+PR #35 locked `tar -tf` + `gzip -t` on every extracted member; the first
+draft's `gzip -t` only ran on a 20-file spot-check (via a slow
+per-member `tar -xOf <big-tar> <member> | gzip -t`, which re-scans the
+whole archive each call — infeasible to run exhaustively that way on a
+1,138-member/5.66GB archive), while the PR body and this doc still
+called every archive "clean" and "per the design's corrected mechanics"
+— overstating what a 20/1,138 spot-check actually established. Confirmed
+real by re-reading the committed function. **Fixed**: each archive is
+now extracted once (a single sequential pass), then `gzip -t` runs on
+**every** extracted `.gz` member directly off local disk (fast per-file,
+no re-scanning) — genuinely exhaustive. Re-run confirms 0 failures
+across all 1,596 `.gz` members checked (78+1,138+177+55+148).
+
+**Blocker 4 — TCGA's "verified" claim didn't actually check md5.**
+`download_tcga.py`'s resume-skip logic and `inventory_tcga()`'s
+verification count both only compared on-disk file size against the
+manifest, never recomputed md5 — so a stale/same-length-but-corrupted
+file could have silently passed, despite the PR's claim of "701/701
+verified (size+md5)." Confirmed real by re-reading both committed
+functions. **Fixed**: the resume-skip predicate now requires size AND
+md5 match; `inventory_tcga()` independently re-hashes **every** one of
+the 701 files against the manifest's own md5sum (not sampled). Re-run
+confirms: 701/701 verified, 0 missing, 0 size mismatches, 0 md5
+mismatches.
+
+**Completeness gap — bulk/TCGA structural characterization was
+shallower than the design's declared dimensions.** The design commits to
+characterizing "sample/cell counts, gene-ID format, raw-vs-processed
+status" per dataset; the scRNA loaders did this, but
+`inventory_cel_series()` only counted CEL archive members and
+`inventory_tcga()` never opened a single expression file. **Fixed**:
+`inventory_cel_series()` now extracts a real Affymetrix array-type
+string directly from a sample CEL file's own binary header (confirmed
+`HG-U133_Plus_2` for all 3 CEL series — matches GPL570, independently
+confirming the series-matrix `!Sample_platform_id` field rather than
+just trusting it) and records CEL's raw-probe-level status explicitly.
+`inventory_tcga()` now opens a sample `augmented_star_gene_counts.tsv`
+file directly and confirms real Ensembl gene IDs (60,660/60,664 rows are
+genes, versioned Ensembl format, the other 4 are STAR's own
+`N_unmapped`/`N_multimapping`/`N_noFeature`/`N_ambiguous` summary rows)
+and that both raw (`unstranded`, integer STAR counts) and processed
+(`tpm_unstranded`/`fpkm_unstranded`/`fpkm_uq_unstranded`) representations
+coexist in the same file.
 
 ## Per-dataset structural characterization + cohort-reconstruction results
 
@@ -95,12 +144,14 @@ All 701/701 files verified (size+md5) after the fix.
 Clean 10x-style MTX loader pattern (bare/versioned Ensembl gene IDs,
 100% integer-valued sampled nonzeros in every sample — genuine raw
 counts). **Paper's cited 9 CLiM + 6 primary CRC subset reconstructs
-EXACTLY** once classified by the correct GSM-accession join (Bug 1,
-above): 9 liver-tumor samples (`L1T, L4T, L6T, L8T1, L8T2, L9T, L10T,
+EXACTLY**: 9 liver-tumor samples (`L1T, L4T, L6T, L8T1, L8T2, L9T, L10T,
 L11T, L12T`) = CLiM exactly; 6 colon-tumor samples (`C1T-C6T`) = primary
-CRC exactly. The remaining 11 samples (8 liver-normal, 3 colon-normal)
-are paired-normal reference tissue, not part of the cited 9+6 tumor
-cohort. Full per-sample table: `results/07_clim_external_data/GSE231559_inventory.tsv`.
+CRC exactly, classified by joining the RAW.tar's extracted GSM
+accessions against the GEO series matrix's own `Sample_title` field (not
+the tar's internal library-ID filenames, which use an unrelated naming
+scheme). The remaining 11 samples (8 liver-normal, 3 colon-normal) are
+paired-normal reference tissue, not part of the cited 9+6 tumor cohort.
+Full per-sample table: `results/07_clim_external_data/GSE231559_inventory.tsv`.
 
 ### GSE225857 — scRNA-seq, 2 genuine scRNA GSMs
 
@@ -108,12 +159,13 @@ cohort. Full per-sample table: `results/07_clim_external_data/GSE231559_inventor
 41,892 cells) — matches the design's locked exact-GSM-accession
 selection (the other 6 GSMs in this series are spatial, correctly not
 downloaded). Both GSMs' accompanying `*_meta.txt.gz` files carry real
-per-cell metadata including patient-of-origin candidate columns
-(`patients`, `sampletag`, `patients_organ`) — confirming the round-2
-design-review fix (patient-of-origin metadata lives in a **separate
-file**, not "inside the matrix") and confirming per-patient (4 CLiM + 4
-primary) reconstruction is structurally possible from this metadata, not
-attempted in this inventory-only PR. Full table:
+per-cell metadata including `patients`/`sampletag`/`patients_organ`
+columns, confirming the design's round-2 fix (patient-of-origin metadata
+lives in a **separate file**, not "inside the matrix"). **Real
+per-patient reconstruction result** (round-1 review fix, see above): 7
+unique patients with liver-cancer tissue data, 6 with colon-cancer
+tissue data — does not cleanly match the paper's cited 4+4, reported as
+PARTIAL/UNRESOLVED. Full table:
 `results/07_clim_external_data/GSE225857_inventory.tsv`.
 
 ### GSE285990 — scRNA-seq, 10/10 human liver-metastasis samples confirmed
@@ -135,30 +187,37 @@ cohort; the Stereo-seq pair also wrong modality). Full table:
 ### GSE17536 + GSE17537 — bulk microarray, primary CRC
 
 177 + 55 = **232 CEL files exactly**, matching the paper's cited n=232
-(this reconstruction was already confirmed via GEO's own subseries
-counts during the design-review round; this round adds real archive
-integrity confirmation — both `_RAW.tar` files pass `tar -tf` +
-`gzip -t` spot-check cleanly, and GEO's own declared per-series sample
-counts match the actual extracted CEL-file counts exactly).
+(subseries-count reconstruction already confirmed during the design-
+review round). This round confirms, directly from a sample CEL file's
+own binary header (not assumed from GEO's `!Sample_platform_id` field
+alone): both series use the **Affymetrix HG-U133_Plus_2** array (GPL570)
+— real raw probe-level intensity data, not summarized/normalized
+expression values. Archive integrity: exhaustive `tar -tf` + `gzip -t`
+clean on both `_RAW.tar` files (177/177, 55/55).
 
 ### GSE131418 — bulk microarray, 1,135 total samples; paper cites 170 liver-met
 
 Real, honest attempt to reconstruct the paper's cited 170-sample
-liver-metastasis subset from GEO's own series-matrix per-sample
-characteristics, **not forced to match by construction**:
+liver-metastasis subset, **not forced to match by construction**:
 
 - Two sub-cohorts distinguishable by sample-title prefix:
   `consortium` (618 samples) and `mcc` (517 samples), 618+517=1,135 ✓
 - `site of metastasis: LIVER` — **197 total** (141 MCC + 56 Consortium)
 - `site of metastasis: LIVER` restricted to `treatment status: PRE` only
   — 53
+- **Round-1 review fix**: the 2 clinical XLS files (`Recurrence`: 134
+  rows; `Stage4`/survival: 40 rows) were actually opened this round —
+  both are exclusively primary-tumor samples, contain zero metastasis
+  samples, and therefore cannot help resolve the liver-met subset
+  question at all.
 - **None of these groupings reproduce 170 exactly.**
 
-**Reported as UNRESOLVED** — the paper's exact 170-sample subset likely
-requires its own supplementary sample list, not reconstructable from
-GEO's public per-sample characteristics fields alone. Downloading all
-1,135 samples (done, byte-verified, archive-integrity-clean) is
-sufficient per the design ("downloading all X is fine; declaring the
+**Reported as UNRESOLVED, now with a directly-verified reason** — the
+paper's exact 170-sample subset likely requires its own supplementary
+sample list not present in any of the publicly downloadable GEO
+material for this series. Downloading all 1,135 samples (done,
+byte-verified, archive-integrity-clean, exhaustive gzip-t 1,138/1,138)
+is sufficient per the design ("downloading all X is fine; declaring the
 cohort reconstructed is not"); the exact cohort match remains an open
 item. Full per-sample metadata:
 `results/07_clim_external_data/GSE131418_sample_metadata.tsv`.
@@ -174,24 +233,37 @@ characteristics:
   combination.
 - 107 unique patients total (41 with >1 sample); 104 unique patients
   have a `cancer, LCM` sample (no duplicates within that category).
+- Array type confirmed directly from a sample CEL header:
+  **Affymetrix HG-U133_Plus_2** (GPL570).
 
 **Reported as UNRESOLVED** — the exact 2 excluded samples and the
 exclusion basis (QC failure, sample swap, etc.) cannot be identified
 from GEO's public series-matrix metadata alone; this would require the
 paper's own supplementary methods/QC exclusion list. Downloading all
-148 (done, byte-verified, archive-integrity-clean) is sufficient per the
-design; the exact 146-sample cohort remains an open item. Full
-per-sample metadata: `results/07_clim_external_data/GSE21510_sample_metadata.tsv`.
+148 (done, byte-verified, exhaustive archive-integrity-clean 148/148) is
+sufficient per the design; the exact 146-sample cohort remains an open
+item. Full per-sample metadata:
+`results/07_clim_external_data/GSE21510_sample_metadata.tsv`.
 
 ### TCGA-CRC — bulk RNA-seq via GDC, 701 open-access files; paper cites 610
 
-TCGA-COAD (524 files) + TCGA-READ (177 files) = 701, gene-level STAR-Counts
-`augmented_star_gene_counts.tsv`, all open-access (no dbGaP application
-needed). Sample-type breakdown: 647 Primary Tumor, 51 Solid Tissue
-Normal, 2 Recurrent Tumor, 1 Metastatic. Restricting to Primary-Tumor
-files gives 647 files across **624 unique cases** (13 cases have >1
-Primary-Tumor aliquot — real technical replicates, not paper-cohort
-members counted twice).
+TCGA-COAD (524 files) + TCGA-READ (177 files) = 701, gene-level STAR-
+Counts `augmented_star_gene_counts.tsv`, all open-access (no dbGaP
+application needed). **Round-1 review fix**: every one of the 701 files
+is now independently re-hashed against the GDC manifest's own md5sum
+(not sampled, not size-only) — 701/701 verified, 0 missing, 0 size
+mismatches, 0 md5 mismatches. Structural characterization confirmed
+directly from a sample file: 60,660 of 60,664 data rows are real genes
+(versioned Ensembl IDs, e.g. `ENSG00000000003.15`), the other 4 are
+STAR's own summary rows (`N_unmapped` etc.); both raw (`unstranded`,
+integer STAR counts) and processed (`tpm_unstranded`/`fpkm_unstranded`/
+`fpkm_uq_unstranded`) representations coexist in the same file.
+
+Sample-type breakdown: 647 Primary Tumor, 51 Solid Tissue Normal, 2
+Recurrent Tumor, 1 Metastatic. Restricting to Primary-Tumor files gives
+647 files across **624 unique cases** (13 cases have >1 Primary-Tumor
+aliquot — real technical replicates, not paper-cohort members counted
+twice).
 
 **Reported as PARTIAL, not exact** — 624 unique primary-tumor cases is
 close to but does not exactly match the paper's cited 610; the specific
@@ -206,8 +278,9 @@ such, not declared exact.
 Runs no D/F/P/revCSC scoring against any of these cohorts — deliberately
 deferred to a separate follow-on PR, per the locked design. Does not
 resolve the 3 explicitly-unresolved cohort-reconstruction items
-(GSE131418's 170, GSE21510's 146, TCGA's exact 610) — these remain open,
-honestly documented, not silently assumed or forced to match. Does not
-touch the Zenodo-restricted record (`10.5281/zenodo.19043057`) or any
-spatial/LCM-WGS/protein-imaging data — out of scope per the user-confirmed
-descope and the design's scope boundary.
+(GSE131418's 170, GSE21510's 146, TCGA's exact 610, GSE225857's exact
+4+4) — these remain open, honestly documented, not silently assumed or
+forced to match. Does not touch the Zenodo-restricted record
+(`10.5281/zenodo.19043057`) or any spatial/LCM-WGS/protein-imaging data
+— out of scope per the user-confirmed descope and the design's scope
+boundary.

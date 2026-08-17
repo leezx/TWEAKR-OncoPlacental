@@ -159,12 +159,18 @@ def main():
     for i in range(0, len(all_ids), BATCH_SIZE):
         batch_ids = all_ids[i:i + BATCH_SIZE]
         # Skip file_ids whose extracted file already matches expected
-        # size+md5 (resumability).
+        # size+md5 (resumability). Round-1 review fix: this previously
+        # only checked size, contradicting the docstring/PR claim of
+        # "size+md5" resumability -- a stale/corrupted same-length file
+        # could have silently survived a rerun without ever satisfying
+        # the manifest checksum. Fixed to also recompute md5 (cheap for
+        # already-downloaded ~4MB files, a few seconds total for 700).
         need = []
         for fid in batch_ids:
             rec = by_id[fid]
             fpath = os.path.join(dest_dir, fid, rec["file_name"])
-            if os.path.exists(fpath) and os.path.getsize(fpath) == rec["file_size"]:
+            if (os.path.exists(fpath) and os.path.getsize(fpath) == rec["file_size"]
+                    and md5_of_file(fpath) == rec["md5sum"]):
                 n_skip += 1
             else:
                 need.append(fid)
