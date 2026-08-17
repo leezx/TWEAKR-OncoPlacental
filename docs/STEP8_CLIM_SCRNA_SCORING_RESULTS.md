@@ -205,3 +205,31 @@ of this PR's loaders. Occurs more on the smallest panels, as expected;
   scored with **separate** null calibrations (per the design's locked
   contract) and are not directly comparable without an additional joint
   calibration pass, which this PR does not perform.
+
+## Review history (PR #39)
+
+**Round 1: REQUEST_CHANGES**, no compute blocker — the reviewer
+confirmed the loader, canonicalize→intersect order, 4 populations,
+`n_perm=500`, GSE225857 immune-fraction exclusion, and the
+coverage-deviation→empirical-investigation-before-scoring sequence all
+match the PR #37-locked contract. 4 real write-up/provenance errors
+found, all independently re-verified against the committed artifacts
+before fixing, no re-run of job 3621331 required:
+1. The "≥92.5%" coverage claim for GSE231559/GSE285990 was real but
+   misattributed — that number belongs to GSE225857 non-immune's
+   `revCSC_primary27_full` (25/27=92.6%); the true minimum for
+   GSE231559/GSE285990 is 96.15% — fixed above.
+2. "49/53 of these genes" implied 53 unique genes; the file has 53
+   gene×panel rows (36 unique genes, 35 present in both reference
+   cohorts) — fixed above, both counts now stated explicitly.
+3. "D/P median range 43.5–62.8" used 43.52, `P_Gut-specific`'s *mean*
+   percentile in `gse231559_primary`, not a median (true minimum median
+   is 44.6) — fixed above.
+4. `docs/PROJECT_SUMMARY.md`'s Step 8 status was stale the moment this
+   PR was opened (still said "has not been pushed... no open PR") —
+   updated to reflect PR #39 actually being open.
+
+**Round 2: APPROVE**, at head `fcd2058`. The reviewer independently
+re-checked all 4 corrected numbers against the committed artifacts
+before approving, and confirmed the compute itself continues to match
+the PR #37 contract with no reason to re-run job 3621331.
