@@ -77,11 +77,28 @@
         "s1231"
       ]
     },
-    "n_unique_liver_cancer_patients": 7,
-    "n_unique_colon_cancer_patients": 6,
+    "geo_series_summary_ground_truth": "GSE225857 series summary (re-fetched directly, round-2 review cross-check): 'For single-cell RNA sequencing, 6 CRC patients with liver metastasis were enrolled' -- '27 samples of 6 CRC patients.'",
+    "n_liver_tumor_patients_LCT": 5,
+    "n_colon_tumor_patients_CCT": 5,
+    "n_paired_liver_and_colon_tumor_patients": 5,
+    "paired_tumor_patients": [
+      "s0107",
+      "s0115",
+      "s0813",
+      "s0920",
+      "s1231"
+    ],
+    "immune_only_both_organs_patients": [
+      "s1125"
+    ],
+    "liver_only_no_colon_at_all_patients": [
+      "s0816"
+    ],
+    "n_total_unique_patients_any_organ": 7,
+    "total_patient_count_matches_geo_summary_of_6": false,
     "paper_cited_clim": 4,
     "paper_cited_primary": 4,
-    "cohort_reconstruction_status": "PARTIAL/UNRESOLVED -- real per-patient values now parsed (round-1 review fix): 7 unique patients have liver-cancer (CLiM) tissue data, 6 unique patients have colon-cancer (primary CRC) tissue data. Neither matches the paper's cited 4+4 exactly -- these are pooled dissociated-cell fractions (immune/non-immune) across all profiled patients, not the paper's discrete per-tumor-block sample structure, so a clean 4+4 subset is not recoverable by tissue-prefix counting alone. Reported honestly as unresolved, not forced to match.",
+    "cohort_reconstruction_status": "PARTIAL/UNRESOLVED -- corrected reconstruction (round-2 review fix, replacing an unsupported borrow of GSE231559's L/C naming convention onto this unrelated dataset): LCT (liver-tumor, non-immune fraction) and CCT (colon-tumor, non-immune fraction) patient sets are IDENTICAL (['s0107', 's0115', 's0813', 's0920', 's1231'], n=5) -- a genuinely paired primary+liver-met tumor-tissue cohort. ['s1125'] has immune-fraction (CD45+) presence in BOTH liver and colon but no tumor-fraction data in either -- adding to the 5 paired patients gives 6 patients with disease representation in both organs, matching GEO's cited '6 CRC patients' exactly. ['s0816'] has liver+blood representation only, with ZERO colon representation of any kind (immune or tumor fraction) -- the 7th total unique patient across all organ prefixes (7 total), structurally distinct from the other 6, consistent with being a non-CRC inclusion (flagged as a hypothesis, not confirmed from public data alone). This is close to but does not exactly match the paper's cited 4+4 (5 paired tumor-tissue patients, not 4); which specific 4 of these 5 the paper's cited CLiM+primary subset corresponds to is not recoverable from public GEO metadata alone. Reported honestly as unresolved, not forced to match.",
     "note": "Only GSM7058754/GSM7058755 downloaded (exact-GSM selection, per design); the other 6 GSMs in this series are spatial and explicitly out of scope, not downloaded."
   },
   {

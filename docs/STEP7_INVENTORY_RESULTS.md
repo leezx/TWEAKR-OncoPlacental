@@ -17,10 +17,11 @@ integer `Content-Length` (GEO) or GDC manifest `file_size`+`md5sum`
 (TCGA) — never GEO's rounded MB/GB webpage display, never piped through
 `tail`/`head` (standing `curl_pipe_swallows_exit_code` lesson).
 
-**Went through 1 review round** (`PR #36`) — 4 blockers plus 1
-completeness gap, all independently re-verified against real committed
-data/live sources before fixing, none disputed. See "Round-1 review
-fixes" below.
+**Went through 2 review rounds** (`PR #36`) — round 1: 4 blockers plus 1
+completeness gap; round 2: 1 residual correctness blocker (GSE225857's
+patient-cohort reconstruction). All independently re-verified against
+real committed data/live sources before fixing, none disputed. See
+"Round-1 review fixes" and "Round-2 review fix" below.
 
 ## Scripts
 
@@ -74,6 +75,9 @@ pooled dissociated-cell fractions (immune vs. non-immune) across all
 profiled patients, not the paper's discrete per-tumor-block sample
 structure, so a clean 4+4 subset isn't recoverable by tissue-prefix
 counting alone. Reported as PARTIAL/UNRESOLVED, not forced to match.
+**Superseded by the round-2 fix below** — the 7/6 split here turned out
+to rest on an unsupported classification assumption, corrected in round
+2.
 
 **Blocker 2 — GSE131418 declared unresolved without opening the clinical
 metadata files the PR itself downloads.** `download_geo.sh` downloads
@@ -137,6 +141,40 @@ and that both raw (`unstranded`, integer STAR counts) and processed
 (`tpm_unstranded`/`fpkm_unstranded`/`fpkm_uq_unstranded`) representations
 coexist in the same file.
 
+## Round-2 review fix (`PR #36`, independently re-verified before fixing)
+
+**Blocker — GSE225857's round-1 patient-cohort reconstruction rested on
+an unsupported classification assumption.** The round-1 fix unioned
+`LCL`(immune)`|LCT`(non-immune) into a single "liver-cancer patient"
+count and `CCL|CCT` into a single "colon-cancer patient" count, treating
+the immune-cell-sorting-fraction prefixes (`LCL`/`CCL`) as equally
+tumor-defining as the non-immune/tumor-containing fraction (`LCT`/`CCT`)
+— explicitly justified as "the same L/C convention confirmed for
+GSE231559." That justification doesn't hold: GSE231559 and GSE225857 are
+unrelated datasets with independent naming schemes, and the resulting
+7-liver-cancer-patient count directly conflicts with GSE225857's own
+series summary, which states "6 CRC patients with liver metastasis were
+enrolled" / "27 samples of 6 CRC patients." Confirmed real by directly
+re-fetching GSE225857's series summary text.
+
+**Fixed** with a properly-grounded reconstruction: the non-immune
+fraction's `LCT` (liver-tumor) and `CCT` (colon-tumor) patient sets are
+IDENTICAL — `{s0107, s0115, s0813, s0920, s1231}`, n=5 — a genuinely
+paired primary+liver-met tumor-tissue cohort, not an assumption borrowed
+from an unrelated series. This also explains the 7-vs-6 discrepancy
+precisely: `s1125` has immune-fraction (CD45+) presence in *both* liver
+and colon but no tumor-fraction data in either — adding it to the 5
+paired patients gives 6 patients with disease representation in both
+organs, matching GEO's cited "6 CRC patients" exactly. `s0816` has
+liver+blood representation only, with zero colon representation of any
+kind (immune or tumor fraction) — the 7th total unique patient across
+all organ prefixes, structurally distinct from the other 6, consistent
+with being a non-CRC inclusion (flagged as a hypothesis, not confirmed
+from public data alone). The corrected result (5 paired tumor-tissue
+patients) is closer to the paper's cited 4+4 than the round-1 result (7)
+but still doesn't match exactly — reported honestly as unresolved, not
+forced to match.
+
 ## Per-dataset structural characterization + cohort-reconstruction results
 
 ### GSE231559 — scRNA-seq, 26 total samples
@@ -162,10 +200,16 @@ downloaded). Both GSMs' accompanying `*_meta.txt.gz` files carry real
 per-cell metadata including `patients`/`sampletag`/`patients_organ`
 columns, confirming the design's round-2 fix (patient-of-origin metadata
 lives in a **separate file**, not "inside the matrix"). **Real
-per-patient reconstruction result** (round-1 review fix, see above): 7
-unique patients with liver-cancer tissue data, 6 with colon-cancer
-tissue data — does not cleanly match the paper's cited 4+4, reported as
-PARTIAL/UNRESOLVED. Full table:
+per-patient reconstruction result** (round-2 review fix, see above): the
+non-immune fraction's liver-tumor (`LCT`) and colon-tumor (`CCT`)
+patient sets are IDENTICAL — 5 paired patients
+(`s0107, s0115, s0813, s0920, s1231`) — with `s1125` (immune-fraction
+presence in both organs, no tumor-fraction data) and `s0816`
+(liver+blood only, zero colon representation) accounting for the
+remaining 2 of GSE225857's 7 total unique patients; 5 paired + `s1125`
+= 6, matching GEO's own series-summary count of "6 CRC patients"
+exactly. Close to but not an exact match for the paper's cited 4+4,
+reported as PARTIAL/UNRESOLVED. Full table:
 `results/07_clim_external_data/GSE225857_inventory.tsv`.
 
 ### GSE285990 — scRNA-seq, 10/10 human liver-metastasis samples confirmed
