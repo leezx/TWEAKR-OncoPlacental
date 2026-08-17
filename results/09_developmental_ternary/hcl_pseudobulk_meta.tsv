@@ -1,0 +1,15 @@
+sample	group	donor	n_columns	total_umi	mean_umi_per_column
+GSM4008722_Placenta1	Placenta	Placenta1	10000	12610052	1261.0
+GSM4008688_Fetal-Intestine1	Fetal	FetalIntestine1	10000	3253065	325.3
+GSM4008689_Fetal-Intestine2	Fetal	FetalIntestine2	10000	3173856	317.4
+GSM4008690_Fetal-Intestine3	Fetal	FetalIntestine3	10000	11853478	1185.3
+GSM4008691_Fetal-Intestine4	Fetal	FetalIntestine4	10000	7248060	724.8
+GSM4008692_Fetal-Intestine5	Fetal	FetalIntestine5	10000	5725975	572.6
+GSM3980125_Adult-Ascending-Colon1	Adult	AscendingColon1	10000	6146538	614.7
+GSM4008648_Adult-Sigmoid-Colon1	Adult	SigmoidColon1	10000	5407507	540.8
+GSM4008662_Adult-Transverse-Colon1	Adult	TransverseColon1	10000	8906080	890.6
+GSM4008663_Adult-Transverse-Colon2-1	Adult	TransverseColon2_1	10000	7156014	715.6
+GSM4008664_Adult-Transverse-Colon2-2	Adult	TransverseColon2_2	10000	9426607	942.7
+GSM3980131_Adult-Duodenum1	Adult	Duodenum1	10000	5803804	580.4
+GSM3980140_Adult-Ileum2	Adult	Ileum2	10000	5953023	595.3
+GSM3980141_Adult-Jejunum2	Adult	Jejunum2	10000	7195037	719.5
