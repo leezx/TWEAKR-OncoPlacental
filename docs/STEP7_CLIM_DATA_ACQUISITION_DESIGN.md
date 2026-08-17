@@ -35,13 +35,13 @@ directly, not assumed from the paper's abstract-level description)
 
 | Dataset | Paper's stated scope | Verified structure | Notes/discrepancies found |
 |---|---|---|---|
-| **GSE231559** | scRNA-seq, 9 CLiM + 6 primary CRC | 26 samples total, `GSE231559_RAW.tar` (692.1MB), MTX/TSV (10x-style) | Clean match to this project's existing loader pattern (bare MTX/barcodes/features, same as HTAN/CRLM). Raw counts available. |
-| **GSE225857** | scRNA-seq, 4 CLiM + 4 primary CRC | 8 samples listed at series level, `GSE225857_RAW.tar` (607.0MB) mixing MTX/TSV **with JPG/PNG/JSON** (spatial-image-adjacent files) | **Real finding**: this series appears to co-package spatial-transcriptomics-related files alongside the scRNA-seq matrices (its own title mentions "single-cell and spatial transcriptome analysis"). Must isolate the scRNA-seq-only files during download/inventory — not assumed to be scRNA-seq-only just because the paper cites it that way. Raw sequencing unavailable (patient privacy); only processed matrices provided (per GEO's own notice), deposited separately in CNGB for raw. |
-| **GSE285991** (SuperSeries) | scRNA-seq, 10 liver metastases | **Not scRNA-seq at series level.** Two subseries: `GSE285989` (CUT&Tag/ATAC-seq, mouse+human) and `GSE285990` (RNA-seq, mouse+human). `GSE285990`'s 10 human samples (`P01_LM`–`P10_LM`) are labeled only as "RNA-seq" — GEO's own record does not confirm these are single-cell rather than bulk/pseudobulk, and explicitly states **raw sequence data for the human samples was withheld from GEO for patient-privacy reasons** (only processed expression matrices deposited). | **Real, unresolved discrepancy**: the paper describes this as a scRNA-seq source; GEO's own metadata does not confirm single-cell resolution for the human arm and may in fact be bulk. **Must be resolved by directly inspecting the downloaded processed-matrix file structure** (a true per-cell matrix will have far more "samples"/barcodes than 10 govern-level entries; a bulk matrix will have exactly ~10 columns) before this dataset is used for anything beyond inventory — flagged as a blocking verification item, not assumed either way. |
-| **GSE131418** | bulk microarray, 170 liver-met samples | SuperSeries-scale, **1,135 samples total** (333+545 primary tumors, 184+73 metastases, discovery+validation cohorts combined), CEL files (5.3GB) + processed TXT/CSV | The paper's "170" is a **subset** of this 1,135-sample series (the liver-metastasis-site subset specifically) — needs to be identified via the series' own clinical/site metadata (sample characteristics fields) during inventory, not assumed to be the whole series. |
-| **GSE17538** | bulk microarray, primary CRC, n=232 | SuperSeries, 244 samples total (human **and mouse** mixed, 2 platforms: `GPL570` human, `GPL1261` mouse), CEL files (1.8GB) | Paper's 232 is the human-only subset of the 244; mouse samples must be excluded during inventory via the platform/organism field. |
-| **GSE21510** | bulk microarray, primary CRC, n=146 | 148 samples total, `GPL570`, CEL files (735.4MB) | Close match (148 vs. paper's 146) — likely 2 excluded for QC in the paper; not investigated further, reported as-is. |
-| **TCGA-CRC** | bulk RNA-seq, n=610 | Not a GEO accession — public, open-access via the [GDC Data Portal](https://portal.gdc.cancer.gov/) (`TCGA-COAD` + `TCGA-READ` projects combined). Gene-level expression counts/FPKM are open-tier (no dbGaP application needed); only raw BAMs/germline variants are controlled-access. Typical combined COADREAD RNA-seq sample count in public reporting is ~570–630 depending on exact QC filter — paper's 610 is within this range, not independently re-derived here. | Access method differs from every other cohort in this table (GDC API/`gdc-client`, not a GEO `_RAW.tar`) — noted explicitly so the download script doesn't assume one uniform mechanism. |
+| **GSE231559** | scRNA-seq, 9 CLiM + 6 primary CRC | 26 samples total, `GSE231559_RAW.tar` (692.1MB declared), MTX/TSV (10x-style) | Clean match to this project's existing loader pattern (bare MTX/barcodes/features, same as HTAN/CRLM). Raw counts available. **Round-1 review correction**: technical loadability is not the same as matching the paper's cited 9+6 subset — reproducing that exact 15-sample cohort from the 26-sample series (via patient-ID/tissue-site metadata) is a required inventory acceptance criterion, not assumed automatic. |
+| **GSE225857** | scRNA-seq, 4 CLiM + 4 primary CRC | **Round-1 review correction (real, sharper finding than originally reported)**: at GSM level, this series contains only **2 genuine scRNA-seq samples** — `GSM7058754` ("immune cells") and `GSM7058755` ("nonimmune cells"), each an aggregated pool across all patients (41,892 CD45− + 196,473 CD45+ cells total), **not 8 per-patient samples**. The remaining 6 GSMs (`GSM7058756`–`GSM7058761`) are separate spatial-transcriptomics samples (4 primary + 2 CLiM, FFPE) that also carry `barcodes.tsv`/`features.tsv`/`matrix.mtx`-shaped files, not just images — so file-extension/MTX-shape alone cannot distinguish scRNA-seq from spatial in this series. | Downloader **must select by exact GSM accession** (`GSM7058754`/`GSM7058755` only), never by file extension or "looks 10x-shaped." Recovering per-patient (4 CLiM + 4 primary) breakdown from these 2 pooled immune/non-immune files, if possible at all, requires the cells' own per-cell patient-of-origin metadata inside the matrix — a required inventory verification item, not assumed to exist. Raw sequencing unavailable (patient privacy) for the scRNA-seq GSMs; only processed matrices provided. |
+| **GSE285991** (SuperSeries) | scRNA-seq, 10 liver metastases | Two subseries: `GSE285989` (CUT&Tag/ATAC-seq) and `GSE285990` (RNA-seq). **Round-1 review correction**: the first draft called `GSE285990`'s 10 human samples (`P01_LM`–`P10_LM`) "genuinely unresolved" single-cell-vs-bulk — **false, confirmed directly by fetching the individual GSM record** (`GSM8714595`/P01_LM): `Library source: transcriptomic single cell`, prepared with the `Chromium Single Cell 3' Reagent Kit v2`, supplementary files are genuine per-cell `barcodes.tsv.gz`/`features.tsv.gz`/`matrix.mtx.gz` (82.3MB matrix for this one sample alone — far too large to be a 10-column bulk matrix). **These are confirmed real single-cell data**, not an open question. | Corrected acceptance criterion: verify matrix integrity, real per-cell dimensions (thousands of barcodes, not ~10), and the 10-sample→per-patient mapping — a QA step, not a "decide if this is single-cell at all" step (that question is already answered). Human raw sequence still withheld from GEO for privacy (processed matrices only, as originally noted — this part was correct). |
+| **GSE131418** | bulk microarray, 170 liver-met samples | SuperSeries-scale, **1,135 samples total** (333+545 primary tumors, 184+73 metastases, discovery+validation cohorts combined), CEL files (5.3GB declared) + processed TXT/CSV | The paper's "170" is a **subset** of this 1,135-sample series. **Round-1 review correction (strengthened acceptance criterion)**: identifying "liver metastasis" by site keyword alone is not sufficient — the inventory must reproduce the paper's specific 170-sample cohort together with the treatment/status metadata the paper actually analyzes, using the series' own clinical annotation fields, not a keyword match. |
+| **GSE17538** | bulk microarray, primary CRC, n=232 | **Round-1 review correction (real subsetting error, not just wording)**: the first draft assumed 232 = 244-total minus mouse (238) — **wrong, confirmed directly**: `GSE17538` is a SuperSeries of 4 subseries — `GSE17536` (177 human CRC, Moffitt) + `GSE17537` (55 human CRC, Vanderbilt, confirmed exact sample count directly) = **232 exactly**, matching the paper's cited n; `GSE19072` (human colonic adenomas) and `GSE19073` (6 mouse) are excluded entirely, not merely filtered by organism. | Corrected reconstruction: download and use `GSE17536` + `GSE17537` specifically (not the SuperSeries' full sample set, and not a naive organism filter on the combined 244). |
+| **GSE21510** | bulk microarray, primary CRC, n=146 | 148 samples total, `GPL570`, CEL files (735.4MB declared) | **Round-1 review correction**: the first draft's "likely 2 excluded for QC, not investigated further" was itself an unverified assumption — exactly the kind of thing this project's discipline requires checking, not guessing. Corrected: stated as an **unresolved 148→146 discrepancy** — the exact 2 excluded samples and the exclusion basis must be identified from the series' own clinical/QC metadata during inventory, not assumed. Downloading all 148 is fine; declaring the paper's cohort reconstructed is not, until this is resolved. |
+| **TCGA-CRC** | bulk RNA-seq, n=610 | Not a GEO accession — public, open-access via the [GDC Data Portal](https://portal.gdc.cancer.gov/) (`TCGA-COAD` + `TCGA-READ` projects combined). Gene-level expression counts/FPKM are open-tier (no dbGaP application needed); only raw BAMs/germline variants are controlled-access. | Access method differs from every other cohort in this table (GDC API/`gdc-client`, not a GEO `_RAW.tar`) — noted explicitly so the download script doesn't assume one uniform mechanism. **Round-1 review correction**: "610 is within the typical ~570–630 public range" is not itself a reconstruction of the paper's cohort — inventory must establish which specific sample/aliquot/sample-type filter (primary tumor only vs. all sample types, one aliquot per patient, etc.) reproduces the paper's n=610 as closely as achievable, not stop at "plausible magnitude." |
 
 ## What "preliminary analysis" means for this PR (scoped explicitly)
 
@@ -65,14 +65,27 @@ to keep this PR's scope checkable in one pass rather than conflating
 - Runs on Argos, `argos-qsub1`, network download (not qsub-wrapped —
   I/O-bound, not compute-bound, same precedent as this project's
   original HDMA/Arutyunyan acquisition phase).
-- Every download verified by **exact byte size** against the source's
-  declared size (GEO's own reported file sizes above; GDC's own
-  manifest-reported sizes for TCGA) — never piped through `tail`/`head`
-  (the standing `curl_pipe_swallows_exit_code` lesson from this
-  project's own history: a pipe silently swallows `curl`'s real exit
-  code, so a truncated download can report success).
-- Archive integrity additionally checked via `tar -tzf`/`gzip -t` where
-  applicable, matching the same precedent.
+- **Round-1 review correction, byte-verification mechanics**: the first
+  draft proposed verifying against GEO's human-readable declared sizes
+  above (e.g. "692.1 Mb") — these are rounded UI display values, **not**
+  an exact byte oracle, and cannot be used for byte-exact verification.
+  Corrected: verification uses the exact integer byte count from
+  machine-readable source metadata at download time — the HTTP
+  `Content-Length` header (or FTP `SIZE` response) for GEO downloads,
+  and the GDC manifest's own reported file size + checksum for TCGA —
+  never the GEO webpage's rounded MB/GB display. Never piped through
+  `tail`/`head` regardless (the standing `curl_pipe_swallows_exit_code`
+  lesson from this project's own history: a pipe silently swallows
+  `curl`'s real exit code, so a truncated download can report success).
+- **Round-1 review correction, archive-integrity mechanics**: the first
+  draft proposed `tar -tzf` for every archive — wrong for GEO's ordinary
+  `_RAW.tar` files, which are **plain (non-gzip-compressed) tar archives
+  containing individually-gzipped members** (per GEO's own documented
+  convention: `tar -xf GSExxxx_RAW.tar` then decompress the `.gz`
+  members inside). Corrected: `tar -tf` (not `-tzf`) to verify the outer
+  archive's own integrity/listing, then `gzip -t` on each extracted
+  `.gz` member — `tar -tzf` reserved only for genuinely gzip-compressed
+  tarballs (`.tar.gz`/`.tgz`), which none of these `_RAW.tar` files are.
 - New directory structure: `results/07_clim_external_data/` (metadata,
   inventory reports) + a `DATA/` staging area on Argos (not committed to
   git — matching this project's existing convention that raw data lives
@@ -82,10 +95,49 @@ to keep this PR's scope checkable in one pass rather than conflating
 ## What this design does not do
 
 Does not download anything from the Zenodo-restricted record (§Scope
-above). Does not attempt to resolve the GSE225857/GSE285990
-discrepancies here — they are locked as **required verification items**
-during the actual download/inventory compute, not assumed away. Does
+above). Does not attempt to reconstruct the paper's exact per-cohort
+sample counts (GSE231559's 9+6, GSE225857's per-patient CLiM/primary
+split, GSE131418's 170, GSE21510's 146, TCGA's 610) here — locked as
+**required inventory acceptance criteria** during the actual
+download/inventory compute, not assumed satisfied by "the series
+downloads and loads." (`GSE285990`'s single-cell-vs-bulk question,
+originally listed here as unresolved, is no longer open — confirmed
+genuine scRNA-seq directly against its own GSM record, round 1.) Does
 not run any scoring/analysis beyond structural inventory. Does not touch
 this project's already-frozen D/F/P/revCSC gene sets or scoring
 machinery (would be reused as-is in a later follow-on PR, not
 re-derived).
+
+## Review history
+
+- **Round 1 (REQUEST_CHANGES — 2 real factual errors plus several
+  acceptance-criteria gaps, all independently re-verified against live
+  GEO records before fixing, no download performed yet so nothing to
+  re-run)**: (1) `GSE285990`'s human samples were called "genuinely
+  unresolved" single-cell-vs-bulk — false; fetched the individual GSM
+  record (`GSM8714595`/P01_LM) directly, confirmed `Library source:
+  transcriptomic single cell`, Chromium kit, genuine per-cell
+  barcodes/features/matrix files — corrected to state this is confirmed
+  scRNA-seq, not an open question. (2) `GSE17538`'s "232 = 244 total
+  minus mouse" reconstruction was wrong — confirmed directly that
+  `GSE17538` is itself a 4-subseries SuperSeries, and the paper's 232 is
+  exactly `GSE17536` (177) + `GSE17537` (55, confirmed exact count) —
+  corrected the reconstruction rule. (3) `GSE225857`'s scRNA-seq/spatial
+  isolation rule was underspecified — confirmed at GSM level that only
+  2 GSMs (`GSM7058754`/`GSM7058755`, pooled immune/non-immune across all
+  patients, not 8 per-patient samples) are scRNA-seq, and that the other
+  6 GSMs are spatial samples that also carry MTX-shaped files — fixed to
+  require exact-GSM-accession selection, not file-shape heuristics.
+  (4)/(5)/(6) `GSE21510`'s "likely 2 excluded for QC" was itself an
+  unverified assumption — corrected to an explicit unresolved
+  discrepancy requiring identification during inventory; added explicit
+  paper-cohort-reconstruction acceptance criteria for `GSE231559`,
+  `GSE131418`, and TCGA-CRC (previously implied, not stated as a
+  requirement). (7) Byte-verification mechanics corrected from GEO's
+  rounded MB/GB display values to exact `Content-Length`/manifest byte
+  counts. (8) Archive-integrity mechanics corrected from `tar -tzf`
+  (wrong — GEO's `_RAW.tar` files are plain tar containing gzipped
+  members) to `tar -tf` + per-member `gzip -t`.
+
+Submitting for round-2 review before download, same discipline as every
+prior step this session.
