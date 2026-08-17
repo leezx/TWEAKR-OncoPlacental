@@ -489,5 +489,29 @@ never uses that word) — this distinction is kept explicit throughout
 this document and should be kept explicit in any future reuse of this
 result, not smoothed into an unqualified "trophoblast" claim.
 
-Re-submitted to the same ChatGPT conversation. Final verdict + head
-commit to be recorded here once received.
+**Verdict: APPROVE**, at head `bf7acdf5409ddaaa8c9ab321431c6dbcca242ea1`.
+The reviewer independently checked the actual submitted audit numbers
+(not just the PR description) — cited KRT7 (63.5% vs. 12.8%,
+log2FC+2.39), GATA3 (39.6% vs. 3.2%, +1.19), HLA-G (43.0% vs. 5.4%,
++1.48), PSG5 (28.1% vs. 4.1%, +0.91), and the negative COL1A1/COL1A2/
+DCN/LUM contamination-marker log2FCs directly. One non-blocking
+observation: several classic trophoblast markers (ERVFRD-1, some
+CGB/PSG-family genes) have very low detection fraction in HCL — the
+reviewer read this as "a marker constellation collectively supporting
+trophoblast identity," not "every cell expresses the full trophoblast
+program," consistent with Microwell-seq's shallower per-cell depth, and
+confirmed this PR does not overclaim the weak individual markers as
+strong evidence. Confirmed both scientific boundaries this PR set are
+now correct: Track C is a genuine cell-type-restricted same-atlas
+comparison (not whole-tissue composition), and all 3 tracks are
+consistently described as relative effect-based coordinates, not
+symmetric state-probabilities.
+
+**Forward-looking, non-blocking guidance from the reviewer** (recorded
+for any future extension, not required for this PR): this ternary map
+is a reasonable, continuous replacement for "three hard gene lists" as
+a first version, but is not yet a true developmental-trajectory model.
+A future upgrade would shift from ternary plotting toward learning
+gene-wise continuous coefficients along real embryo-proper→fetal-gut
+and trophectoderm→trophoblast developmental trajectories, rather than
+adding more markers or triangles to this same design.
