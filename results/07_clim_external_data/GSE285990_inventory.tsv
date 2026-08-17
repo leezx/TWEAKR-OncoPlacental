@@ -1,0 +1,11 @@
+label	n_genes_matrix_rows	n_cells_matrix_cols	n_barcodes	n_features	axes_consistent	gene_id_format	frac_ensembl_gene_ids	nnz_sampled	frac_integer_valued	likely_raw_counts	gsm	sample
+GSM8714595_P01_LM	37487	17088	17088	37487	True	bare_or_versioned_ensembl	1.0	200000	1.0	True	GSM8714595	P01_LM
+GSM8714596_P02_LM	37487	12384	12384	37487	True	bare_or_versioned_ensembl	1.0	200000	1.0	True	GSM8714596	P02_LM
+GSM8714597_P03_LM	37487	11411	11411	37487	True	bare_or_versioned_ensembl	1.0	200000	1.0	True	GSM8714597	P03_LM
+GSM8714598_P04_LM	37487	9203	9203	37487	True	bare_or_versioned_ensembl	1.0	200000	1.0	True	GSM8714598	P04_LM
+GSM8714599_P05_LM	37487	15402	15402	37487	True	bare_or_versioned_ensembl	1.0	200000	1.0	True	GSM8714599	P05_LM
+GSM8714600_P06_LM	37487	15780	15780	37487	True	bare_or_versioned_ensembl	1.0	200000	1.0	True	GSM8714600	P06_LM
+GSM8714601_P07_LM	37487	11012	11012	37487	True	bare_or_versioned_ensembl	1.0	200000	1.0	True	GSM8714601	P07_LM
+GSM8714602_P08_LM	37487	10481	10481	37487	True	bare_or_versioned_ensembl	1.0	200000	1.0	True	GSM8714602	P08_LM
+GSM8714603_P09_LM	37487	10157	10157	37487	True	bare_or_versioned_ensembl	1.0	200000	1.0	True	GSM8714603	P09_LM
+GSM8714604_P10_LM	37487	10759	10759	37487	True	bare_or_versioned_ensembl	1.0	200000	1.0	True	GSM8714604	P10_LM

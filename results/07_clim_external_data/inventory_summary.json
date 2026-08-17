@@ -1,0 +1,276 @@
+[
+  {
+    "dataset": "GSE231559",
+    "n_samples_total": 26,
+    "n_clim_reconstructed": 9,
+    "n_primary_reconstructed": 6,
+    "paper_cited_clim": 9,
+    "paper_cited_primary": 6,
+    "cohort_reconstruction_exact_match": true,
+    "archive_integrity": {
+      "path": "/home/zz950/DATA/scRNAseq/GSE231559/raw/GSE231559_RAW.tar",
+      "exists": true,
+      "tar_tf_ok": true,
+      "n_members": 78,
+      "n_gz_members": 78,
+      "gz_exhaustive_check_n": 78,
+      "gz_exhaustive_check_failures": [],
+      "extract_dir": "/home/zz950/DATA/scRNAseq/GSE231559/raw/extracted"
+    }
+  },
+  {
+    "dataset": "GSE225857",
+    "n_scrna_gsms": 2,
+    "organ_prefix_unique_patients": {
+      "CCL": [
+        "s0107",
+        "s0115",
+        "s0813",
+        "s0920",
+        "s1125",
+        "s1231"
+      ],
+      "CNL": [
+        "s0107",
+        "s0115",
+        "s0813",
+        "s1125",
+        "s1231"
+      ],
+      "LCL": [
+        "s0107",
+        "s0115",
+        "s0813",
+        "s0816",
+        "s0920",
+        "s1125",
+        "s1231"
+      ],
+      "LNL": [
+        "s0107",
+        "s0115",
+        "s0813",
+        "s0816",
+        "s0920",
+        "s1125",
+        "s1231"
+      ],
+      "PBL": [
+        "s0107",
+        "s0115",
+        "s0813",
+        "s0816",
+        "s0920"
+      ],
+      "CCT": [
+        "s0107",
+        "s0115",
+        "s0813",
+        "s0920",
+        "s1231"
+      ],
+      "LCT": [
+        "s0107",
+        "s0115",
+        "s0813",
+        "s0920",
+        "s1231"
+      ]
+    },
+    "geo_series_summary_ground_truth": "GSE225857 series summary (re-fetched directly, round-2 review cross-check): 'For single-cell RNA sequencing, 6 CRC patients with liver metastasis were enrolled' -- '27 samples of 6 CRC patients.'",
+    "n_liver_tumor_patients_LCT": 5,
+    "n_colon_tumor_patients_CCT": 5,
+    "n_paired_liver_and_colon_tumor_patients": 5,
+    "paired_tumor_patients": [
+      "s0107",
+      "s0115",
+      "s0813",
+      "s0920",
+      "s1231"
+    ],
+    "immune_only_both_organs_patients": [
+      "s1125"
+    ],
+    "liver_only_no_colon_at_all_patients": [
+      "s0816"
+    ],
+    "n_total_unique_patients_any_organ": 7,
+    "total_patient_count_matches_geo_summary_of_6": false,
+    "paper_cited_clim": 4,
+    "paper_cited_primary": 4,
+    "authors_own_analysis_code": "Repository: https://github.com/jalon9358/LianLab_CRCLM (cited directly in the source publication's Data and Materials Availability statement, PMID 37327339; confirmed reachable without authentication). Its data_import_and_filter.R constructs tumor_merge from exactly 6 patient IDs (s1231, s0920, s0813, s0115, s0107, s0816 -- the last as sample tag 's0816_1') and immune_merge separately, which includes s1125 but NOT s0816's tumor sample under that name. Real, verified evidence that the original authors' own tumor-cell analysis input included s0816 among the intended 6, with s1125 immune-fraction-only from the start -- but s0816's tumor-fraction sample is present in this original code and absent from the deposited GSM7058755 metadata, for a reason not independently confirmed by this project (e.g. downstream QC/filtering is plausible but not confirmed).",
+    "cohort_reconstruction_status": "PARTIAL/UNRESOLVED -- corrected reconstruction (round-2 review fix, replacing an unsupported borrow of GSE231559's L/C naming convention onto this unrelated dataset): LCT (liver-tumor, non-immune fraction) and CCT (colon-tumor, non-immune fraction) patient sets, AS DEPOSITED IN GEO, are IDENTICAL (['s0107', 's0115', 's0813', 's0920', 's1231'], n=5) -- a genuinely paired primary+liver-met tumor-tissue cohort. The remaining 2 of GSE225857's 7 total unique patients are ['s1125'] (immune-fraction presence in BOTH liver and colon, no tumor-fraction data in the DEPOSITED metadata) and ['s0816'] (liver+blood representation only in the deposited metadata, zero colon representation of any kind). Real, verified evidence from the original authors' own public analysis code (see authors_own_analysis_code) shows their intended 6-patient tumor cohort included ['s0816'], not ['s1125'] -- but that code's 6-patient set does not fully match what was actually deposited to GEO (the 5 paired patients above), so this project does not promote that evidence into a final CRC/non-CRC identity claim about the deposited data itself. This is close to but does not exactly match the paper's cited 4+4 (5 paired tumor-tissue patients as deposited, not 4); which specific 4 of these 5 the paper's cited CLiM+primary subset corresponds to is also not recoverable from public GEO metadata alone. Reported honestly as unresolved, not forced to match.",
+    "note": "Only GSM7058754/GSM7058755 downloaded (exact-GSM selection, per design); the other 6 GSMs in this series are spatial and explicitly out of scope, not downloaded."
+  },
+  {
+    "dataset": "GSE285990",
+    "n_samples_downloaded": 10,
+    "paper_cited_n": 10,
+    "cohort_reconstruction_exact_match": true,
+    "out_of_scope_confirmed_this_round": {
+      "mouse_kupffer_cell_substudy_gsms": [
+        "GSM8714605",
+        "GSM8714606",
+        "GSM8714607",
+        "GSM8714608",
+        "GSM8714609"
+      ],
+      "mouse_stereo_seq_spatial_gsms": [
+        "GSM8714610",
+        "GSM8714611"
+      ],
+      "confirmed_via": "direct per-GSM record fetch (Sample_organism_ch1 == Mus musculus for all 7); none downloaded"
+    }
+  },
+  {
+    "dataset": "GSE131418",
+    "n_samples_total": 1135,
+    "n_cohorts": {
+      "consortium": 618,
+      "mcc": 517
+    },
+    "n_liver_metastasis_total": 197,
+    "n_liver_metastasis_by_cohort": {
+      "mcc": 141,
+      "consortium": 56
+    },
+    "n_liver_metastasis_pre_treatment_only": 53,
+    "clinical_xls_files_inspected": {
+      "recurrence_meta": {
+        "n_rows": 134,
+        "n_columns": 68,
+        "cohort_tag_counts": {
+          "mcc": 134
+        },
+        "metastasis_primary_tag_counts": {
+          "prim": 134
+        },
+        "contains_any_metastasis_sample": false
+      },
+      "stage4_meta": {
+        "n_rows": 40,
+        "n_columns": 67,
+        "cohort_tag_counts": {
+          "mcc": 40
+        },
+        "metastasis_primary_tag_counts": {
+          "prim": 40
+        },
+        "contains_any_metastasis_sample": false
+      }
+    },
+    "paper_cited_n": 170,
+    "cohort_reconstruction_status": "UNRESOLVED, now with a directly-verified reason (round-1 review fix -- both clinical XLS files download_geo.sh downloads were actually opened this round, not just declared unhelpful): both files are exclusively 'mcc.prim.*' samples (Recurrence file: 134/134 primary; Stage4/survival file: 40/40 primary) -- neither file contains a single metastasis sample (contains_any_metastasis_sample=False), so they are primary-tumor clinical-outcome/survival annotation files, not annotations of the liver-metastasis samples themselves, and structurally cannot resolve which subset of the 197 GEO-identified liver-met samples matches the paper's cited 170. None of the GEO series-matrix-based groupings checked (total liver-met=197; per-cohort 141 MCC/56 Consortium; PRE-treatment-only=53) reproduce 170 exactly either. Likely requires the paper's own supplementary sample list.",
+    "archive_integrity": {
+      "path": "/home/zz950/DATA/bulkRNAseq/GSE131418/raw/GSE131418_RAW.tar",
+      "exists": true,
+      "tar_tf_ok": true,
+      "n_members": 1138,
+      "n_gz_members": 1138,
+      "gz_exhaustive_check_n": 1138,
+      "gz_exhaustive_check_failures": [],
+      "extract_dir": "/home/zz950/DATA/bulkRNAseq/GSE131418/raw/extracted"
+    }
+  },
+  {
+    "dataset": "GSE17536",
+    "n_cel_files": 177,
+    "expected_n_from_geo_filelist": 177,
+    "matches_geo_declared_count": true,
+    "array_type_confirmed_from_cel_header": "HG-U133_Plus_2.1sq",
+    "raw_vs_processed_status": "raw (Affymetrix CEL = probe-level raw intensity data, not summarized/normalized expression values)",
+    "archive_integrity": {
+      "path": "/home/zz950/DATA/bulkRNAseq/GSE17536/raw/GSE17536_RAW.tar",
+      "exists": true,
+      "tar_tf_ok": true,
+      "n_members": 177,
+      "n_gz_members": 177,
+      "gz_exhaustive_check_n": 177,
+      "gz_exhaustive_check_failures": [],
+      "extract_dir": "/home/zz950/DATA/bulkRNAseq/GSE17536/raw/extracted"
+    }
+  },
+  {
+    "dataset": "GSE17537",
+    "n_cel_files": 55,
+    "expected_n_from_geo_filelist": 55,
+    "matches_geo_declared_count": true,
+    "array_type_confirmed_from_cel_header": "HG-U133_Plus_2.1sq",
+    "raw_vs_processed_status": "raw (Affymetrix CEL = probe-level raw intensity data, not summarized/normalized expression values)",
+    "archive_integrity": {
+      "path": "/home/zz950/DATA/bulkRNAseq/GSE17537/raw/GSE17537_RAW.tar",
+      "exists": true,
+      "tar_tf_ok": true,
+      "n_members": 55,
+      "n_gz_members": 55,
+      "gz_exhaustive_check_n": 55,
+      "gz_exhaustive_check_failures": [],
+      "extract_dir": "/home/zz950/DATA/bulkRNAseq/GSE17537/raw/extracted"
+    }
+  },
+  {
+    "dataset": "GSE21510",
+    "n_samples_total": 148,
+    "tissue_type_breakdown": {
+      "cancer, LCM": 104,
+      "normal, homogenized": 25,
+      "cancer, homogenized": 19
+    },
+    "n_unique_patients": 107,
+    "paper_cited_n": 146,
+    "geo_total_n": 148,
+    "cohort_reconstruction_status": "UNRESOLVED -- tissue-type breakdown ({'cancer, LCM': 104, 'normal, homogenized': 25, 'cancer, homogenized': 19}) sums to 148 exactly with no natural 146-sized subgroup; the exact 2 excluded samples and exclusion basis cannot be identified from GEO's public series-matrix metadata alone (checked this round: tissue-prep category, unique-patient counts). Downloading all 148 is fine per the locked design; the paper's exact 146-sample cohort remains an open item requiring the paper's own supplementary methods.",
+    "archive_integrity": {
+      "path": "/home/zz950/DATA/bulkRNAseq/GSE21510/raw/GSE21510_RAW.tar",
+      "exists": true,
+      "tar_tf_ok": true,
+      "n_members": 148,
+      "n_gz_members": 148,
+      "gz_exhaustive_check_n": 148,
+      "gz_exhaustive_check_failures": [],
+      "extract_dir": "/home/zz950/DATA/bulkRNAseq/GSE21510/raw/extracted"
+    }
+  },
+  {
+    "dataset": "TCGA-CRC",
+    "access_method": "GDC API (distinct from every GEO cohort in this table -- not a GEO _RAW.tar)",
+    "n_files_total_manifest": 701,
+    "n_files_size_and_md5_verified": 701,
+    "n_files_missing": 0,
+    "n_files_size_mismatch": 0,
+    "n_files_md5_mismatch": 0,
+    "structural_characterization_sample_file": {
+      "columns": [
+        "gene_id",
+        "gene_name",
+        "gene_type",
+        "unstranded",
+        "stranded_first",
+        "stranded_second",
+        "tpm_unstranded",
+        "fpkm_unstranded",
+        "fpkm_uq_unstranded"
+      ],
+      "n_data_rows_total": 60664,
+      "n_star_summary_rows": 4,
+      "n_gene_rows": 60660,
+      "frac_ensembl_gene_ids": 0.9992,
+      "raw_vs_processed": "BOTH present in one file: 'unstranded' column is raw STAR gene counts (integer), 'tpm_unstranded'/'fpkm_unstranded'/'fpkm_uq_unstranded' are processed/normalized -- confirmed directly from column names, not assumed from the GDC data-type label alone."
+    },
+    "by_project": {
+      "TCGA-COAD": 524,
+      "TCGA-READ": 177
+    },
+    "by_sample_type": {
+      "Primary Tumor": 647,
+      "Solid Tissue Normal": 51,
+      "Recurrent Tumor": 2,
+      "Metastatic": 1
+    },
+    "n_primary_tumor_files": 647,
+    "n_primary_tumor_unique_cases": 624,
+    "n_cases_with_multiple_primary_tumor_aliquots": 13,
+    "paper_cited_n": 610,
+    "cohort_reconstruction_status": "PARTIAL -- one-aliquot-per-case Primary-Tumor-only filtering gives 624 unique cases, close to but not exactly matching the paper's cited 610; the exact filter (which aliquot per multi-aliquot case, any additional QC/data-completeness exclusions) is not reconstructable from GDC file metadata alone. Reported honestly as the closest achievable reconstruction, not declared exact."
+  }
+]

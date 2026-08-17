@@ -1,0 +1,3 @@
+gsm	tag	n_columns	first_col_header	first_row_gene_id_example	first_row_looks_ensembl	n_data_rows	meta_n_rows	meta_n_unique_patients	meta_organ_prefix_cell_counts
+GSM7058754	immune	196474	""""""	"""A1BG"""	False	17066	196473	7	{'LCL': 55471, 'LNL': 45225, 'CCL': 39974, 'CNL': 30952, 'PBL': 24851}
+GSM7058755	non_immune	41893	""""""	"""A1BG"""	False	17515	41892	5	{'LCT': 26436, 'CCT': 15456}
