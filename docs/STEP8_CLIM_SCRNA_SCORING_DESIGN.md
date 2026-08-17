@@ -57,8 +57,18 @@ scored. **Fixed, locked per dataset**:
   vs. cell-level granularity mismatch is stated explicitly, not silently
   equated with the primary atlas's per-cell malignant-cell restriction.
   The 11 paired-normal samples are loaded and scored separately (not
-  pooled into the primary population), available for a future normal-
-  vs-tumor contrast but not part of this design's primary result.
+  pooled into the primary population) as their own independent
+  calibration pass. **Round-2 review fix**: this separate pass is NOT
+  by itself sufficient for a future direct percentile contrast against
+  the tumor scores — per this same design's own population-dependence
+  logic (detectability bins/null controls are recomputed per scoring
+  population), a valid tumor-vs-normal percentile contrast needs an
+  additional JOINT tumor+normal calibration pass, exactly mirroring
+  Step 6's HTAN extension pattern (`docs/STEP6_DATASET_EXTENSION_
+  DESIGN.md`: malignant-only pass + a separate malignant+normal joint
+  pass for the patient-matched contrast). Not designed in this PR —
+  flagged as what a future contrast analysis would require, not
+  claimed as already provided by this pass.
 - `GSE285990`: all 10 `P01_LM`-`P10_LM` samples (confirmed human liver-
   metastasis tumor tissue by GEO's own sample titles, no separate
   normal counterpart in this cohort) — single population, no split
@@ -116,37 +126,42 @@ below are only meaningful if the actual scoring object ends up on the
 same axis.
 
 **Blocker 4 — GSE225857's reduced gene universe was framed as a neutral
-smaller-reference-background, when it's actually the product of the
-original authors' own systematic, gene-class-biased preprocessing.**
-Confirmed directly by fetching the real authors' analysis code
-(`github.com/jalon9358/LianLab_CRCLM/data_import_and_filter.R`, the same
-repository independently verified for GSE225857's patient-cohort
-provenance in Step 7 PR #36): Seurat objects are created with
-`min.cells = 50` (an expression-frequency floor, not a reference-
-annotation limit), and a regex removes noncoding-gene-name patterns
-(antisense transcripts, `LINC`-prefixed, `MIR`-prefixed genes, etc.)
-plus ribosomal (`RP[LS]`) and mitochondrial (`MT.`) genes from a
-separate integration-feature list. This means gene absence in the
-deposited ~17K-gene matrices is **expression/preprocessing-dependent,
-not a neutral smaller-reference phenomenon** — the first draft's
-"expected, not itself a flag" framing for the general ~82-89% coverage
-undersold this. **Investigated directly this round, not left as a
-deferred TODO**: checked which of `D_Gut-shared`'s 2 missing genes
-(`LGALS14`, `KISS1`) match the noncoding/RP/MT removal patterns —
-neither does (both are protein-coding, correctly-named genes), so their
-absence is more consistent with the `min.cells=50` expression floor
-(both `LGALS14`/galectin-14 and `KISS1`/kisspeptin have narrow,
-tissue-restricted expression profiles biologically plausible for
-falling below a 50-cell floor in a large aggregate object). **Fixed,
-locked**: the compute-time investigation required for any coverage
-deviation is extended beyond `P_Gut-specific` to explicitly include
-`D_Gut-shared` and the small revCSC panels too (proportionally large
-losses, e.g. 2/8 = 25% for `D_Gut-shared`, don't trigger the aggregate
-"−15 points vs. dataset median" rule but are still worth checking per-
-gene, as done here) — check each missing panel gene's status against
-the documented noncoding/RP/MT patterns AND the `min.cells=50`
-expression-floor hypothesis directly (not assumed), for every flagged
-or small-panel deviation, not only the largest one.
+smaller-reference-background, when it's actually preprocessing-
+dependent; round-1's specific attribution of that preprocessing was
+itself factually wrong for the population this design actually scores.**
+Round-1 fixed the framing (not neutral, preprocessing-dependent) by
+citing `github.com/jalon9358/LianLab_CRCLM/data_import_and_filter.R`'s
+`min.cells=50` and noncoding/RP/MT gene-class removal as the mechanism —
+but round-2 review correctly caught that this attribution doesn't
+actually hold for `GSM7058755` (the **non-immune** matrix this design
+scores). **Directly re-verified this round, fetching both relevant
+files completely, not re-reading only the earlier excerpt**:
+`data_import_and_filter.R`'s noncoding-regex filter and
+`CreateSeuratObject(..., min.cells=50)` call are both applied ONLY to
+`immune_count`/the immune `RNA_matrix` — no Seurat object is constructed
+for `tumor_merge` (the non-immune object) anywhere in this script at
+all. Separately, the RP/MT-pattern removal is applied to
+`SelectIntegrationFeatures()`'s output — a feature-selection step
+feeding `FindIntegrationAnchors()`, not a removal from any actual count
+matrix — so it was never a valid explanation for genes being *absent*
+from a deposited matrix in the first place, immune or non-immune.
+Additionally, `nonimmune_cell_analysis.R` (the non-immune-specific
+script) opens with `load("tumor_integrated.RData")` — a pre-built
+object with no gene-axis construction code visible anywhere in this
+public repository. **The public code therefore does not establish how
+the deposited 17,515-gene non-immune axis was actually produced** — round
+1's specific `min.cells=50`/noncoding-filter attribution for it, and the
+`LGALS14`/`KISS1` "consistent with `min.cells=50`" inference built on
+that attribution, do not hold and are retracted. **Fixed, locked**: the
+compute-time investigation for any coverage deviation (extended beyond
+`P_Gut-specific` to `D_Gut-shared` and the small revCSC panels, per
+round 1's still-valid point that proportionally large small-panel losses
+warrant checking even when the aggregate deviation rule doesn't trigger)
+must check each missing gene's status **empirically** — real per-gene
+expression/detection diagnostics computed directly from the loaded data
+— not assigned to a specific named preprocessing mechanism unless a
+primary source actually demonstrates that mechanism applies to the exact
+object being scored.
 
 ## Real pre-compute findings (this round — every claim checked directly
 against the actual downloaded files, not assumed from the Step 7
@@ -199,8 +214,7 @@ common background) and `GSE285990` (37,487 genes) show near-complete
 coverage (≥96%) on every panel — no deviation, no gate triggered.
 `GSE225857`'s two populations (16,028/16,616 genes successfully
 symbol→Ensembl-mapped, out of 17,066/17,515 total) show broadly lower
-coverage across the board (~82-89% for most panels, consistent with its
-smaller pre-filtered background — expected, not itself a flag), **but
+coverage across the board (~82-89% for most panels), **but
 `P_Gut-specific` drops much further, to 51% (immune) / 58% (non-immune)
 — clearly >15 points below this dataset's own ~82-89% median for every
 other panel.** This is flagged as a required pre-compute investigation
@@ -208,18 +222,23 @@ item, **not waived**, and is structurally the same shape of finding as
 Step 6's already-investigated CRLM `P_Gut-specific` coverage gap
 (`docs/STEP6_DATASET_EXTENSION_RESULTS.md`) — worth checking during
 compute whether the same underlying cause recurs here, or whether this
-is a genuinely different, dataset-specific cause. **Round-1 review fix**:
-confirmed directly this round (see Blocker 4 above) that GSE225857's
-gene reduction is NOT a neutral smaller-reference phenomenon but the
-product of the original authors' own `min.cells=50` expression floor
-plus systematic noncoding/RP/MT gene-class removal (both confirmed
-directly from `github.com/jalon9358/LianLab_CRCLM`'s real preprocessing
-code) — so the required investigation is per-gene (checked against both
-mechanisms directly), not a generic "reference gap" assumption, and is
-extended to `D_Gut-shared` and the small revCSC panels too (proportional
-losses that don't trigger the aggregate deviation rule but are still
-worth checking for a small panel), not only `P_Gut-specific`. Locked as
-a required investigation during the compute PR.
+is a genuinely different, dataset-specific cause. **Round-2 review fix**:
+round 1 attributed GSE225857's general gene reduction to the original
+authors' `min.cells=50` expression floor and noncoding/RP/MT gene-class
+removal — round-2 review correctly caught that this attribution was
+verified against the wrong object (the *immune*-fraction preprocessing
+code, not the non-immune/`GSM7058755` object this design actually
+scores), and on closer re-verification the public repository does not
+show how the non-immune object's own gene axis was constructed at all
+(see Blocker 4 above for the full correction). **The general ~82-89%
+coverage reduction and the `P_Gut-specific` deviation are therefore
+NOT attributed to any specific named mechanism** — both require genuine
+empirical, per-gene investigation during compute (real expression/
+detection diagnostics on the loaded data), extended to `D_Gut-shared`
+and the small revCSC panels too (proportional losses that don't trigger
+the aggregate deviation rule but are still worth checking for a small
+panel), not assigned to a preprocessing cause this project has not
+actually confirmed applies to the object being scored.
 
 ## Cell/sample-scoring-population contract (round-1 review fix — see
 Blocker 1 above for the full finding)
@@ -261,22 +280,40 @@ reads directly — then rebuild `adata.X` via
 concatenation within a scoring population (e.g. GSE231559's 15-sample
 primary population), not just per-sample before merging.
 
-## Gene-axis canonicalization contract (round-1 review fix — see
-Blocker 3 above for the full finding)
+## Gene-axis canonicalization contract (rounds 1-2 review fixes — see
+Blocker 3 above for the round-1 finding)
 
-Locked, shared across the coverage check and the compute-time scoring
-loader (one function, not two independent reimplementations that could
-drift apart): (1) strip Ensembl version suffixes
-(`gene_id.split(".")[0]`) as the canonical bare-ID axis for
-`GSE231559`/`GSE285990`; (2) for `GSE225857`, map gene symbols to
-Ensembl IDs via `hgnc_symbol_ensembl_map.tsv`, dropping any symbol with
-no unambiguous mapping (logged with counts, not silently dropped); (3)
-after either canonicalization path, assert no duplicate Ensembl IDs
-result — raise loudly if two input genes collapse onto the same ID,
-never silently sum/average/pick-first; (4) `GSE231559`'s two-reference
-intersection (32,732 common genes, computed above) is itself part of
-this canonical axis, applied before the version-stripping/mapping step
-interacts with anything else.
+**Round-2 review fix**: round 1's step ordering was internally
+inconsistent — the findings table (above) correctly described
+`GSE231559`'s 32,732-gene intersection as computed on already-stripped
+bare Ensembl IDs, but this section's own locked-contract text said the
+opposite (intersection applied *before* version-stripping). Confirmed
+real by directly re-reading both passages side by side. If one
+reference carries `ENSG...\.1` and the other `ENSG...\.2` for the same
+gene, native-ID (unstripped) intersection followed by stripping would
+lose that gene, while canonicalize-first intersection retains it — a
+real, consequential difference, not a cosmetic one. The Step 7
+inventory only recorded the gene-ID format as `bare_or_versioned_
+ensembl`, so this project cannot assume the distinction is irrelevant
+without locking the correct order.
+
+**Fixed, locked in the correct order** — one shared function, used
+identically by the coverage check and the compute-time scoring loader
+(not two independent reimplementations that could drift apart): (1)
+canonicalize each reference's native gene IDs to bare Ensembl
+(`gene_id.split(".")[0]`) for `GSE231559`/`GSE285990` — or map gene
+symbols to Ensembl via `hgnc_symbol_ensembl_map.tsv` for `GSE225857`,
+dropping any symbol with no unambiguous mapping (logged with counts, not
+silently dropped); (2) assert no duplicate Ensembl IDs result WITHIN
+each individual reference after this canonicalization step — raise
+loudly if two input genes collapse onto the same ID, never silently
+sum/average/pick-first; (3) only THEN intersect the canonical axes
+across `GSE231559`'s two references (still 32,732 genes when computed
+in this corrected order — re-confirmed directly, since this project's
+original coverage-check script already canonicalized before
+intersecting even though this section's contract text hadn't matched
+that order); (4) subset/concatenate matrices onto that final
+intersected, canonical, collision-free axis.
 
 ## What this design does not do
 
@@ -316,7 +353,43 @@ frozen scoring machinery.
   matched the noncoding/RP/MT patterns, consistent with the
   `min.cells=50` expression floor instead) — fixed, required
   investigation extended beyond `P_Gut-specific` to `D_Gut-shared` and
-  the small revCSC panels too.
+  the small revCSC panels too. **This item's specific mechanism
+  attribution was itself found incomplete in round 2, below** — kept
+  here as an accurate historical record of what round 1 actually
+  verified and asserted at the time, not retroactively edited.
 
-Submitting for round-2 review before any compute, same discipline as
+- **Round 2 (REQUEST_CHANGES — 2 real blockers + 2 minor cleanups, all
+  independently re-verified against real committed code/live sources
+  before fixing, none disputed)**: (1) the round-1 gene-axis
+  canonicalization contract was internally self-contradictory — the
+  findings table described GSE231559's 32,732-gene intersection as
+  computed on already-stripped bare Ensembl IDs, but the locked-contract
+  text said intersection happened *before* stripping; confirmed real by
+  directly comparing both passages — fixed to lock the correct order
+  explicitly (canonicalize each reference first, assert no within-
+  reference collisions, then intersect), re-confirmed this still yields
+  32,732 genes since the original coverage computation had already used
+  the correct order even though the prose hadn't matched it. (2) round
+  1's specific `min.cells=50`/noncoding-RP-MT attribution for
+  GSE225857's gene reduction was verified against the wrong object —
+  directly re-fetching the full `data_import_and_filter.R` and
+  `nonimmune_cell_analysis.R` files confirmed that filter is applied
+  only to the *immune* object, RP/MT removal only touches
+  `SelectIntegrationFeatures()` output (never the count matrix itself),
+  and the non-immune/`GSM7058755` object's own gene-axis construction is
+  not shown anywhere in the public repository (`nonimmune_cell_
+  analysis.R` loads a pre-built `tumor_integrated.RData` with no
+  visible construction code) — fixed by retracting the specific
+  mechanism attribution (including the `LGALS14`/`KISS1` inference built
+  on it) and requiring genuine empirical per-gene investigation during
+  compute instead. Plus 2 minor cleanups: the coverage section's
+  "expected, not itself a flag" framing for GSE225857's general
+  reduction was removed (it partially re-introduced the framing blocker
+  4 was meant to fix); GSE231559's separately-scored normal population
+  was corrected from "available for a future contrast" to explicitly
+  requiring an additional joint tumor+normal calibration pass first, per
+  this design's own population-dependence logic and the Step 6 HTAN
+  precedent.
+
+Submitting for round-3 review before any compute, same discipline as
 every prior step this session.
