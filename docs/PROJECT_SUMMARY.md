@@ -43,10 +43,15 @@ a fetal-somatic developmental program than a placental/trophoblast one
 or a generically shared developmental one — though the underlying
 mechanism (what drives it) remains untested and out of this project's
 scope (Q5/Q6). See "Step 6 Q1/Q2/Q4 cross reference" and "Step 6 dataset
-extension" below for the full detail. **This project is complete** per
-the user-confirmed "100% = close what's reachable with current data"
-scope (2026-08-16) — see "Project completion" at the end of this
-document.
+extension" below for the full detail. **The project's original scope was
+complete** per the user-confirmed "100% = close what's reachable with
+current data" scope (2026-08-16) — see "Project completion (original
+scope)" below. **Since then, the user requested a genuine extension**
+(Step 7 + Step 8, 2026-08-16 to 2026-08-17): acquiring and scoring a new
+external CRC spatial-multi-omics-paper's public scRNA-seq cohorts against
+this project's own frozen D/F/P/revCSC panels. See "Step 7" / "Step 8"
+below and "Current overall status" at the end of this document for
+exactly what is closed/merged vs. still awaiting review.
 
 ## Step 1 — Data inventory
 
@@ -488,21 +493,123 @@ PR #27's core weak, not-single-axis finding to this provenance-confirmed
 non-overlapping population, though correlation *signs* for the F/P pairs
 are not stable between datasets — reported honestly, not smoothed over.
 
-## Project completion
+## Project completion (original scope)
 
-**This project is complete** per the user-confirmed "100% = close what's
-reachable with current data" scope (2026-08-16,
+**The project's original scope is complete** per the user-confirmed
+"100% = close what's reachable with current data" scope (2026-08-16,
 `docs/Q1_Q2_Q4_CROSS_REFERENCE.md`). Every phase of the progress tracker
-(`Worklog.md`) is closed. Q5/Q6 of the original 6-question framework
-(does SPP1+ TAM/TWEAK/Fn14/YAP macrophage signaling causally drive a
-specific developmental program; does the placental component have
-independent functional consequences) remain **explicitly out of scope**
-(user-confirmed 2026-08-16): both require data this project does not
-have (spatial macrophage/TWEAK perturbation data; functional/invasion
-assay data). Documented here as a distinct future aim, not a blocker —
-any future work on Q5/Q6 can reuse this project's frozen
-`D_Gut-shared`/`F_Gut-specific`/`P_Gut-specific`/`revCSC`/`M11` scores
-directly, no new signature construction needed to start.
+(`Worklog.md`) through Step 6's dataset extension is closed. Q5/Q6 of the
+original 6-question framework (does SPP1+ TAM/TWEAK/Fn14/YAP macrophage
+signaling causally drive a specific developmental program; does the
+placental component have independent functional consequences) remain
+**explicitly out of scope** (user-confirmed 2026-08-16): both require
+data this project does not have (spatial macrophage/TWEAK perturbation
+data; functional/invasion assay data). Documented here as a distinct
+future aim, not a blocker — any future work on Q5/Q6 can reuse this
+project's frozen `D_Gut-shared`/`F_Gut-specific`/`P_Gut-specific`/
+`revCSC`/`M11` scores directly, no new signature construction needed to
+start.
+
+## Step 7 — CLiM/CLuM external data acquisition + inventory (CLOSED)
+
+User-requested extension (2026-08-16): a Cancer Cell paper describes a
+19-patient/49-tumor CRC spatial-multi-omics cohort (CLiM/CLuM). Scope
+was narrowed twice via direct user decision: first to "scRNA-seq + bulk
+RNA-seq only, no spatial" after a real Zenodo login-gate blocker was
+surfaced (not worked around — never creating accounts/handling
+credentials to reach gated data is a standing rule); the acquisition
+itself then covered 6 GEO cohorts + TCGA-COAD/READ.
+
+**Design** (`docs/STEP7_CLIM_DATA_ACQUISITION_DESIGN.md`, PR #35, 3
+review rounds, merged `3a1e4be`): locks per-cohort loader/reconstruction
+contracts for GSE231559, GSE225857, GSE285990, GSE131418, GSE17536,
+GSE17537, GSE21510, TCGA-CRC.
+
+**Compute** (`docs/STEP7_INVENTORY_RESULTS.md`, PR #36, 5 review rounds,
+merged `6ca26a5`): every cohort downloaded with exact-`Content-Length`
+byte verification (never GEO's rounded MB/GB display) and archive
+integrity checked. 3 real bugs self-caught and fixed (a GSM-title join
+bug, a GSM-ID string-concat rollover bug, a GDC single-file-batch API
+quirk). Cohort-reconstruction honestly mixed: GSE231559 (9+6) and
+GSE17536+GSE17537 (232) reconstruct exactly against the paper; GSE131418
+(170), GSE21510 (146), GSE225857 (exact 4+4), and TCGA (610) were left
+**honestly unresolved** rather than forced to match — including a
+genuine self-correction where round 3's "could not verify" conclusion on
+GSE225857 was itself found incomplete in round 4 (had only checked
+GitHub's login-gated code search, not the paper's own Data Availability
+statement).
+
+## Step 8 — CLiM scRNA-seq D/F/P/revCSC scoring
+
+Scores the 3 usable Step 7 scRNA-seq cohorts (GSE231559, GSE285990,
+GSE225857) against this project's own frozen `D_Gut-shared`/
+`F_Gut-specific`/`F_Colon-specific`/`F_SI-specific`/`P_Gut-specific`/
+`revCSC` panels — the same null-calibrated scoring method as Step 6.
+Bulk-cohort scoring and any cross-cohort/founding-question interpretation
+are explicitly deferred, not part of this step.
+
+**Design — CLOSED** (`docs/STEP8_CLIM_SCRNA_SCORING_DESIGN.md`, PR #37,
+3 review rounds, merged `8a68191`): locks 4 scoring populations
+(GSE231559 primary [9 CLiM + 6 primary-tumor, 15 samples] + GSE231559
+normal [11 samples, separate calibration pass]; GSE285990 [all 10
+samples]; GSE225857 **non-immune fraction only** — the 196,473-cell
+immune fraction is explicitly out of scope), the raw-counts/
+normalization contract, and the gene-axis canonicalization order
+(canonicalize-then-intersect). Round 2 caught and fixed a genuine
+self-inflicted problem from round 1's own fix: an internal contradiction
+in the locked intersection order, and a GSE225857 preprocessing-mechanism
+attribution that had been verified against the *wrong* R object —
+retracted and replaced with a requirement to investigate empirically
+rather than assume a mechanism.
+
+**Compute — DONE, results real.** Ran on Argos (qsub job 3621331,
+`-pe pvm 8`, wallclock 15,739s ≈ 4.37h, exit status 0, 0 failures). All
+3 loaders smoke-tested against real data before the full run. Results,
+byte-exact md5-verified back from Argos:
+
+- Coverage check (`results/08_clim_scrna_scoring/coverage_check.tsv`):
+  GSE231559/GSE285990 all ≥96.15% coverage, no flags. GSE225857
+  non-immune's `P_Gut-specific` panel flagged (44/76 genes, 57.9%),
+  matching the design doc's 51–58% pre-compute estimate closely.
+- Required empirical missing-gene investigation
+  (`results/08_clim_scrna_scoring/gse225857_missing_gene_investigation.tsv`,
+  per the round-2-corrected "investigate, don't assume a mechanism"
+  contract): 49/53 of GSE225857's missing gene×panel rows (36 unique
+  genes, 35 present in both) are present in the reference cohorts
+  (GSE231559, GSE285990) but with median real-count detection fraction
+  0.000 there too — an honest, hedged partial explanation (these are
+  inherently rare/low-expression genes), not a proven GSE225857-specific
+  mechanism.
+- Full null-calibrated per-cell scores (`n_perm=500`, all 13 panels) for
+  all 4 populations — see
+  `docs/STEP8_CLIM_SCRNA_SCORING_RESULTS.md` for the complete
+  per-population/per-panel summary table and an explanation of the
+  expected (pre-existing, not new) NaN pattern in the two smallest
+  panels' z-score columns.
+
+**Status**: pushed and under review — `PR #39` (branch
+`step8-clim-scrna-scoring-compute`) is open at GitHub, submitted to the
+project's standing ChatGPT reviewer; round 1 confirmed the compute
+itself needs no re-run, flagged 4 write-up/provenance corrections in
+this doc and the results doc (the ≥92.5%→≥96.15% coverage number above,
+the gene-vs-row count above, a median-vs-mean mixup in the results doc,
+and this section's own staleness) — all independently re-verified
+against the committed artifacts and fixed in the same PR.
+
+## Current overall status
+
+- **Steps 1–6 (original scope)**: complete, merged, reviewed to APPROVE
+  — see "Project completion (original scope)" above.
+- **Step 7 (CLiM/CLuM data acquisition + inventory)**: complete, merged,
+  reviewed to APPROVE (PR #35, #36).
+- **Step 8 design**: complete, merged, reviewed to APPROVE (PR #37).
+- **Step 8 compute**: real, done, pushed; **PR #39 open and under
+  review** — round 1 found no compute blocker, only doc/write-up fixes
+  (applied in the same PR); merge pending final APPROVE + your
+  confirmation.
+- **Step 9 (Fetal-Placenta-Adult developmental ternary map)**: complete,
+  merged, reviewed to APPROVE after 2 real rounds (PR #38) — see
+  `docs/STEP9_DEVELOPMENTAL_TERNARY_MAP.md`.
 
 ## Standing practices (apply to every future step, not just Step 4)
 

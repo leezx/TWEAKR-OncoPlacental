@@ -1,0 +1,54 @@
+population	panel	gene	gse231559_primary_present	gse231559_primary_detect_frac	gse231559_primary_mean_count	gse285990_present	gse285990_detect_frac	gse285990_mean_count
+gse225857_nonimmune	revCSC_primary27_minus_CLU_ASS1	ENSG00000118523	True	0.0414	0.1881	True	0.056	0.2622
+gse225857_nonimmune	revCSC_primary27_minus_CLU_ASS1	ENSG00000142871	True	0.0376	0.1744	True	0.0408	0.2089
+gse225857_nonimmune	revCSC_extended28_full	ENSG00000118523	True	0.0414	0.1881	True	0.056	0.2622
+gse225857_nonimmune	revCSC_extended28_full	ENSG00000142871	True	0.0376	0.1744	True	0.0408	0.2089
+gse225857_nonimmune	revCSC_extended28_full	ENSG00000291309	False			False		
+gse225857_nonimmune	revCSC_extended28_minus_CLU	ENSG00000118523	True	0.0414	0.1881	True	0.056	0.2622
+gse225857_nonimmune	revCSC_extended28_minus_CLU	ENSG00000142871	True	0.0376	0.1744	True	0.0408	0.2089
+gse225857_nonimmune	revCSC_extended28_minus_CLU	ENSG00000291309	False			False		
+gse225857_nonimmune	revCSC_extended28_minus_CLU_ASS1	ENSG00000118523	True	0.0414	0.1881	True	0.056	0.2622
+gse225857_nonimmune	revCSC_extended28_minus_CLU_ASS1	ENSG00000142871	True	0.0376	0.1744	True	0.0408	0.2089
+gse225857_nonimmune	revCSC_extended28_minus_CLU_ASS1	ENSG00000291309	False			False		
+gse225857_nonimmune	revCSC_primary27_minus_ASS1	ENSG00000118523	True	0.0414	0.1881	True	0.056	0.2622
+gse225857_nonimmune	revCSC_primary27_minus_ASS1	ENSG00000142871	True	0.0376	0.1744	True	0.0408	0.2089
+gse225857_nonimmune	revCSC_primary27_minus_CLU	ENSG00000118523	True	0.0414	0.1881	True	0.056	0.2622
+gse225857_nonimmune	revCSC_primary27_minus_CLU	ENSG00000142871	True	0.0376	0.1744	True	0.0408	0.2089
+gse225857_nonimmune	D_Gut-shared	ENSG00000006659	True	0.0002	0.0003	True	0.0001	0.0001
+gse225857_nonimmune	P_Gut-specific	ENSG00000082556	True	0.0001	0.0001	True	0.0002	0.0002
+gse225857_nonimmune	P_Gut-specific	ENSG00000105198	True	0.0	0.0	True	0.0	0.0
+gse225857_nonimmune	P_Gut-specific	ENSG00000108255	True	0.0004	0.0004	True	0.0014	0.0015
+gse225857_nonimmune	P_Gut-specific	ENSG00000120211	True	0.0007	0.001	True	0.0	0.0
+gse225857_nonimmune	P_Gut-specific	ENSG00000124467	True	0.0001	0.0001	True	0.0	0.0
+gse225857_nonimmune	P_Gut-specific	ENSG00000136487	True	0.0	0.0	True	0.0	0.0
+gse225857_nonimmune	P_Gut-specific	ENSG00000139780	True	0.0	0.0	True	0.0002	0.0002
+gse225857_nonimmune	P_Gut-specific	ENSG00000155269	True	0.0001	0.0001	True	0.0001	0.0001
+gse225857_nonimmune	P_Gut-specific	ENSG00000156269	True	0.0	0.0	True	0.0001	0.0001
+gse225857_nonimmune	P_Gut-specific	ENSG00000163530	True	0.0	0.0	True	0.0	0.0
+gse225857_nonimmune	P_Gut-specific	ENSG00000170848	True	0.0	0.0	True	0.0	0.0
+gse225857_nonimmune	P_Gut-specific	ENSG00000171402	True	0.0002	0.0002	True	0.0001	0.0001
+gse225857_nonimmune	P_Gut-specific	ENSG00000176979	True	0.0035	0.0036	True	0.0	0.0
+gse225857_nonimmune	P_Gut-specific	ENSG00000179520	True	0.0001	0.0001	True	0.0001	0.0002
+gse225857_nonimmune	P_Gut-specific	ENSG00000183668	True	0.0	0.0	True	0.0	0.0
+gse225857_nonimmune	P_Gut-specific	ENSG00000186452	True	0.0001	0.0001	True	0.0001	0.0001
+gse225857_nonimmune	P_Gut-specific	ENSG00000189108	True	0.0002	0.0002	True	0.0001	0.0001
+gse225857_nonimmune	P_Gut-specific	ENSG00000204414	True	0.0	0.0	True	0.0	0.0
+gse225857_nonimmune	P_Gut-specific	ENSG00000204941	True	0.0	0.0	True	0.0	0.0001
+gse225857_nonimmune	P_Gut-specific	ENSG00000214336	True	0.0002	0.0002	True	0.0	0.0
+gse225857_nonimmune	P_Gut-specific	ENSG00000221826	True	0.0	0.0	True	0.0	0.0
+gse225857_nonimmune	P_Gut-specific	ENSG00000226887	True	0.0036	0.0045	True	0.0031	0.0037
+gse225857_nonimmune	P_Gut-specific	ENSG00000231924	True	0.0	0.0	True	0.0	0.0
+gse225857_nonimmune	P_Gut-specific	ENSG00000233056	True	0.0003	0.0003	True	0.0009	0.001
+gse225857_nonimmune	P_Gut-specific	ENSG00000242950	True	0.0011	0.0011	True	0.0006	0.0006
+gse225857_nonimmune	P_Gut-specific	ENSG00000243130	True	0.0	0.0	True	0.0	0.0
+gse225857_nonimmune	P_Gut-specific	ENSG00000243137	True	0.0	0.0	True	0.0	0.0
+gse225857_nonimmune	P_Gut-specific	ENSG00000244476	True	0.0003	0.0003	True	0.0011	0.0014
+gse225857_nonimmune	P_Gut-specific	ENSG00000249861	True	0.0	0.0	True	0.0	0.0
+gse225857_nonimmune	P_Gut-specific	ENSG00000269526	True	0.0001	0.0001	True	0.0001	0.0001
+gse225857_nonimmune	P_Gut-specific	ENSG00000283324	True	0.0	0.0	True	0.0	0.0
+gse225857_nonimmune	P_Gut-specific	ENSG00000284701	True	0.0	0.0	True	0.0	0.0
+gse225857_nonimmune	revCSC_extended28_minus_ASS1	ENSG00000118523	True	0.0414	0.1881	True	0.056	0.2622
+gse225857_nonimmune	revCSC_extended28_minus_ASS1	ENSG00000142871	True	0.0376	0.1744	True	0.0408	0.2089
+gse225857_nonimmune	revCSC_extended28_minus_ASS1	ENSG00000291309	False			False		
+gse225857_nonimmune	revCSC_primary27_full	ENSG00000118523	True	0.0414	0.1881	True	0.056	0.2622
+gse225857_nonimmune	revCSC_primary27_full	ENSG00000142871	True	0.0376	0.1744	True	0.0408	0.2089
