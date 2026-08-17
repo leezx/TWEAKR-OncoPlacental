@@ -60,11 +60,18 @@ list: `load_gse225857_nonimmune_population()` only ever opens
 
 Full table: `results/08_clim_scrna_scoring/coverage_check.tsv`.
 
-- **GSE231559 primary/normal and GSE285990**: every panel ≥92.5% testable
-  gene coverage, population-median coverage 99.7–99.8%, **0 panels
-  flagged** (`>15pts below that population's own median` rule). Matches
-  the design doc's "≥96% coverage everywhere" estimate closely (the
-  revCSC 28-gene "extended" panels sit at 96.2–96.4%, the rest higher).
+- **GSE231559 primary/normal and GSE285990**: every panel ≥96.15% testable
+  gene coverage (`revCSC_extended28_minus_CLU_ASS1`, 25/26 genes, is the
+  minimum in all 3 populations), population-median coverage 99.7–99.8%,
+  **0 panels flagged** (`>15pts below that population's own median`
+  rule). Matches the design doc's "≥96% coverage everywhere" estimate
+  closely (the revCSC 28-gene "extended" panels sit at 96.2–96.4%, the
+  rest higher). **Round-1 review correction**: an earlier draft of this
+  doc stated "≥92.5%" for these 3 populations — that number is real, but
+  belongs to a different population entirely (GSE225857 non-immune's
+  `revCSC_primary27_full`, 25/27 = 92.6%, see below), not these 3; fixed
+  after independently re-deriving each population's true minimum
+  directly from `coverage_check.tsv`.
 - **GSE225857 non-immune**: general-panel coverage 87.3–92.6% (population
   median 88.9%), consistent with the design doc's "~82–89%" estimate.
   `P_Gut-specific` is the one flagged pair: **44/76 genes testable
@@ -84,9 +91,20 @@ specific: 32 genes) against the two reference populations that *do* have
 near-complete coverage (GSE231559 primary, GSE285990) — full results in
 `results/08_clim_scrna_scoring/gse225857_missing_gene_investigation.tsv`.
 
-**Real finding**: 49/53 of these genes are present on both reference
-populations' gene axes, but with **median real-count detection fraction
-0.000 in both** (i.e., at or near zero cells in GSE231559 primary and
+**Real finding**: 49/53 of these **gene×panel rows** — not 53 unique
+genes; the same missing gene recurs across multiple revCSC
+overlap-exclusion panel variants (e.g. `ENSG00000118523`,
+`ENSG00000142871`, `ENSG00000291309` each appear in more than one row).
+The 53 rows correspond to **36 unique missing genes** (35/36 present in
+both reference populations). **Round-1 review correction**: an earlier
+draft of this doc described this as "49/53 of these genes," implying 53
+distinct genes — fixed to the correct row-vs-gene distinction after
+independently re-deriving both counts directly from
+`gse225857_missing_gene_investigation.tsv`.
+
+Of the 49 (row-level) / 35 (unique-gene-level) present-in-both cases,
+**median real-count detection fraction is 0.000 in both reference
+populations** (i.e., at or near zero cells in GSE231559 primary and
 GSE285990 actually detect these genes, even though the genes are present
 on those axes). This is an honest, hedged conclusion, not a demonstrated
 mechanism: it is consistent with most of GSE225857's missing genes being
@@ -125,8 +143,14 @@ above):
   paired-normal population — i.e., this descriptive elevation is not
   confined to the tumor/metastasis populations in this raw summary.
 - `D_Gut-shared` and `P_Gut-specific` sit close to the 50th-percentile
-  null expectation in all 4 populations (43.5–62.8), unlike the revCSC
-  panels.
+  null expectation in all 4 populations (median percentile range
+  44.6–62.8), unlike the revCSC panels. **Round-1 review correction**: an
+  earlier draft of this doc stated "43.5–62.8" — 43.52 is
+  `P_Gut-specific`'s *mean* percentile in `gse231559_primary`, not a
+  median; the true minimum median across all 8 D/P population×panel
+  combinations is 44.6 (`P_Gut-specific`, same population) — fixed after
+  independently re-checking `summary_stats_by_population_panel.tsv`'s
+  `median_percentile` column directly, not the `mean_percentile` column.
 - The three F-panels (`F_Gut-specific`, `F_Colon-specific`,
   `F_SI-specific`) vary more by population than the revCSC or D/P
   panels — e.g. GSE285990 (liver-metastasis samples) sits lowest on

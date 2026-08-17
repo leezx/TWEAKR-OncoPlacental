@@ -562,23 +562,24 @@ attribution that had been verified against the *wrong* R object —
 retracted and replaced with a requirement to investigate empirically
 rather than assume a mechanism.
 
-**Compute — DONE, results real, but NOT YET REVIEWED OR MERGED.** Ran
-on Argos (qsub job 3621331, `-pe pvm 8`, wallclock 15,739s ≈ 4.37h, exit
-status 0, 0 failures). All 3 loaders smoke-tested against real data
-before the full run. Results, byte-exact md5-verified back from Argos:
+**Compute — DONE, results real.** Ran on Argos (qsub job 3621331,
+`-pe pvm 8`, wallclock 15,739s ≈ 4.37h, exit status 0, 0 failures). All
+3 loaders smoke-tested against real data before the full run. Results,
+byte-exact md5-verified back from Argos:
 
 - Coverage check (`results/08_clim_scrna_scoring/coverage_check.tsv`):
-  GSE231559/GSE285990 all ≥92.5% coverage, no flags. GSE225857
+  GSE231559/GSE285990 all ≥96.15% coverage, no flags. GSE225857
   non-immune's `P_Gut-specific` panel flagged (44/76 genes, 57.9%),
   matching the design doc's 51–58% pre-compute estimate closely.
 - Required empirical missing-gene investigation
   (`results/08_clim_scrna_scoring/gse225857_missing_gene_investigation.tsv`,
   per the round-2-corrected "investigate, don't assume a mechanism"
-  contract): 49/53 of GSE225857's missing gene×panel rows are present in
-  the reference cohorts (GSE231559, GSE285990) but with median real-count
-  detection fraction 0.000 there too — an honest, hedged partial
-  explanation (these are inherently rare/low-expression genes), not a
-  proven GSE225857-specific mechanism.
+  contract): 49/53 of GSE225857's missing gene×panel rows (36 unique
+  genes, 35 present in both) are present in the reference cohorts
+  (GSE231559, GSE285990) but with median real-count detection fraction
+  0.000 there too — an honest, hedged partial explanation (these are
+  inherently rare/low-expression genes), not a proven GSE225857-specific
+  mechanism.
 - Full null-calibrated per-cell scores (`n_perm=500`, all 13 panels) for
   all 4 populations — see
   `docs/STEP8_CLIM_SCRNA_SCORING_RESULTS.md` for the complete
@@ -586,14 +587,14 @@ before the full run. Results, byte-exact md5-verified back from Argos:
   expected (pre-existing, not new) NaN pattern in the two smallest
   panels' z-score columns.
 
-**What's not done yet**: this work is committed on local branch
-`step8-clim-scrna-scoring-compute` (commits `b1b7660`, `c6b07b1`) but
-**has not been pushed to GitHub, has no open PR, and has not been through
-the ChatGPT review cycle** — pushing was blocked by the session's
-permission classifier pending explicit user go-ahead, so nothing past
-this point has the same independent-verification treatment every other
-closed step in this document has had. Treat the Step 8 compute numbers
-above as real-and-committed-locally, not yet review-hardened.
+**Status**: pushed and under review — `PR #39` (branch
+`step8-clim-scrna-scoring-compute`) is open at GitHub, submitted to the
+project's standing ChatGPT reviewer; round 1 confirmed the compute
+itself needs no re-run, flagged 4 write-up/provenance corrections in
+this doc and the results doc (the ≥92.5%→≥96.15% coverage number above,
+the gene-vs-row count above, a median-vs-mean mixup in the results doc,
+and this section's own staleness) — all independently re-verified
+against the committed artifacts and fixed in the same PR.
 
 ## Current overall status
 
@@ -602,8 +603,13 @@ above as real-and-committed-locally, not yet review-hardened.
 - **Step 7 (CLiM/CLuM data acquisition + inventory)**: complete, merged,
   reviewed to APPROVE (PR #35, #36).
 - **Step 8 design**: complete, merged, reviewed to APPROVE (PR #37).
-- **Step 8 compute**: real, done, committed locally; **push + PR + review
-  + merge still pending** — awaiting your decision to proceed.
+- **Step 8 compute**: real, done, pushed; **PR #39 open and under
+  review** — round 1 found no compute blocker, only doc/write-up fixes
+  (applied in the same PR); merge pending final APPROVE + your
+  confirmation.
+- **Step 9 (Fetal-Placenta-Adult developmental ternary map)**: complete,
+  merged, reviewed to APPROVE after 2 real rounds (PR #38) — see
+  `docs/STEP9_DEVELOPMENTAL_TERNARY_MAP.md`.
 
 ## Standing practices (apply to every future step, not just Step 4)
 
