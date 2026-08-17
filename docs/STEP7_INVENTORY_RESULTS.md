@@ -17,11 +17,13 @@ integer `Content-Length` (GEO) or GDC manifest `file_size`+`md5sum`
 (TCGA) — never GEO's rounded MB/GB webpage display, never piped through
 `tail`/`head` (standing `curl_pipe_swallows_exit_code` lesson).
 
-**Went through 2 review rounds** (`PR #36`) — round 1: 4 blockers plus 1
-completeness gap; round 2: 1 residual correctness blocker (GSE225857's
-patient-cohort reconstruction). All independently re-verified against
-real committed data/live sources before fixing, none disputed. See
-"Round-1 review fixes" and "Round-2 review fix" below.
+**Went through 3 review rounds** (`PR #36`) — round 1: 4 blockers plus 1
+completeness gap; round 2 and round 3: 2 successive residual correctness
+issues in GSE225857's patient-cohort reconstruction, the second of which
+this project could not fully resolve either way (see round 3). All
+independently re-verified against real committed data/live sources
+before fixing. See "Round-1 review fixes," "Round-2 review fix," and
+"Round-3 review fix" below.
 
 ## Scripts
 
@@ -173,7 +175,43 @@ with being a non-CRC inclusion (flagged as a hypothesis, not confirmed
 from public data alone). The corrected result (5 paired tumor-tissue
 patients) is closer to the paper's cited 4+4 than the round-1 result (7)
 but still doesn't match exactly — reported honestly as unresolved, not
-forced to match.
+forced to match. **This section's `s1125`/`s0816` directional hypothesis
+was itself corrected in round 3, below** — kept here as an accurate
+historical record of what round 2 actually fixed and asserted, not
+retroactively edited.
+
+## Round-3 review fix (`PR #36`, independently investigated before
+fixing — the finding this time could not be confirmed either way)
+
+**Blocker — the round-2 fix's directional hypothesis about which patient
+is "likely non-CRC" was itself an unsupported claim.** Round 2 asserted
+`s1125` (immune-fraction presence in both organs) "completes" GEO's 6
+cited CRC patients and that `s0816` (liver+blood only) is "consistent
+with being a non-CRC inclusion." The reviewer's round-3 finding disputed
+this directly, citing "the original authors' own public analysis code"
+as constructing the tumor-cell input from 6 patient IDs that include
+`s0816` but *exclude* `s1125` — the opposite assignment.
+
+**This project attempted to independently verify the reviewer's specific
+counter-claim and could not.** Searched for any publicly accessible
+GitHub/Zenodo/code repository tied to GSE225857's source publication
+(Wang F, Long J et al., *Science Advances* 2023, PMID 37327339) via
+GEO's own contact/publication metadata and targeted web search for the
+specific variable/ID strings cited (`tumor_merge`, `immune_merge`,
+`s0816_1`) — found no such repository reachable without authentication.
+Per this session's standing discipline (never accept a specific factual
+claim, including a reviewer's, without independent confirmation), this
+project does not adopt the reviewer's counter-claim as fact either.
+
+**Fixed** by removing the directional assertion entirely rather than
+flipping it: both `s1125` and `s0816` are now reported neutrally, with
+their objective, directly-computed organ-prefix membership stated
+plainly and *no* CRC/non-CRC label assigned to either. Which one (if
+either) corresponds to GEO's 6th cited "CRC patient with liver
+metastasis" is explicitly left unresolved — this project's own public
+GEO metadata and public-search access are insufficient to settle it
+either way, and the honest record is to say so rather than assert a
+direction this project cannot itself verify.
 
 ## Per-dataset structural characterization + cohort-reconstruction results
 
@@ -200,16 +238,18 @@ downloaded). Both GSMs' accompanying `*_meta.txt.gz` files carry real
 per-cell metadata including `patients`/`sampletag`/`patients_organ`
 columns, confirming the design's round-2 fix (patient-of-origin metadata
 lives in a **separate file**, not "inside the matrix"). **Real
-per-patient reconstruction result** (round-2 review fix, see above): the
-non-immune fraction's liver-tumor (`LCT`) and colon-tumor (`CCT`)
-patient sets are IDENTICAL — 5 paired patients
+per-patient reconstruction result** (round-2/round-3 review fixes, see
+above): the non-immune fraction's liver-tumor (`LCT`) and colon-tumor
+(`CCT`) patient sets are IDENTICAL — 5 paired patients
 (`s0107, s0115, s0813, s0920, s1231`) — with `s1125` (immune-fraction
 presence in both organs, no tumor-fraction data) and `s0816`
 (liver+blood only, zero colon representation) accounting for the
-remaining 2 of GSE225857's 7 total unique patients; 5 paired + `s1125`
-= 6, matching GEO's own series-summary count of "6 CRC patients"
-exactly. Close to but not an exact match for the paper's cited 4+4,
-reported as PARTIAL/UNRESOLVED. Full table:
+remaining 2 of GSE225857's 7 total unique patients. One of these two,
+added to the 5 paired patients, would give 6 — matching GEO's own
+series-summary count of "6 CRC patients" — but **which of the two is
+not resolvable from public data** (round-3 fix: neither is asserted to
+be the CRC/non-CRC one). Close to but not an exact match for the paper's
+cited 4+4 either way, reported as PARTIAL/UNRESOLVED. Full table:
 `results/07_clim_external_data/GSE225857_inventory.tsv`.
 
 ### GSE285990 — scRNA-seq, 10/10 human liver-metastasis samples confirmed

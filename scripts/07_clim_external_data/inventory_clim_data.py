@@ -321,14 +321,28 @@ def inventory_gse225857(data_root, out_dir):
     immune_only_liver_patients = organ_patients.get("LCL", set()) - liver_tumor_patients
     immune_only_colon_patients = organ_patients.get("CCL", set()) - colon_tumor_patients
     # Patients with immune-fraction presence in BOTH organs but no
-    # tumor/non-immune-fraction data in either -- structurally still
-    # "has CRC + liver-met disease representation," just not sequenced
-    # in the tumor-cell fraction.
+    # tumor/non-immune-fraction data in either.
     immune_only_both_organs = immune_only_liver_patients & immune_only_colon_patients
-    # The one remaining patient type: immune-fraction presence in liver
-    # ONLY, with zero representation (immune or tumor) in colon at all --
-    # this project's own direct finding (confirmed via each patient's
-    # full organ_prefix membership), not from the reviewer's cross-check.
+    # The one remaining patient: immune-fraction presence in liver ONLY,
+    # with zero representation (immune or tumor) in colon at all.
+    #
+    # Round-3 review correction: an earlier draft of this function
+    # additionally asserted that this liver-only patient was "likely a
+    # non-CRC inclusion" and that the immune-only-both-organs patient
+    # "completes GEO's 6 CRC patients" -- an unsupported directional
+    # claim this project could not independently verify (attempted:
+    # searched for any publicly accessible analysis code/repository tied
+    # to this GEO series' source publication, PMID 37327339 -- found
+    # none reachable without authentication). The reviewer's round-3
+    # finding, that this direction is unconfirmed and possibly reversed,
+    # is itself also not independently verifiable from this project's own
+    # search. Per this project's standing discipline (never assert a
+    # claim taken on either the reviewer's word or an earlier draft's
+    # word alone, without direct confirmation): report BOTH patients'
+    # objective, directly-computed organ-prefix membership neutrally,
+    # assign neither a "likely CRC" nor "likely non-CRC" label, and leave
+    # which one (if either) corresponds to GEO's 6th cited CRC patient
+    # explicitly unresolved.
     liver_only_no_colon_at_all = immune_only_liver_patients - immune_only_colon_patients
     all_patients_any_organ = set()
     for v in organ_patients.values():
@@ -363,27 +377,28 @@ def inventory_gse225857(data_root, out_dir):
             f"non-immune fraction) patient sets are IDENTICAL "
             f"({sorted(paired_tumor_patients)}, n={len(paired_tumor_patients)}) "
             f"-- a genuinely paired primary+liver-met tumor-tissue cohort. "
-            f"{sorted(immune_only_both_organs)} "
-            f"{'has' if len(immune_only_both_organs)==1 else 'have'} immune-"
-            f"fraction (CD45+) presence in BOTH liver and colon but no "
-            f"tumor-fraction data in either -- adding to the 5 paired "
-            f"patients gives {len(paired_tumor_patients)+len(immune_only_both_organs)} "
-            f"patients with disease representation in both organs, "
-            f"matching GEO's cited '6 CRC patients' exactly. "
-            f"{sorted(liver_only_no_colon_at_all)} "
-            f"{'has' if len(liver_only_no_colon_at_all)==1 else 'have'} "
-            f"liver+blood representation only, with ZERO colon "
-            f"representation of any kind (immune or tumor fraction) -- "
-            f"the 7th total unique patient across all organ prefixes "
-            f"({len(all_patients_any_organ)} total), structurally distinct "
-            f"from the other 6, consistent with being a non-CRC inclusion "
-            f"(flagged as a hypothesis, not confirmed from public data "
-            f"alone). This is close to but does not exactly match the "
-            f"paper's cited 4+4 (5 paired tumor-tissue patients, not 4); "
-            f"which specific 4 of these 5 the paper's cited CLiM+primary "
-            f"subset corresponds to is not recoverable from public GEO "
-            f"metadata alone. Reported honestly as unresolved, not forced "
-            f"to match."
+            f"The remaining 2 of GSE225857's 7 total unique patients "
+            f"(round-3 review correction: reported neutrally, neither "
+            f"assigned a CRC/non-CRC label -- see code comment) are "
+            f"{sorted(immune_only_both_organs)} (immune-fraction presence "
+            f"in BOTH liver and colon, no tumor-fraction data in either) "
+            f"and {sorted(liver_only_no_colon_at_all)} (liver+blood "
+            f"representation only, zero colon representation of any "
+            f"kind). One of these two, together with the 5 paired "
+            f"patients, would give 6 -- matching GEO's own series-summary "
+            f"count of '6 CRC patients' -- but WHICH of the two "
+            f"corresponds to GEO's 6th cited patient (and whether the "
+            f"other is a non-CRC inclusion, a QC-filtered CRC patient, or "
+            f"something else) could not be independently confirmed from "
+            f"public GEO metadata or a publicly accessible analysis "
+            f"repository for this series' source publication (PMID "
+            f"37327339) -- left explicitly unresolved rather than "
+            f"asserted either way. This is close to but does not exactly "
+            f"match the paper's cited 4+4 (5 paired tumor-tissue "
+            f"patients, not 4); which specific 4 of these 5 the paper's "
+            f"cited CLiM+primary subset corresponds to is also not "
+            f"recoverable from public GEO metadata alone. Reported "
+            f"honestly as unresolved, not forced to match."
         ),
         "note": "Only GSM7058754/GSM7058755 downloaded (exact-GSM selection, "
                 "per design); the other 6 GSMs in this series are spatial "
