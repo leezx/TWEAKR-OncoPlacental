@@ -62,6 +62,14 @@ statistical equivalence between them — stated here, not hidden.
   — 2-of-2 concordant-replication combination, same spirit as the
   frozen `P_developmental_primary84` definition.
 - Gene universe: intersection of genes tested in all 3 DE tables — **13,480 genes**.
+- **Round-1 review note (see "Round 1 review" below)**: Fetal/Adult and
+  Placenta here are two DIFFERENT estimands — fetal-vs-adult colon
+  epithelial DE for one, trophoblast-vs-non-trophoblast within-placenta
+  DE for the other — combined into one triangle only via the shared
+  99th-percentile rescale. This coordinate is a **relative, effect-based
+  positioning**, not three statistically symmetric/isomorphic state
+  probabilities. Stated explicitly here per the reviewer's request, not
+  just implied by the geometry.
 
 ### Track B — Pan-tissue (embryo/fetal somatic vs trophoblast/placenta vs adult somatic)
 
@@ -108,57 +116,114 @@ discipline):
 - **Real, honest limitation found during this inventory**: every one of
   the 141 files has exactly 10,000 barcode columns — HCL's own DGE
   export pads/caps each sample at a fixed 10,000 columns rather than a
-  variable barcode-rank-knee cutoff, so a real (unquantified here)
-  fraction of those columns per sample are likely low/near-empty
-  droplets, not all genuine cells. Pseudobulk summing is reasonably
-  robust to this but it is not a "10,000 real cells" claim.
+  variable barcode-rank-knee cutoff, so a real fraction of those columns
+  per sample are low/near-empty droplets, not all genuine cells.
 - **Real, honest limitation**: Placenta has only 1 donor (matches this
   project's own precedent for treating single-donor sources as
   directional/exploratory support, not primary replicated evidence —
   Greenbaum, Vento-Tormo).
 
+**Round-1 review finding (REQUEST_CHANGES, confirmed real and fixed —
+full account in "Round 1 review" below)**: the version submitted for
+round-1 review summed ALL 10,000 barcode columns per whole-tissue
+sample, with no cell-type restriction. Directly confirmed against
+HCL's own published per-cell annotation (`HCL_Fig1_cell_Info.xlsx`,
+Figshare 7235471, byte+md5-verified): `Placenta1`'s dominant cell type
+is **Fibroblast (72.7%)**, not trophoblast — HCL's own annotation has
+**no "Trophoblast" label at all**; "Epithelial cell" (11.4% of the
+sample) is the closest available proxy. The reviewer's estimand-mismatch/
+cell-composition-confounding concern was correct, and worse than they
+guessed. **Fixed**: pseudobulk now restricted to cell-type-annotated
+epithelial cells only (see below) — this is the version actually
+scored in this PR as merged.
+
+**Corrected method**: pseudobulk restricted per sample to real
+annotated cell types (`scripts/09_developmental_ternary/hcl_pseudobulk.py`,
+using `HCL_Fig1_cell_Info.xlsx`'s `celltype` column, barcode-matched
+directly against the downloaded `_dge.txt.gz` files — every matched
+barcode confirmed to actually exist in the raw matrix, not assumed):
+- **Placenta → "Epithelial cell"** (1,095/9,595 cells) — the only
+  epithelial-lineage label HCL provides for this sample; genuinely not
+  "Trophoblast," reported as a proxy, not hidden as exact.
+- **Fetal intestine → "Fetal enterocyte" + "Fetal epithelial progenitor"
+  + "Enterocyte progenitor" + "Enterocyte"** (689–4,338 cells/sample,
+  5 samples) — explicitly **excludes** "Hepatocyte/Endodermal cell"
+  (10,232/23,516 = 43.5% of the raw sample, the single largest label),
+  a real, surprising, separately-flagged finding (see below), not
+  intestinal epithelium.
+- **Adult intestine → "Enterocyte" + "Enterocyte progenitor" +
+  "Epithelial cell" + "Goblet cell"** (98–5,120 cells/sample, 7 samples
+  — `AdultAscendingColon1` is thin at only 98 epithelial cells, kept
+  and reported as-is, not dropped).
+
+**2 further real, independently-caught bugs found while building this
+fix** (not the reviewer's finding — self-caught during implementation):
+1. HCL's own `celltype` column has inconsistent trailing whitespace
+   (`'Fetal enterocyte '` with a trailing space) — a naive `.isin([...])`
+   filter against unstripped labels silently matched almost nothing
+   (13–69 cells/sample instead of the real 676–4,338). Fixed with an
+   explicit `.str.strip()`.
+2. HCL's own curated batch naming has a real quirk: the Jejunum sample
+   is spelled `"AdultJeJunum"` (capital J twice) in the annotation table,
+   not `"AdultJejunum"` — the first version of this fix used the latter
+   and got a real 0-barcodes-matched warning that caught it, not a
+   silent gap.
+
+`AdultTransverseColon2` in HCL's own curated batch structure combines
+what this project's GSM-level download treated as two separate samples
+(`Adult-Transverse-Colon2-1`, `Adult-Transverse-Colon2-2`) — confirmed
+directly by barcode set-overlap testing against both underlying files
+(after stripping a barcode-collision-disambiguating trailing digit HCL
+adds when merging: 4,813/11,169 barcodes match GSM4008663, 6,486/11,169
+match GSM4008664). Since this analysis pools all Adult samples into one
+group regardless, both files' matched cells are used together without
+needing per-GSM attribution.
+
 Method: genuine one-vs-rest edgeR pseudobulk DE within the single atlas
 (`scripts/09_developmental_ternary/hcl_edgeR_onevsrest.R`) — 3 groups
-(Fetal n=5, Placenta n=1, Adult n=8), `~0+group` design,
-`filterByExpr` → 19,266/34,744 genes kept, common dispersion 0.3408.
+(Fetal n=5, Placenta n=1, **Adult n=7**, corrected pseudobulk),
+`~0+group` design, `filterByExpr` → **14,749/34,744 genes kept** (down
+from the pre-fix 19,266 — real cost of restricting to far fewer,
+noisier epithelial-only cells per sample), common dispersion 0.3274.
 Three one-vs-rest contrasts (`group - mean(other two)`). Placenta's n=1
 means its dispersion is borrowed entirely from the common/trended
 estimate (edgeR's standard behavior for an unreplicated group) — its
 p-values are not meaningful and are not used; only the logFC effect
-size feeds the ternary score, consistent with this whole analysis's
-"effect size, not p-value" principle.
-`S_fetal/placenta/adult = ReLU(logFC_<group>_vs_rest)` directly (no
-same-dataset-pairwise-contrast approximation needed here, unlike
-Tracks A/B, since all 3 groups are genuinely modeled together).
-Gene universe: **19,266 genes** (the joint `filterByExpr` pass — notably
-does *not* lose AFP/LIN28B the way Tracks A/B's separate-DE-then-
-intersect design does, see below).
+size feeds the ternary score.
+`S_fetal/placenta/adult = ReLU(logFC_<group>_vs_rest)` directly.
+Gene universe: **14,749 genes**. **Real cost of the fix**: TRIM71 — this
+analysis's single most reassuring cross-track marker in the pre-fix
+version — no longer clears `filterByExpr` in the epithelial-restricted
+pseudobulk and is absent from Track C's corrected universe. Reported
+honestly, not hidden by reverting to the confounded version.
 
-## Real marker sanity check (all 3 tracks)
+## Real marker sanity check (all 3 tracks, post-fix)
 
-| Marker | Track A (Fetal/Placenta/Adult) | Track B | Track C |
+| Marker | Track A (Fetal/Placenta/Adult) | Track B | Track C (cell-type-restricted) |
 |---|---|---|---|
 | AFP | not in universe (see below) | not in universe (see below) | **0.981 / 0.010 / 0.010** |
 | LIN28B | not in universe (see below) | 0.431 / 0.563 / 0.006 | 0.010 / 0.981 / 0.010 |
-| CSH1/CSH2/CGA/PSG1/PSG3/ERVW-1 | Placenta-dominant where present | Placenta-dominant (0.59–0.90 Placenta) | Placenta-dominant (0.86–0.98 Placenta) |
-| KRT7 | 0.010 / 0.761 / 0.229 | 0.109 / 0.443 / 0.448 | Placenta-dominant |
-| ERVFRD-1 | not annotated (weak signal, see note) | Placenta-leaning but weaker than other placental markers | Placenta-leaning, weaker than other placental markers |
-| **TRIM71** | **0.498 / 0.498 / 0.005** | **0.469 / 0.526 / 0.005** | **0.733 / 0.259 / 0.008** |
+| CSH1/CSH2/CGA/PSG1/PSG3/ERVW-1 | Placenta-dominant where present | Placenta-dominant (0.59–0.90 Placenta) | Placenta-dominant (0.981 Placenta, all 6) |
+| KRT7 | 0.010 / 0.761 / 0.229 | 0.109 / 0.443 / 0.448 | 0.010 / 0.981 / 0.010 |
+| ERVFRD-1 | not annotated (weak signal, see note) | Placenta-leaning but weaker than other placental markers | 0.015 / 0.970 / 0.015 |
+| **TRIM71** | **0.498 / 0.498 / 0.005** | **0.469 / 0.526 / 0.005** | **absent — dropped by `filterByExpr` after the cell-type-restriction fix (see above)** |
 
-TRIM71 landing consistently near the Fetal-Placenta edge (both
-substantial, Adult near-zero) across all 3 independently-built tracks is
-the single most reassuring cross-track result — it is exactly the KB
-note's own predicted "shared developmental" example
-(`TRIM71 → (0.47, 0.48, 0.05)`), reproduced by 3 different methods/data
-sources without being built to match that prediction.
+TRIM71 landing near the Fetal-Placenta edge in Tracks A and B (both
+substantial, Adult near-zero) matches the KB note's own predicted
+"shared developmental" example (`TRIM71 → (0.47, 0.48, 0.05)`). It can
+no longer be cross-checked in Track C after the round-1 fix (dropped
+from the universe, see above) — this is reported as a real cost of the
+fix, not smoothed over by keeping the pre-fix number.
 
-**ERVFRD-1** (classic trophoblast syncytialization/fusion marker) shows
-a real, consistently weaker signal than the other placental markers in
-every track (Track C: logFC=+0.68 vs. CSH1's +16.99) — this project has
-flagged ERVFRD-1 as a borderline marker before during the original
-P-developmental threshold calibration (Step 4), so a weak-but-directionally-
-correct signal here is consistent with that prior finding, not a new
-concern, but worth naming rather than silently omitting from the table.
+**ERVFRD-1** (classic trophoblast syncytialization/fusion marker):
+Track C's corrected, cell-type-restricted signal (logFC=+4.71 vs.
+CSH1's +17.86) is *substantially stronger* than the pre-fix whole-tissue
+version (+0.68) — direct evidence the cell-type restriction improved
+signal-to-noise for this specific marker, not just theoretical
+correctness. Track A/B still show it weaker than the other placental
+markers; this project has flagged ERVFRD-1 as a borderline marker
+before during the original P-developmental threshold calibration
+(Step 4), consistent with that prior finding.
 
 **LIN28B lands Placenta-dominant in both Track B and Track C**, not
 Fetal-dominant as the KB note's own prediction guessed
@@ -191,7 +256,10 @@ groups together means any gene passing that one filter appears in all 3
 contrasts, which is why AFP appears cleanly at Track C's Fetal vertex.
 This is a real argument in Track C's favor beyond just "avoids
 cross-dataset batch risk," reported honestly as a limitation of the
-reuse-based design, not fixed in this first version.
+reuse-based design, not fixed in this first version. (Track C has its
+own different gene-dropout cost after the round-1 cell-type-restriction
+fix — TRIM71, not AFP/LIN28B — see "Round 1 review" below; no track in
+this PR is dropout-free.)
 
 ## A real, honest cross-track difference: distribution shape
 
@@ -241,12 +309,21 @@ at face value.
    instead for all manual HCL file inspection in this write-up's
    verification steps (not a script issue — `gzip.open()` in Python and
    R's own gzip handling were never affected).
+5. **Whole-tissue cell-composition confounding in Track C** (round-1
+   reviewer finding, confirmed real and fixed) and **2 further
+   self-caught bugs while implementing the fix** (a trailing-whitespace
+   bug in HCL's own `celltype` column silently dropping real matches; a
+   real `"AdultJeJunum"` vs `"AdultJejunum"` naming-quirk 0-match) — full
+   account in "Round 1 review" below, not just a fix summary.
 
 ## File manifest
 
-- `scripts/09_developmental_ternary/hcl_pseudobulk.py` — builds the 14
-  relevant HCL pseudobulk samples from the byte-verified GSE134355 raw
-  files (local execution, lightweight aggregation, not heavy compute).
+- `scripts/09_developmental_ternary/hcl_pseudobulk.py` — builds 13
+  cell-type-restricted HCL pseudobulk samples (1 Placenta + 5 Fetal +
+  7 Adult) from 14 underlying GSM files (`AdultTransverseColon2` draws
+  from 2 GSM files, see below), using HCL's own real per-cell
+  annotation (local execution, lightweight aggregation, not heavy
+  compute).
 - `scripts/09_developmental_ternary/hcl_edgeR_onevsrest.R` — Track C's
   one-vs-rest edgeR DE.
 - `scripts/09_developmental_ternary/build_ternary_coords.py` — builds
@@ -258,14 +335,18 @@ at face value.
 - `results/09_developmental_ternary/track_B_organ_diff_table.tsv` —
   Track B's intermediate per-organ percentile-differential table.
 - `results/09_developmental_ternary/hcl_pseudobulk_{counts,meta}.tsv`,
-  `hcl_edgeR_{Fetal,Placenta,Adult}_vs_rest.tsv` — Track C's intermediate
-  pseudobulk and DE tables.
+  `hcl_pseudobulk_meta_detail.tsv` (per-GSM-file cell-type-match detail,
+  added in the round-1 fix), `hcl_edgeR_{Fetal,Placenta,Adult}_vs_rest.tsv`
+  — Track C's intermediate pseudobulk and DE tables.
 - `results/09_developmental_ternary/ternary_track_{A,B,C}_*.png` — the 3
   rendered ternary plots.
 - Raw HCL data: `DATA/scRNAseq/GSE134355/raw/` (not committed to this
   repo, per this project's data-separation rule — `GSE134355_RAW.tar`,
   927,109,120 bytes, byte-verified, plus `extracted/` — 141 `_dge.txt.gz`
-  files, all `gzip -t` clean).
+  files, all `gzip -t` clean; `annotation/HCL_Fig1_cell_Info.xlsx`,
+  19,772,723 bytes, byte+md5-verified against Figshare article 7235471 —
+  the real per-cell cell-type annotation this PR's round-1 fix depends
+  on). See `datasets/GSE134355/dataset.md` for the full manifest.
 
 ## Explicitly out of scope for this first version
 
@@ -280,3 +361,74 @@ at face value.
   Track A/Gut Cell Atlas can — a genuine granularity gap between the
   gut-specific and HCL-validation tracks, not attempted to be closed
   here.
+
+## Round 1 review
+
+Submitted to the project's standing ChatGPT reviewer (same persistent
+conversation used for every PR this project). **Verdict: REQUEST_CHANGES.**
+
+**Blocking finding**: the submitted Track C summed all 10,000 barcode
+columns per whole-tissue HCL sample with no cell-type restriction. The
+reviewer's argument: this compares tissue-composition (e.g. "trophoblast
++ Hofbauer + endothelium + stromal" vs. "intestinal epithelium + immune
++ stromal"), not developmental cell state — a gene near the Placenta
+vertex could be a trophoblast gene, a placental endothelial/macrophage
+gene, or just a generic composition marker, indistinguishable at that
+resolution. The reviewer explicitly said this could not be fixed by the
+99th-percentile rescale and that, unfixed, Track C should be downgraded
+from "independent validation" to "whole-tissue exploratory concordance
+track."
+
+**Independently verified before responding** (not accepted or rejected
+on the reviewer's word alone, per this project's standing discipline):
+directly queried HCL's own published per-cell annotation
+(`HCL_Fig1_cell_Info.xlsx`, Figshare article 7235471, byte+md5-verified
+download) for the `Placenta1` sample's real cell-type composition.
+**Confirmed true, and worse than the reviewer's own framing**:
+`Placenta1` is 72.7% Fibroblast, 13.4% Macrophage, and only 11.4%
+"Epithelial cell" — and HCL's own annotation contains **no "Trophoblast"
+label anywhere**, so even the best-available proxy is imperfect. The
+reviewer's core concern was correct.
+
+**Fixed** (not argued away): rebuilt Track C's pseudobulk restricted to
+real annotated epithelial cells per sample (Placenta → "Epithelial
+cell"; Fetal intestine → "Fetal enterocyte"/"Fetal epithelial
+progenitor"/"Enterocyte progenitor"/"Enterocyte", excluding the
+sample's single largest label "Hepatocyte/Endodermal cell"; Adult
+intestine → "Enterocyte"/"Enterocyte progenitor"/"Epithelial
+cell"/"Goblet cell"). Full detail, including 2 further self-caught bugs
+found while implementing the fix (a trailing-whitespace bug in HCL's
+own `celltype` labels, and a real `"AdultJeJunum"` naming quirk), is in
+the "Track C" section above and `scripts/09_developmental_ternary/
+hcl_pseudobulk.py`'s module docstring.
+
+**Real, honest cost of the fix**: gene universe dropped from 19,266 to
+14,749 (`filterByExpr` on far fewer, noisier epithelial-only cells per
+sample); TRIM71 — the single most reassuring cross-track marker in the
+pre-fix version — no longer clears the filter and is absent from
+Track C's corrected universe. Not hidden by reverting to the confounded
+version to keep a better-looking marker table.
+
+**Real, positive signal the fix is doing real work, not just adding
+noise**: ERVFRD-1's signal strengthened substantially after cell-type
+restriction (logFC +0.68 pre-fix → +4.71 post-fix) — direct evidence
+the restriction improved signal-to-noise for a marker this project has
+independently flagged as borderline before (Step 4), not just a
+theoretically-more-correct-but-empirically-neutral change.
+
+**Secondary, non-blocking note from the same review**: Track A's Fetal/
+Adult and Placenta axes are two different estimands (fetal-vs-adult
+colon epithelial DE vs. trophoblast-vs-non-trophoblast within-placenta
+DE) combined only via the shared 99th-percentile rescale — acceptable
+as an exploratory coordinate, but the doc must consistently describe
+this as a relative, effect-based positioning, not three statistically
+symmetric state probabilities. Addressed inline in the Track A section
+above.
+
+Everything else in the reviewer's first pass (ReLU, effect-size-not-
+p-value, closure normalization, 3 tracks reported separately, markers
+used only for sanity-check not modeling) had no blocking issue.
+
+This round's fix is pushed to the same PR/branch (not a new branch),
+re-submitted to the same ChatGPT conversation for re-review. Final
+verdict + head commit to be recorded here once received.

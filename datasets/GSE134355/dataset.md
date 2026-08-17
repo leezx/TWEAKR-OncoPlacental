@@ -42,6 +42,37 @@ fraction of those 10,000 columns per sample are likely low/near-empty
 droplets, not all genuine cells. Not treated as "10,000 real cells" in
 any downstream use.
 
+## Cell-type annotation (added round-1 review fix)
+
+The GEO `RAW.tar` contains only the 141 `_dge.txt.gz` whole-tissue
+matrices, no cell-type annotation. The real per-cell annotation lives
+on Figshare, not GEO: article
+[7235471](https://figshare.com/articles/dataset/HCL_DGE_Data/7235471),
+file `HCL_Fig1_cell_Info.xlsx` (19,772,723 bytes, md5
+`fe73a9b7129abb10d09dfcd355c19f12`, both verified on download) —
+599,926 cells with `cellnames`/`sample`/`cluster`/`stage`/`batch`/
+`donor`/`celltype` columns. Barcode suffixes in `cellnames` (after the
+`.`) confirmed to be an exact subset of the corresponding `_dge.txt.gz`
+file's column headers (direct membership test, not assumed).
+
+**Real, honest finding this annotation revealed**: `Placenta1`'s
+dominant cell type is **Fibroblast (72.7%)**, not trophoblast — HCL's
+own annotation has **no "Trophoblast" label at all**; "Epithelial cell"
+(11.4% of the sample) is the best available proxy. Downloaded and used
+after a round-1 ChatGPT PR review correctly flagged that scoring the
+whole-tissue pseudobulk (this project's first version) confounds
+cell-composition with developmental state — see
+`docs/STEP9_DEVELOPMENTAL_TERNARY_MAP.md` "Round 1 review" for the full
+account, including 2 further self-caught bugs (a trailing-whitespace
+bug in HCL's own `celltype` labels; a real `"AdultJeJunum"` vs
+`"AdultJejunum"` naming quirk) found while implementing the fix.
+
+Also real: `AdultTransverseColon2` in this annotation's own curated
+batch structure combines what this project's GSM-level download
+treated as two separate samples (`Adult-Transverse-Colon2-1`,
+`Adult-Transverse-Colon2-2`) — confirmed by direct barcode set-overlap
+testing against both underlying files, not assumed.
+
 ## Samples used in this project (of 141 total)
 
 Only 14 of the 141 GSMs are used (this project's Step 9 needs Fetal
