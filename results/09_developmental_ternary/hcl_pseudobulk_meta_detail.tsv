@@ -1,0 +1,15 @@
+sample	group	annot_sample	annot_batch	gsm_stem	n_epithelial_cells_matched	n_epithelial_cells_annotated	total_umi
+Placenta1	Placenta	Placenta	Placenta1	GSM4008722_Placenta1	1095	1095	1683741
+FetalIntestine1	Fetal	FetalIntestine	FetalIntestine1	GSM4008688_Fetal-Intestine1	689	689	619693
+FetalIntestine2	Fetal	FetalIntestine	FetalIntestine2	GSM4008689_Fetal-Intestine2	970	970	757717
+FetalIntestine3	Fetal	FetalIntestine	FetalIntestine3	GSM4008690_Fetal-Intestine3	2833	2833	3256673
+FetalIntestine4	Fetal	FetalIntestine	FetalIntestine4	GSM4008691_Fetal-Intestine4	4338	4338	3470323
+FetalIntestine5	Fetal	FetalIntestine	FetalIntestine5	GSM4008692_Fetal-Intestine5	1291	1291	1145202
+AdultAscendingColon1	Adult	AdultAscendingColon	AdultAscendingColon1	GSM3980125_Adult-Ascending-Colon1	98	98	123384
+AdultSigmoidColon1	Adult	AdultSigmoidColon	AdultSigmoidColon1	GSM4008648_Adult-Sigmoid-Colon1	2162	2162	1574916
+AdultTransverseColon1	Adult	AdultTransverseColon	AdultTransverseColon1	GSM4008662_Adult-Transverse-Colon1	4547	4547	4942143
+AdultTransverseColon2__GSM4008663_Adult-Transverse-Colon2-1	Adult	AdultTransverseColon	AdultTransverseColon2	GSM4008663_Adult-Transverse-Colon2-1	2178	5057	2536239
+AdultTransverseColon2__GSM4008664_Adult-Transverse-Colon2-2	Adult	AdultTransverseColon	AdultTransverseColon2	GSM4008664_Adult-Transverse-Colon2-2	2942	5057	3907527
+AdultDuodenum1	Adult	AdultDuodenum	AdultDuodenum1	GSM3980131_Adult-Duodenum1	2756	2756	2153903
+AdultIleum2	Adult	AdultIleum	AdultIleum2	GSM3980140_Adult-Ileum2	1472	1472	1700818
+AdultJejunum2	Adult	AdultJeJunum	AdultJejunum2	GSM3980141_Adult-Jejunum2	3889	3889	3893973
