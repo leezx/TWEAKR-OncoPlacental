@@ -17,13 +17,17 @@ integer `Content-Length` (GEO) or GDC manifest `file_size`+`md5sum`
 (TCGA) — never GEO's rounded MB/GB webpage display, never piped through
 `tail`/`head` (standing `curl_pipe_swallows_exit_code` lesson).
 
-**Went through 3 review rounds** (`PR #36`) — round 1: 4 blockers plus 1
-completeness gap; round 2 and round 3: 2 successive residual correctness
-issues in GSE225857's patient-cohort reconstruction, the second of which
-this project could not fully resolve either way (see round 3). All
-independently re-verified against real committed data/live sources
-before fixing. See "Round-1 review fixes," "Round-2 review fix," and
-"Round-3 review fix" below.
+**Went through 4 review rounds** (`PR #36`) — round 1: 4 blockers plus 1
+completeness gap; rounds 2-4: 3 successive correctness issues in
+GSE225857's patient-cohort reconstruction, culminating in round 4's
+discovery of the paper's own real, publicly-cited analysis-code
+repository. All independently re-verified against real committed
+data/live sources before fixing — round 3 in particular is a genuine
+example of *not* accepting a specific claim (from the reviewer) without
+confirmation, and round 4 is an equally genuine example of the earlier
+"could not confirm" conclusion itself turning out to be incomplete once
+checked more directly. See "Round-1 review fixes" through "Round-4
+review fix" below.
 
 ## Scripts
 
@@ -211,7 +215,55 @@ either) corresponds to GEO's 6th cited "CRC patient with liver
 metastasis" is explicitly left unresolved — this project's own public
 GEO metadata and public-search access are insufficient to settle it
 either way, and the honest record is to say so rather than assert a
-direction this project cannot itself verify.
+direction this project cannot itself verify. **This section's "could not
+verify" conclusion was itself corrected in round 4, below** — the
+verification attempt described here was real but incomplete, kept here
+as an accurate historical record.
+
+## Round-4 review fix (`PR #36`, independently verified — the repository
+this time turned out to be real and directly checkable)
+
+**Blocker — round 3's "could not verify" conclusion was itself
+incomplete.** The reviewer's round-4 finding pointed out that this
+project's round-3 verification attempt never checked the source
+publication's own Data and Materials Availability statement — the most
+direct place such a code repository would actually be named — and that
+this statement explicitly names a real, public repository.
+
+**Independently confirmed, this round, by directly fetching the primary
+sources (not taken on the reviewer's word):**
+- The PMC article for PMID 37327339 (Wang F, Long J et al., *Science
+  Advances* 2023) states verbatim: "The code for data cleaning and
+  analysis is hosted at https://github.com/jalon9358/LianLab_CRCLM."
+- That repository is real and reachable without authentication, and
+  contains a file `data_import_and_filter.R` among others.
+- That file's actual content, fetched directly, constructs `tumor_merge`
+  from exactly 6 patient IDs — `s1231, s0920, s0813, s0115, s0107,
+  s0816` (the last as sample tag `s0816_1`) — and constructs
+  `immune_merge` separately, which includes `s1125` but not `s0816`'s
+  tumor sample under that name. **This confirms the reviewer's round-3
+  citation was accurate**, not a fabricated or hallucinated claim.
+
+**Fixed**: added a new `authors_own_analysis_code` field citing the real
+repository and quoting this real evidence. The `cohort_reconstruction_
+status` narrative now states plainly that the original authors' own
+tumor-cell analysis input included `s0816` among their intended 6, with
+`s1125` immune-fraction-only from the start — while explicitly not
+promoting this into a final CRC/non-CRC identity claim about the
+*deposited* GEO data, since `s0816`'s tumor-fraction sample is present
+in the authors' original code but absent from the deposited GSM7058755
+metadata, for a reason (most plausibly downstream QC/filtering) this
+project has not independently confirmed. The 5-paired-patient result (as
+actually deposited in GEO) remains the operative reconstruction; the
+authors'-code evidence is recorded as real, cited context, not asserted
+as settling the deposited data's own composition.
+
+**Lesson for this session's standing discipline**: independently
+verifying a specific claim means checking the *most direct* available
+source, not just a general web/code search — a negative result from an
+incomplete search is not the same as a confirmed absence, and should not
+have been reported with the same confidence as a positive confirmation
+would carry.
 
 ## Per-dataset structural characterization + cohort-reconstruction results
 
@@ -238,18 +290,23 @@ downloaded). Both GSMs' accompanying `*_meta.txt.gz` files carry real
 per-cell metadata including `patients`/`sampletag`/`patients_organ`
 columns, confirming the design's round-2 fix (patient-of-origin metadata
 lives in a **separate file**, not "inside the matrix"). **Real
-per-patient reconstruction result** (round-2/round-3 review fixes, see
+per-patient reconstruction result** (rounds 2-4 review fixes, see
 above): the non-immune fraction's liver-tumor (`LCT`) and colon-tumor
-(`CCT`) patient sets are IDENTICAL — 5 paired patients
-(`s0107, s0115, s0813, s0920, s1231`) — with `s1125` (immune-fraction
-presence in both organs, no tumor-fraction data) and `s0816`
-(liver+blood only, zero colon representation) accounting for the
-remaining 2 of GSE225857's 7 total unique patients. One of these two,
-added to the 5 paired patients, would give 6 — matching GEO's own
-series-summary count of "6 CRC patients" — but **which of the two is
-not resolvable from public data** (round-3 fix: neither is asserted to
-be the CRC/non-CRC one). Close to but not an exact match for the paper's
-cited 4+4 either way, reported as PARTIAL/UNRESOLVED. Full table:
+(`CCT`) patient sets, *as deposited in GEO*, are IDENTICAL — 5 paired
+patients (`s0107, s0115, s0813, s0920, s1231`) — with `s1125`
+(immune-fraction presence in both organs, no tumor-fraction data in the
+deposited metadata) and `s0816` (liver+blood-only in the deposited
+metadata, zero colon representation) accounting for the remaining 2 of
+GSE225857's 7 total unique patients. The paper's own publicly-cited
+analysis-code repository (`github.com/jalon9358/LianLab_CRCLM`,
+confirmed real and directly fetched, round-4 fix) shows the *original
+authors'* intended 6-patient tumor cohort included `s0816`, not `s1125`
+— real, cited evidence, though it describes the authors' own
+intermediate processing rather than the final deposited GEO object, so
+it is not promoted into a definitive claim about the deposited data's
+composition. Close to but not an exact match for the paper's cited 4+4
+either way (5 paired patients as deposited, not 4), reported as
+PARTIAL/UNRESOLVED. Full table:
 `results/07_clim_external_data/GSE225857_inventory.tsv`.
 
 ### GSE285990 — scRNA-seq, 10/10 human liver-metastasis samples confirmed

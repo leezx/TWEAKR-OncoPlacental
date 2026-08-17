@@ -327,22 +327,39 @@ def inventory_gse225857(data_root, out_dir):
     # with zero representation (immune or tumor) in colon at all.
     #
     # Round-3 review correction: an earlier draft of this function
-    # additionally asserted that this liver-only patient was "likely a
+    # asserted that this liver-only patient (s0816) was "likely a
     # non-CRC inclusion" and that the immune-only-both-organs patient
-    # "completes GEO's 6 CRC patients" -- an unsupported directional
-    # claim this project could not independently verify (attempted:
-    # searched for any publicly accessible analysis code/repository tied
-    # to this GEO series' source publication, PMID 37327339 -- found
-    # none reachable without authentication). The reviewer's round-3
-    # finding, that this direction is unconfirmed and possibly reversed,
-    # is itself also not independently verifiable from this project's own
-    # search. Per this project's standing discipline (never assert a
-    # claim taken on either the reviewer's word or an earlier draft's
-    # word alone, without direct confirmation): report BOTH patients'
-    # objective, directly-computed organ-prefix membership neutrally,
-    # assign neither a "likely CRC" nor "likely non-CRC" label, and leave
-    # which one (if either) corresponds to GEO's 6th cited CRC patient
-    # explicitly unresolved.
+    # (s1125) "completes GEO's 6 CRC patients." This project's first
+    # attempt to verify the reviewer's counter-claim (that the authors'
+    # own analysis code says the opposite) failed -- searched GitHub's
+    # login-gated code-search UI and general web search, found nothing,
+    # reported the claim as unverifiable.
+    #
+    # Round-4 review correction: that verification attempt was itself
+    # incomplete -- it never checked the source publication's own Data
+    # and Materials Availability statement, which explicitly names the
+    # analysis-code repository. Confirmed directly this round: PMC
+    # article for PMID 37327339 (Wang F, Long J et al., Science Advances
+    # 2023) states "The code for data cleaning and analysis is hosted at
+    # https://github.com/jalon9358/LianLab_CRCLM" -- a real, publicly
+    # accessible repository (verified reachable without authentication).
+    # Its `data_import_and_filter.R` genuinely constructs `tumor_merge`
+    # from exactly 6 patient IDs -- s1231, s0920, s0813, s0115, s0107,
+    # s0816 (the last as sample tag `s0816_1`) -- while `immune_merge`
+    # separately includes s1125 (as `s1125_3_4`/`s1125_1_2`) but s1125
+    # never appears in `tumor_merge`. This is real, verified evidence
+    # (not the earlier draft's speculation, and not taken on the
+    # reviewer's word alone) that the ORIGINAL authors' own tumor-cell
+    # analysis input included s0816 among the 6, with s1125 immune-
+    # fraction-only from the start -- the opposite of this project's
+    # round-2 hypothesis. It does not by itself prove s0816 vs s1125's
+    # final CRC/non-CRC status in the DEPOSITED GEO object (s0816's
+    # tumor-fraction sample is present in the authors' original code but
+    # absent from the public GSM7058755 metadata -- for a reason this
+    # project has not independently confirmed, e.g. downstream QC/
+    # filtering) -- so the final 4+4 reconstruction is still not
+    # promoted to exact, but the directional evidence is now real and
+    # cited, not asserted from either side without support.
     liver_only_no_colon_at_all = immune_only_liver_patients - immune_only_colon_patients
     all_patients_any_organ = set()
     for v in organ_patients.values():
@@ -369,36 +386,54 @@ def inventory_gse225857(data_root, out_dir):
         "n_total_unique_patients_any_organ": len(all_patients_any_organ),
         "total_patient_count_matches_geo_summary_of_6": bool(len(all_patients_any_organ) == 6),
         "paper_cited_clim": 4, "paper_cited_primary": 4,
+        "authors_own_analysis_code": (
+            "Repository: https://github.com/jalon9358/LianLab_CRCLM "
+            "(cited directly in the source publication's Data and "
+            "Materials Availability statement, PMID 37327339; confirmed "
+            "reachable without authentication). Its "
+            "data_import_and_filter.R constructs tumor_merge from "
+            "exactly 6 patient IDs (s1231, s0920, s0813, s0115, s0107, "
+            "s0816 -- the last as sample tag 's0816_1') and immune_merge "
+            "separately, which includes s1125 but NOT s0816's tumor "
+            "sample under that name. Real, verified evidence that the "
+            "original authors' own tumor-cell analysis input included "
+            "s0816 among the intended 6, with s1125 immune-fraction-only "
+            "from the start -- but s0816's tumor-fraction sample is "
+            "present in this original code and absent from the deposited "
+            "GSM7058755 metadata, for a reason not independently "
+            "confirmed by this project (e.g. downstream QC/filtering is "
+            "plausible but not confirmed)."
+        ),
         "cohort_reconstruction_status": (
             f"PARTIAL/UNRESOLVED -- corrected reconstruction (round-2 "
             f"review fix, replacing an unsupported borrow of GSE231559's "
             f"L/C naming convention onto this unrelated dataset): LCT "
             f"(liver-tumor, non-immune fraction) and CCT (colon-tumor, "
-            f"non-immune fraction) patient sets are IDENTICAL "
-            f"({sorted(paired_tumor_patients)}, n={len(paired_tumor_patients)}) "
-            f"-- a genuinely paired primary+liver-met tumor-tissue cohort. "
-            f"The remaining 2 of GSE225857's 7 total unique patients "
-            f"(round-3 review correction: reported neutrally, neither "
-            f"assigned a CRC/non-CRC label -- see code comment) are "
+            f"non-immune fraction) patient sets, AS DEPOSITED IN GEO, are "
+            f"IDENTICAL ({sorted(paired_tumor_patients)}, "
+            f"n={len(paired_tumor_patients)}) -- a genuinely paired "
+            f"primary+liver-met tumor-tissue cohort. The remaining 2 of "
+            f"GSE225857's 7 total unique patients are "
             f"{sorted(immune_only_both_organs)} (immune-fraction presence "
-            f"in BOTH liver and colon, no tumor-fraction data in either) "
-            f"and {sorted(liver_only_no_colon_at_all)} (liver+blood "
-            f"representation only, zero colon representation of any "
-            f"kind). One of these two, together with the 5 paired "
-            f"patients, would give 6 -- matching GEO's own series-summary "
-            f"count of '6 CRC patients' -- but WHICH of the two "
-            f"corresponds to GEO's 6th cited patient (and whether the "
-            f"other is a non-CRC inclusion, a QC-filtered CRC patient, or "
-            f"something else) could not be independently confirmed from "
-            f"public GEO metadata or a publicly accessible analysis "
-            f"repository for this series' source publication (PMID "
-            f"37327339) -- left explicitly unresolved rather than "
-            f"asserted either way. This is close to but does not exactly "
-            f"match the paper's cited 4+4 (5 paired tumor-tissue "
-            f"patients, not 4); which specific 4 of these 5 the paper's "
-            f"cited CLiM+primary subset corresponds to is also not "
-            f"recoverable from public GEO metadata alone. Reported "
-            f"honestly as unresolved, not forced to match."
+            f"in BOTH liver and colon, no tumor-fraction data in the "
+            f"DEPOSITED metadata) and {sorted(liver_only_no_colon_at_all)} "
+            f"(liver+blood representation only in the deposited metadata, "
+            f"zero colon representation of any kind). Real, verified "
+            f"evidence from the original authors' own public analysis "
+            f"code (see authors_own_analysis_code) shows their intended "
+            f"6-patient tumor cohort included "
+            f"{sorted(liver_only_no_colon_at_all)}, not "
+            f"{sorted(immune_only_both_organs)} -- but that code's "
+            f"6-patient set does not fully match what was actually "
+            f"deposited to GEO (the 5 paired patients above), so this "
+            f"project does not promote that evidence into a final "
+            f"CRC/non-CRC identity claim about the deposited data itself. "
+            f"This is close to but does not exactly match the paper's "
+            f"cited 4+4 (5 paired tumor-tissue patients as deposited, not "
+            f"4); which specific 4 of these 5 the paper's cited "
+            f"CLiM+primary subset corresponds to is also not recoverable "
+            f"from public GEO metadata alone. Reported honestly as "
+            f"unresolved, not forced to match."
         ),
         "note": "Only GSM7058754/GSM7058755 downloaded (exact-GSM selection, "
                 "per design); the other 6 GSMs in this series are spatial "
