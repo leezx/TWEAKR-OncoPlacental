@@ -1,0 +1,14 @@
+panel	n_testable	n_perm_used
+revCSC_primary27_full	25	500
+revCSC_primary27_minus_CLU	24	500
+revCSC_primary27_minus_ASS1	24	500
+revCSC_primary27_minus_CLU_ASS1	23	500
+revCSC_extended28_full	25	500
+revCSC_extended28_minus_CLU	24	500
+revCSC_extended28_minus_ASS1	24	500
+revCSC_extended28_minus_CLU_ASS1	23	500
+D_Gut-shared	7	500
+F_Gut-specific	1914	500
+F_Colon-specific	1267	500
+F_SI-specific	1270	500
+P_Gut-specific	44	500
