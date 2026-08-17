@@ -1,0 +1,144 @@
+[
+  {
+    "dataset": "GSE231559",
+    "n_samples_total": 26,
+    "n_clim_reconstructed": 9,
+    "n_primary_reconstructed": 6,
+    "paper_cited_clim": 9,
+    "paper_cited_primary": 6,
+    "cohort_reconstruction_exact_match": true,
+    "archive_integrity": {
+      "path": "/home/zz950/DATA/scRNAseq/GSE231559/raw/GSE231559_RAW.tar",
+      "exists": true,
+      "tar_tf_ok": true,
+      "n_members": 78,
+      "n_gz_members": 78,
+      "gz_spotcheck_n": 20,
+      "gz_spotcheck_failures": []
+    }
+  },
+  {
+    "dataset": "GSE225857",
+    "n_scrna_gsms": 2,
+    "per_patient_reconstruction_possible": true,
+    "note": "Only GSM7058754/GSM7058755 downloaded (exact-GSM selection, per design); the other 6 GSMs in this series are spatial and explicitly out of scope, not downloaded."
+  },
+  {
+    "dataset": "GSE285990",
+    "n_samples_downloaded": 10,
+    "paper_cited_n": 10,
+    "cohort_reconstruction_exact_match": true,
+    "out_of_scope_confirmed_this_round": {
+      "mouse_kupffer_cell_substudy_gsms": [
+        "GSM8714605",
+        "GSM8714606",
+        "GSM8714607",
+        "GSM8714608",
+        "GSM8714609"
+      ],
+      "mouse_stereo_seq_spatial_gsms": [
+        "GSM8714610",
+        "GSM8714611"
+      ],
+      "confirmed_via": "direct per-GSM record fetch (Sample_organism_ch1 == Mus musculus for all 7); none downloaded"
+    }
+  },
+  {
+    "dataset": "GSE131418",
+    "n_samples_total": 1135,
+    "n_cohorts": {
+      "consortium": 618,
+      "mcc": 517
+    },
+    "n_liver_metastasis_total": 197,
+    "n_liver_metastasis_by_cohort": {
+      "mcc": 141,
+      "consortium": 56
+    },
+    "n_liver_metastasis_pre_treatment_only": 53,
+    "paper_cited_n": 170,
+    "cohort_reconstruction_status": "PARTIAL/UNRESOLVED -- none of the GEO-metadata-based groupings checked this round (total liver-met=197; per-cohort 141 MCC/56 Consortium; PRE-treatment-only=53) reproduce the paper's cited 170 exactly. Likely requires the paper's own supplementary sample list, not reconstructable from GEO's public per-sample characteristics alone. Reported honestly as unresolved, not forced to match.",
+    "archive_integrity": {
+      "path": "/home/zz950/DATA/bulkRNAseq/GSE131418/raw/GSE131418_RAW.tar",
+      "exists": true,
+      "tar_tf_ok": true,
+      "n_members": 1138,
+      "n_gz_members": 1138,
+      "gz_spotcheck_n": 20,
+      "gz_spotcheck_failures": []
+    }
+  },
+  {
+    "dataset": "GSE17536",
+    "n_cel_files": 177,
+    "expected_n_from_geo_filelist": 177,
+    "matches_geo_declared_count": true,
+    "archive_integrity": {
+      "path": "/home/zz950/DATA/bulkRNAseq/GSE17536/raw/GSE17536_RAW.tar",
+      "exists": true,
+      "tar_tf_ok": true,
+      "n_members": 177,
+      "n_gz_members": 177,
+      "gz_spotcheck_n": 20,
+      "gz_spotcheck_failures": []
+    }
+  },
+  {
+    "dataset": "GSE17537",
+    "n_cel_files": 55,
+    "expected_n_from_geo_filelist": 55,
+    "matches_geo_declared_count": true,
+    "archive_integrity": {
+      "path": "/home/zz950/DATA/bulkRNAseq/GSE17537/raw/GSE17537_RAW.tar",
+      "exists": true,
+      "tar_tf_ok": true,
+      "n_members": 55,
+      "n_gz_members": 55,
+      "gz_spotcheck_n": 20,
+      "gz_spotcheck_failures": []
+    }
+  },
+  {
+    "dataset": "GSE21510",
+    "n_samples_total": 148,
+    "tissue_type_breakdown": {
+      "cancer, LCM": 104,
+      "normal, homogenized": 25,
+      "cancer, homogenized": 19
+    },
+    "n_unique_patients": 107,
+    "paper_cited_n": 146,
+    "geo_total_n": 148,
+    "cohort_reconstruction_status": "UNRESOLVED -- tissue-type breakdown ({'cancer, LCM': 104, 'normal, homogenized': 25, 'cancer, homogenized': 19}) sums to 148 exactly with no natural 146-sized subgroup; the exact 2 excluded samples and exclusion basis cannot be identified from GEO's public series-matrix metadata alone (checked this round: tissue-prep category, unique-patient counts). Downloading all 148 is fine per the locked design; the paper's exact 146-sample cohort remains an open item requiring the paper's own supplementary methods.",
+    "archive_integrity": {
+      "path": "/home/zz950/DATA/bulkRNAseq/GSE21510/raw/GSE21510_RAW.tar",
+      "exists": true,
+      "tar_tf_ok": true,
+      "n_members": 148,
+      "n_gz_members": 148,
+      "gz_spotcheck_n": 20,
+      "gz_spotcheck_failures": []
+    }
+  },
+  {
+    "dataset": "TCGA-CRC",
+    "access_method": "GDC API (distinct from every GEO cohort in this table -- not a GEO _RAW.tar)",
+    "n_files_total_manifest": 701,
+    "n_files_size_verified_on_disk": 701,
+    "by_project": {
+      "TCGA-COAD": 524,
+      "TCGA-READ": 177
+    },
+    "by_sample_type": {
+      "Primary Tumor": 647,
+      "Solid Tissue Normal": 51,
+      "Recurrent Tumor": 2,
+      "Metastatic": 1
+    },
+    "n_primary_tumor_files": 647,
+    "n_primary_tumor_unique_cases": 624,
+    "n_cases_with_multiple_primary_tumor_aliquots": 13,
+    "paper_cited_n": 610,
+    "cohort_reconstruction_status": "PARTIAL -- one-aliquot-per-case Primary-Tumor-only filtering gives 624 unique cases, close to but not exactly matching the paper's cited 610; the exact filter (which aliquot per multi-aliquot case, any additional QC/data-completeness exclusions) is not reconstructable from GDC file metadata alone. Reported honestly as the closest achievable reconstruction, not declared exact."
+  }
+]
